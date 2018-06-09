@@ -18,7 +18,11 @@ describe Vnet::Core::Networks::Virtual do
     let(:dp_info) { datapath.dp_info }
     let(:flow_options) { {:cookie => vnet_map.id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)} }
     let(:network_md) { subject.md_create(:network => vnet_map.id) }
-    let(:fo_network_md) { flow_options.merge(network_md) }
+    let(:tunnel_md) {
+      { :metadata => METADATA_VALUE_PAIR_TYPE | ((vnet_map.id << 32) & METADATA_VALUE_PAIR_FIRST_MASK),
+        :metadata_mask => METADATA_VALUE_PAIR_TYPE | METADATA_VALUE_PAIR_FIRST_MASK | METADATA_VALUE_PAIR_TYPE
+      }
+    }
     let(:flows) { dp_info.added_flows }
 
     subject { Vnet::Core::Networks::Virtual.new(dp_info: dp_info, map: vnet_map) }
@@ -31,7 +35,7 @@ describe Vnet::Core::Networks::Virtual do
         20,
         {:tunnel_id => (vnet_map.id & TUNNEL_ID_MASK) | TUNNEL_NETWORK},
         nil,
-        fo_network_md.merge(:goto_table => TABLE_NETWORK_SRC_CLASSIFIER))
+        flow_options.merge(tunnel_md).merge(:goto_table => TABLE_INTERFACE_INGRESS_NW_IF))
       expect(flows).to include Vnet::Openflow::Flow.create(
         TABLE_NETWORK_SRC_CLASSIFIER,
         30,

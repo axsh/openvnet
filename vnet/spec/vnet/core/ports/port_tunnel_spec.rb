@@ -26,15 +26,7 @@ describe Vnet::Core::Ports::Tunnel do
       port.try_install
 
       expect(dp_info.added_ovs_flows.size).to eq 0
-      expect(dp_info.added_flows.size).to eq(1 + DATAPATH_IDLE_FLOWCOUNT)
-
-      expect(dp_info.added_flows).to include Vnet::Openflow::Flow.create(
-                                              TABLE_TUNNEL_PORTS,
-                                              30,
-                                              {:in_port => 10},
-                                              nil,
-                                              {:cookie => 10 | (COOKIE_PREFIX_PORT << COOKIE_PREFIX_SHIFT),
-                                               :goto_table => TABLE_TUNNEL_IDS})
+      expect(dp_info.added_flows.size).to eq(0 + DATAPATH_IDLE_FLOWCOUNT)
     end
 
   end
