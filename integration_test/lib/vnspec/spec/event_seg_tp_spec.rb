@@ -43,4 +43,16 @@ describe 'event_seg_tp', :vms_disable_dhcp => true do
     include_examples 'simple examples fail'
   end
 
+  describe 'success after recreating topology' do
+    before(:all) {
+      Vnspec::Models::Topology.add('topo-vnet', 'simple_overlay')
+      Vnspec::Models::Topology.add_underlay('topo-vnet', 'topo-physical')
+      Vnspec::Models::Topology.add_segment('topo-vnet', 'seg-vseg1')
+      Vnspec::Models::Topology.add_segment('topo-vnet', 'seg-vseg2')
+      sleep 5
+    }
+
+    include_examples 'simple examples'
+  end
+
 end

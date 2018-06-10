@@ -17,7 +17,7 @@ describe 'event_nw_tp' do
     include_examples 'simple examples fail first set'
   end
 
-  describe 'success after re-adding' do
+  describe 'success after re-adding topology network' do
     before(:all) {
       Vnspec::Models::Topology.add_network('topo-vnet', 'nw-vnet1')
       sleep 5
@@ -33,6 +33,18 @@ describe 'event_nw_tp' do
     }
 
     include_examples 'simple examples fail'
+  end
+
+  describe 'success after recreating topology' do
+    before(:all) {
+      Vnspec::Models::Topology.add('topo-vnet', 'simple_overlay')
+      Vnspec::Models::Topology.add_underlay('topo-vnet', 'topo-physical')
+      Vnspec::Models::Topology.add_network('topo-vnet', 'nw-vnet1')
+      Vnspec::Models::Topology.add_network('topo-vnet', 'nw-vnet2')
+      sleep 5
+    }
+
+    include_examples 'simple examples'
   end
 
 end
