@@ -344,7 +344,7 @@ module Vnet::Core::Datapaths
         flow_learn_arp << "output:NXM_OF_IN_PORT[]),"
       }
 
-      flow_learn_arp << "write_metadata:0x%x/0x%x,goto_table:%d" % [write_md[:metadata], write_md[:metadata_mask], TABLE_SEGMENT_DST_CLASSIFIER]
+      flow_learn_arp << "write_metadata:0x%x/0x%x,goto_table:%d" % [write_md[:metadata], write_md[:metadata_mask], TABLE_SEGMENT_SRC_CLASSIFIER]
       flow_learn_arp
     end
 
@@ -369,7 +369,7 @@ module Vnet::Core::Datapaths
         flow_learn_arp << "output:NXM_OF_IN_PORT[]),"
       }
 
-      flow_learn_arp << "write_metadata:0x%x/0x%x,goto_table:%d" % [write_md[:metadata], write_md[:metadata_mask], TABLE_NETWORK_DST_CLASSIFIER]
+      flow_learn_arp << "write_metadata:0x%x/0x%x,goto_table:%d" % [write_md[:metadata], write_md[:metadata_mask], TABLE_NETWORK_SRC_CLASSIFIER]
       flow_learn_arp
     end
 
