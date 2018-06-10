@@ -166,10 +166,12 @@ module Vnet::Core::Datapaths
 
       flows_for_filtering_mac_address(flows, dpg_map[:mac_address], flow_cookie)
 
-      ovs_flows = []
-      ovs_flows << create_learn_network_arp(dpg_map, 51, "tun_id=0,")
-      ovs_flows << create_learn_network_arp(dpg_map, 50, "", "load:NXM_NX_TUN_ID[]->NXM_NX_TUN_ID[],")
-      ovs_flows.each { |flow| @dp_info.add_ovs_flow(flow) }
+      if dpg_map[:mode] == 'virtual'
+        ovs_flows = []
+        ovs_flows << create_learn_network_arp(dpg_map, 51, "tun_id=0,")
+        ovs_flows << create_learn_network_arp(dpg_map, 50, "", "load:NXM_NX_TUN_ID[]->NXM_NX_TUN_ID[],")
+        ovs_flows.each { |flow| @dp_info.add_ovs_flow(flow) }
+      end
     end
 
     def flows_for_dp_segment(flows, dpg_map)
@@ -259,10 +261,12 @@ module Vnet::Core::Datapaths
                            },
                            cookie: flow_cookie)
 
-      ovs_flows = []
-      ovs_flows << create_learn_segment_arp(dpg_map, 51, "tun_id=0,")
-      ovs_flows << create_learn_segment_arp(dpg_map, 50, "", "load:NXM_NX_TUN_ID[]->NXM_NX_TUN_ID[],")
-      ovs_flows.each { |flow| @dp_info.add_ovs_flow(flow) }
+      if dpg_map[:mode] == 'virtual'
+        ovs_flows = []
+        ovs_flows << create_learn_segment_arp(dpg_map, 51, "tun_id=0,")
+        ovs_flows << create_learn_segment_arp(dpg_map, 50, "", "load:NXM_NX_TUN_ID[]->NXM_NX_TUN_ID[],")
+        ovs_flows.each { |flow| @dp_info.add_ovs_flow(flow) }
+      end
     end
 
     def flows_for_dp_route_link(flows, dpg_map)

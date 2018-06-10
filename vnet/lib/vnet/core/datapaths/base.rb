@@ -134,6 +134,7 @@ module Vnet::Core::Datapaths
         network_id: get_param_id(dpg_map, :network_id),
         ip_lease_id: get_param_id(dpg_map, :ip_lease_id, false),
         mac_address: get_param_mac_address(dpg_map),
+        mode: get_param_string(dpg_map, :mode),
 
         active: false
       }
@@ -172,6 +173,7 @@ module Vnet::Core::Datapaths
         segment_id: get_param_id(dpg_map, :segment_id),
         ip_lease_id: get_param_id(dpg_map, :ip_lease_id, false),
         mac_address: get_param_mac_address(dpg_map),
+        mode: get_param_string(dpg_map, :mode),
 
         active: false
       }
