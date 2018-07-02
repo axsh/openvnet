@@ -86,7 +86,7 @@ module Vnet::Core::Segments
       # match in_port(?). The hard_timeout would still be required in
       # the case that the dst_mac_lookup flow times out.
 
-      flows << flow_create(table: TABLE_INTERFACE_INGRESS_SEG_DPSEG
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_SEG_DPSEG,
                            goto_table: TABLE_SEGMENT_DST_CLASSIFIER,
                            priority: 60,
                            idle_timeout: 60,
