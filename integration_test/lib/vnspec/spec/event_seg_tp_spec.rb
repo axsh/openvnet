@@ -45,6 +45,8 @@ describe 'event_seg_tp', :vms_disable_dhcp => true do
 
   describe 'success after recreating topology' do
     before(:all) {
+      vms.parallel_each { |vm| vm.clear_arp_cache }
+
       Vnspec::Models::Topology.add('topo-vnet', 'simple_overlay')
       Vnspec::Models::Topology.add_underlay('topo-vnet', 'topo-physical')
       Vnspec::Models::Topology.add_segment('topo-vnet', 'seg-vseg1')
