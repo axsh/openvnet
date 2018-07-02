@@ -94,19 +94,13 @@ module Vnet::Services::Topologies
     def handle_added_mac_range_group(assoc_id, assoc_map)
       debug log_format_h('handle added mac_range_group', assoc_map)
 
-      # TODO: Print warning if the mrg has no range entries.
-
-      updated_all_network()
-      updated_all_segment()
-      updated_all_route_link()
+      # Do nothing, overlay has no mrg.
     end
 
     def handle_removed_mac_range_group(assoc_id, assoc_map)
       debug log_format_h('handle removed mac_range_group', assoc_map)
 
-      updated_all_network()
-      updated_all_segment()
-      updated_all_route_link()
+      # Do nothing, overlay has no mrg.
     end
 
     def handle_added_underlay(assoc_id, assoc_map)
