@@ -40,9 +40,6 @@ topology_mac_range_groups:
   - topology_uuid: topo-physical
     mac_range_group_uuid: mrg-dpg
 
-  - topology_uuid: topo-vnet
-    mac_range_group_uuid: mrg-dpg
-
 topology_networks:
 
   - topology_uuid: topo-physical
