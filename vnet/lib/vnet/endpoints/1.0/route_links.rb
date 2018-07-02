@@ -4,7 +4,6 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/route_links' do
 
   param_uuid M::RouteLink
   param_uuid M::Topology, :topology_uuid
-  param :mac_address, :String, transform: PARSE_MAC
   post do
     uuid_to_id(M::Topology, 'topology_uuid', 'topology_id') if params['topology_uuid']
 

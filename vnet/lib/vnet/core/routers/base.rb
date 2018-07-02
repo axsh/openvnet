@@ -6,13 +6,10 @@ module Vnet::Core::Routers
     include Celluloid::Logger
     include Vnet::Openflow::FlowHelpers
 
-    attr_reader :mac_address
-
     def initialize(params)
       super
 
       map = params[:map]
-      @mac_address = Pio::Mac.new(map.mac_address)
 
       @routes = {}
     end
@@ -26,11 +23,7 @@ module Vnet::Core::Routers
     end
 
     def to_hash
-      Vnet::Core::Router.new(id: @id,
-                             uuid: @uuid,
-                             #mode: @mode,
-
-                             mac_address: @mac_address)
+      Vnet::Core::Router.new(id: @id, uuid: @uuid)
     end
 
     #

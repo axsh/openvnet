@@ -15,8 +15,6 @@ module Vnet::NodeApi
         transaction {
           handle_new_uuid(options)
 
-          mac_address_random_assign(options)
-
           internal_create(options).tap { |model|
             next if model.nil?
 

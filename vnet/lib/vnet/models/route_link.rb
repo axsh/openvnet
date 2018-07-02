@@ -5,7 +5,6 @@ module Vnet::Models
     taggable 'rl'
 
     plugin :paranoia_is_deleted
-    plugin :mac_address_no_segment
 
     one_to_many :routes
 
@@ -23,7 +22,6 @@ module Vnet::Models
     datapath_route_links: :destroy,
     routes: :destroy,
     translation_static_addresses: :destroy,
-    _mac_address: :destroy,
     # 0009_topology
     topology_route_links: :destroy,
     # 0011_assoc_interface
