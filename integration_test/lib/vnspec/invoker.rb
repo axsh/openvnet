@@ -36,22 +36,70 @@ module Vnspec
       if name.to_sym == :all
         specs = config[:specs]
         specs += config[:specs_ext] if config[:specs_ext]
+      else
+        specs = [name]
+      end
 
-        statuses = specs.map do |name|
-          [name, run(name)]
+      if config[:vna_start_time] == :both
+        vna_start_times = [:before, :after]
+      else
+        vna_start_times = [config[:vna_start_time]]
+      end
+
+      statuses = {}
+
+      final_result = true
+      vna_start_times.each_with_index { |start_time, i|
+        highlighted_log "Pass #{i +1} of #{vna_start_times.length}: VNA started #{start_time} running vnctl commands"
+
+        statuses[start_time] = specs.map do |name|
+          result = run_specs(name, start_time)
+          final_result = false if !result
+
+          [name, result]
         end
+      }
 
+      vna_start_times.each { |start_time|
         logger.info("-" * 50)
-        statuses.each do |name, status|
+        logger.info("VNA started #{start_time} running vnctl commands")
+        logger.info ""
+        statuses[start_time].each do |name, status|
           logger.info("#{name}: #{status ? "success" : "failure"}")
         end
         logger.info("-" * 50)
+        logger.info ""
+      }
 
-        return statuses.all?{|n, s| s }
+      final_result
+    end
+
+    def run_specs(name, vna_start_time = :after)
+      highlighted_log "Running spec '#{name}'."
+
+      unless VM.ready?(10)
+        logger.error("vm not ready")
+        raise
       end
 
+      VM.stop_network
+      Vnet.stop
+      Vnet.delete_tunnels
+
+      Vnet.reset_db
+
       Vnet.aggregate_logs(job_id, name) do
-        setup(name)
+        Vnet.start(:vnmgr)
+        Vnet.start(:webapi)
+
+        if vna_start_time == :before
+          Vnet.start(:vna)
+          Dataset.setup(name)
+        else
+          Dataset.setup(name)
+          Vnet.start(:vna)
+        end
+
         sleep(1)
 
         result = SPec.exec(name)
@@ -64,29 +112,6 @@ module Vnspec
 
         result
       end
-    end
-
-    def setup(name = :all)
-      unless VM.ready?(10)
-        logger.error("vm not ready")
-        raise
-      end
-
-      VM.stop_network
-      Vnet.stop
-      #Vnet.add_normal_flow
-      Vnet.delete_tunnels
-
-      Vnet.reset_db
-
-      Vnet.start(:vnmgr)
-      Vnet.start(:webapi)
-
-      Dataset.setup(name)
-
-      Vnet.start(:vna)
-
-      true
     end
 
     def install_ssh_keys
