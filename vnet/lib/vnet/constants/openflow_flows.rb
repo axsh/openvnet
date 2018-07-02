@@ -59,11 +59,8 @@ module Vnet
       # sends the packet to these tables.
 
       TABLE_SEGMENT_SRC_CLASSIFIER    = 25
-      TABLE_SEGMENT_SRC_MAC_LEARNING  = 26
-
-      TABLE_NETWORK_CONNECTION        = 27
-      TABLE_NETWORK_SRC_CLASSIFIER    = 28
-      TABLE_NETWORK_SRC_MAC_LEARNING  = 29
+      TABLE_NETWORK_CONNECTION        = 26
+      TABLE_NETWORK_SRC_CLASSIFIER    = 27
 
       # In the transition from TABLE_ROUTER_EGRESS_LOOKUP to
       # TABLE_ROUTE_EGRESS_LOOKUP the packet loses it's metadata flags.

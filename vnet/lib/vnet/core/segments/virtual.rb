@@ -57,7 +57,8 @@ module Vnet::Core::Segments
 
     def packet_in(message)
       if @datapath_info.enable_ovs_learn_action
-        error log_format_h('packet_in however enable_ovs_learn_action is true', in_port: message.in_port, eth_dst: message.eth_dst, eth_src: message.eth_src)
+        error log_format_h('packet_in however enable_ovs_learn_action is true',
+                           in_port: message.in_port, eth_dst: message.eth_dst, eth_src: message.eth_src)
         return
       end
 
@@ -85,13 +86,14 @@ module Vnet::Core::Segments
       # match in_port(?). The hard_timeout would still be required in
       # the case that the dst_mac_lookup flow times out.
 
-      flows << flow_create(table: TABLE_SEGMENT_SRC_MAC_LEARNING,
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_SEG_DPSEG
                            goto_table: TABLE_SEGMENT_DST_CLASSIFIER,
                            priority: 60,
                            idle_timeout: 60,
                            hard_timeout: 600,
                            match: {
                              :in_port => message.in_port,
+                             :eth_type => 0x0806,
                              :eth_src => message.eth_src
                            },
                            match_segment: @id)
@@ -105,7 +107,7 @@ module Vnet::Core::Segments
       case message.table_id
       when TABLE_OUTPUT_DP_TO_CONTROLLER
         message.match.in_port = OFPP_CONTROLLER
-      when TABLE_SEGMENT_SRC_MAC_LEARNING
+      when TABLE_INTERFACE_INGRESS_SEG_DPSEG
       else
         warn log_format("packet in from wrong table", message.inspect)
       end
