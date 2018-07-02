@@ -25,7 +25,6 @@ describe "/route_links" do
 
     accepted_params = {
       uuid: "rl-link",
-      mac_address: "fe:17:9b:9f:e8:33",
       topology_uuid: 'topo-test'
     }
     expected_response = accepted_params.dup.tap { |map|
