@@ -7,6 +7,11 @@ networks:
     domain_name: vnet1
     network_mode: virtual
 
+topology_networks:
+
+  - topology_uuid: topo-vnet
+    network_uuid: nw-vnet1
+
 interfaces:
 
   - uuid: if-v1
@@ -78,44 +83,15 @@ network_services:
     interface_uuid: if-dhcp1
     mode: dhcp
 
-datapath_networks:
-
-  - datapath_uuid: dp-1
-    network_uuid: nw-vnet1
-    interface_uuid: if-dp1eth0
-    mac_address: "02:00:00:aa:00:01"
-
-  - datapath_uuid: dp-2
-    network_uuid: nw-vnet1
-    interface_uuid: if-dp2eth0
-    mac_address: "02:00:00:bb:00:01"
-
-  - datapath_uuid: dp-3
-    network_uuid: nw-vnet1
-    interface_uuid: if-dp3eth0
-    mac_address: "02:00:00:cc:00:01"
-
 route_links:
 
   - uuid: rl-1
     mac_address: "02:00:33:00:00:01"
 
-datapath_route_links:
+topology_route_links:
 
-  - datapath_uuid: dp-1
+  - topology_uuid: topo-vnet
     route_link_uuid: rl-1
-    interface_uuid: if-dp1eth0
-    mac_address: "02:00:33:aa:00:01"
-
-  - datapath_uuid: dp-2
-    route_link_uuid: rl-1
-    interface_uuid: if-dp2eth0
-    mac_address: "02:00:33:bb:00:01"
-
-  - datapath_uuid: dp-3
-    route_link_uuid: rl-1
-    interface_uuid: if-dp3eth0
-    mac_address: "02:00:33:cc:00:01"
 
 routes:
 

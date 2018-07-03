@@ -7,6 +7,21 @@ networks:
     domain_name: vnet1
     network_mode: virtual
 
+  - uuid: nw-vnet2
+    display_name: vnet2
+    ipv4_network: 10.102.0.0
+    ipv4_prefix: 24
+    domain_name: vnet2
+    network_mode: virtual
+
+topology_networks:
+
+  - topology_uuid: topo-vnet
+    network_uuid: nw-vnet1
+
+  - topology_uuid: topo-vnet
+    network_uuid: nw-vnet2
+
 interfaces:
 
   - uuid: if-v1
@@ -19,7 +34,7 @@ interfaces:
   - uuid: if-v2
     mode: vif
     port_name: if-v2
-    network_uuid: nw-vnet1
+    network_uuid: nw-vnet2
     mac_address: "02:00:00:00:00:02"
     ipv4_address: 10.102.0.10
 
@@ -33,21 +48,21 @@ interfaces:
   - uuid: if-v4
     mode: vif
     port_name: if-v4
-    network_uuid: nw-vnet1
+    network_uuid: nw-vnet2
     mac_address: "02:00:00:00:00:04"
     ipv4_address: 10.102.0.11
 
   - uuid: if-v5
     mode: vif
     port_name: if-v5
-    network_uuid: nw-public1
+    network_uuid: nw-vnet1
     mac_address: "02:00:00:00:00:05"
     ipv4_address: 10.101.0.12
 
   - uuid: if-v6
     mode: vif
     port_name: if-v6
-    network_uuid: nw-vnet1
+    network_uuid: nw-vnet2
     mac_address: "02:00:00:00:00:06"
     ipv4_address: 10.102.0.12
 
@@ -57,11 +72,24 @@ interfaces:
     mac_address: "02:00:00:00:01:01"
     ipv4_address: 10.101.0.2
 
+  - uuid: if-dhcp2
+    mode: simulated
+    network_uuid: nw-vnet2
+    mac_address: "02:00:00:00:01:02"
+    ipv4_address: 10.102.0.2
+
   - uuid: if-router1
     mode: simulated
     network_uuid: nw-vnet1
     mac_address: "02:00:00:00:02:01"
     ipv4_address: 10.101.0.1
+    enable_routing: true
+
+  - uuid: if-router2
+    mode: simulated
+    network_uuid: nw-vnet2
+    mac_address: "02:00:00:00:02:02"
+    ipv4_address: 10.102.0.1
     enable_routing: true
 
   - uuid: if-routerpv
@@ -78,44 +106,19 @@ network_services:
     interface_uuid: if-dhcp1
     mode: dhcp
 
-datapath_networks:
-
-  - datapath_uuid: dp-1
-    network_uuid: nw-vnet1
-    interface_uuid: if-dp1eth0
-    mac_address: "02:00:00:aa:00:01"
-
-  - datapath_uuid: dp-2
-    network_uuid: nw-vnet1
-    interface_uuid: if-dp2eth0
-    mac_address: "02:00:00:bb:00:01"
-
-  - datapath_uuid: dp-3
-    network_uuid: nw-vnet1
-    interface_uuid: if-dp3eth0
-    mac_address: "02:00:00:cc:00:01"
+  - uuid: ns-dhcp2
+    interface_uuid: if-dhcp2
+    mode: dhcp
 
 route_links:
 
   - uuid: rl-1
     mac_address: "02:00:33:00:00:01"
 
-datapath_route_links:
+topology_route_links:
 
-  - datapath_uuid: dp-1
+  - topology_uuid: topo-vnet
     route_link_uuid: rl-1
-    interface_uuid: if-dp1eth0
-    mac_address: "02:00:33:aa:00:01"
-
-  - datapath_uuid: dp-2
-    route_link_uuid: rl-1
-    interface_uuid: if-dp2eth0
-    mac_address: "02:00:33:bb:00:01"
-
-  - datapath_uuid: dp-3
-    route_link_uuid: rl-1
-    interface_uuid: if-dp3eth0
-    mac_address: "02:00:33:cc:00:01"
 
 routes:
 
@@ -124,6 +127,12 @@ routes:
     network_uuid: nw-vnet1
     route_link_uuid: rl-1
     ipv4_network: 10.101.0.0
+
+  - uuid: r-2
+    interface_uuid: if-router2
+    network_uuid: nw-vnet2
+    route_link_uuid: rl-1
+    ipv4_network: 10.102.0.0
 
   - uuid: r-p
     interface_uuid: if-routerpv
