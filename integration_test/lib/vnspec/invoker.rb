@@ -46,28 +46,28 @@ module Vnspec
 
       statuses = {}
 
+      final_result = true
       vna_start_times.each { |start_time|
         statuses[start_time] = specs.map do |name|
-          [name, run_specs(name, start_time)]
+          result = run_specs(name, start_time)
+          final_result = false if !result
+
+          [name, result]
         end
       }
 
       vna_start_times.each { |start_time|
-        print_statuses(statuses[start_time], start_time)
+        logger.info("-" * 50)
+        logger.info("VNA started #{start_time} running vnctl commands")
+        logger.info ""
+        statuses[start_time].each do |name, status|
+          logger.info("#{name}: #{status ? "success" : "failure"}")
+        end
+        logger.info("-" * 50)
+        logger.info ""
       }
 
-      statuses.all?{|n, s| s }
-    end
-
-    def print_statuses(statuses, vna_start_time)
-      logger.info("-" * 50)
-      logger.info("VNA started #{vna_start_time} running vnctl commands")
-      logger.info ""
-      statuses.each do |name, status|
-        logger.info("#{name}: #{status ? "success" : "failure"}")
-      end
-      logger.info("-" * 50)
-      logger.info ""
+      final_result
     end
 
     def run_specs(name, vna_start_time = :after)
