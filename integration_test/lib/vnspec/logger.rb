@@ -54,5 +54,11 @@ module Vnspec
       end
       @logger
     end
+
+    def highlighted_log(log_string)
+      logger.info("\n#=" + ("=" * log_string.length) + "=#")
+      logger.info("# #{log_string} #")
+      logger.info("#=" + ("=" * log_string.length) + "=#\n")
+    end
   end
 end

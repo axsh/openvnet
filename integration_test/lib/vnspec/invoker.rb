@@ -47,7 +47,9 @@ module Vnspec
       statuses = {}
 
       final_result = true
-      vna_start_times.each { |start_time|
+      vna_start_times.each_with_index { |start_time, i|
+        highlighted_log "Pass #{i +1} of #{vna_start_times.length}: VNA started #{start_time} running vnctl commands"
+
         statuses[start_time] = specs.map do |name|
           result = run_specs(name, start_time)
           final_result = false if !result
@@ -71,10 +73,7 @@ module Vnspec
     end
 
     def run_specs(name, vna_start_time = :after)
-      log_string = "Running spec '#{name}. VNA started #{vna_start_time} running vnctl commands"
-      logger.info("\n#=" + ("=" * log_string.length) + "=#")
-      logger.info("# #{log_string} #")
-      logger.info("#=" + ("=" * log_string.length) + "=#\n")
+      highlighted_log "Running spec '#{name}'."
 
       unless VM.ready?(10)
         logger.error("vm not ready")
