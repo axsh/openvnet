@@ -36,32 +36,73 @@ module Vnspec
       if name.to_sym == :all
         specs = config[:specs]
         specs += config[:specs_ext] if config[:specs_ext]
-
-        statuses = specs.map do |name|
-          [name, run(name)]
-        end
-
-        logger.info("-" * 50)
-        statuses.each do |name, status|
-          logger.info("#{name}: #{status ? "success" : "failure"}")
-        end
-        logger.info("-" * 50)
-
-        return statuses.all?{|n, s| s }
       end
 
+      if config[:vna_start_time] == :both
+        vna_start_times = [:before, :after]
+      else
+        vna_start_times = config[:vna_start_time]
+      end
+
+      statuses = {}
+
+      vna_start_times.each { |start_time|
+        statuses[start_time] = specs.map do |name|
+          [name, run_specs(name, start_time)]
+        end
+      }
+
+      vna_start_times.each { |start_time|
+        print_statuses(statuses[start_time], start_time)
+      }
+
+      statuses.all?{|n, s| s }
+    end
+
+    def print_statuses(statuses, vna_start_time)
+      logger.info("-" * 50)
+      logger.info("VNA started #{vna_start_time} running vnctl commands")
+      logger.info ""
+      statuses.each do |name, status|
+        logger.info("#{name}: #{status ? "success" : "failure"}")
+      end
+      logger.info("-" * 50)
+      logger.info ""
+    end
+
+    def run_specs(name, vna_start_time = :after)
+      log_string = "Running spec '#{name}. VNA started #{vna_start_time} running vnctl commands"
+      logger.info("\n#=" + ("=" * log_string.length) + "=#")
+      logger.info("# #{log_string} #")
+      logger.info("#=" + ("=" * log_string.length) + "=#\n")
+
+      unless VM.ready?(10)
+        logger.error("vm not ready")
+        raise
+      end
+
+      VM.stop_network
+      Vnet.stop
+      Vnet.delete_tunnels
+
+      Vnet.reset_db
+
       Vnet.aggregate_logs(job_id, name) do
+        Vnet.start(:vnmgr)
+        Vnet.start(:webapi)
 
-        result = if config[:vna_start_time] == :both
-          result_before_dataset = run_specs(name, :before)
-          result_after_dataset  = run_specs(name, :after)
-
-          result_before_dataset && result_after_dataset
+        if vna_start_time == :before
+          Vnet.start(:vna)
+          Dataset.setup(name)
         else
-          run_specs(name, config[:vna_start_time])
+          Dataset.setup(name)
+          Vnet.start(:vna)
         end
 
-        #TODO: Show logs only for failed tests on 2-pass run
+        sleep(1)
+
+        result = SPec.exec(name)
+
         if !result
           Vnet.dump_logs
           Vnet.dump_flows
@@ -70,45 +111,6 @@ module Vnspec
 
         result
       end
-    end
-
-    def run_specs(name, vna_start_time = :after)
-      log_string = "Starting VNA #{vna_start_time} running vnctl commands"
-      logger.info("\n#=" + ("=" * log_string.length) + "=#")
-      logger.info("# #{log_string} #")
-      logger.info("#=" + ("=" * log_string.length) + "=#\n")
-
-      setup(name, vna_start_time)
-      sleep(1)
-
-      SPec.exec(name)
-    end
-
-    def setup(name = :all, vna_start_time = :after)
-      unless VM.ready?(10)
-        logger.error("vm not ready")
-        raise
-      end
-
-      VM.stop_network
-      Vnet.stop
-      #Vnet.add_normal_flow
-      Vnet.delete_tunnels
-
-      Vnet.reset_db
-
-      Vnet.start(:vnmgr)
-      Vnet.start(:webapi)
-
-      if vna_start_time == :before
-        Vnet.start(:vna)
-        Dataset.setup(name)
-      else
-        Dataset.setup(name)
-        Vnet.start(:vna)
-      end
-
-      true
     end
 
     def install_ssh_keys
