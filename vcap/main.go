@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"os"
+	"reflect"
 	"strings"
 	"time"
 
@@ -49,7 +49,7 @@ func JoinWithSep(separator string, args ...string) string {
 	return strings.Join(args, separator)
 }
 
-func catchAndSendErr(err error, msg ...string) {
+func throwErr(err error, msg ...string) {
 	if err != nil {
 		// send Join(JoinWithSep(" ", msg), err.Error())
 	}
@@ -65,7 +65,7 @@ func catchAndSendErr(err error, msg ...string) {
 // func readPcapFile(filename string) <-chan gopacket.Packet {
 // 	// Open file
 // 	handle, err := pcap.OpenOffline(Join("", filename))
-//  catchAndSendErr(err)
+//  throwErr(err)
 // 	defer handle.Close()
 // 	return readPackets(handle)
 // }
@@ -92,7 +92,7 @@ func catchAndSendErr(err error, msg ...string) {
 // func readDevice(deviceToRead string) <-chan gopacket.Packet {
 // 	// Open device
 // 	handle, err := pcap.OpenLive(deviceToRead, snapshotLen, promiscuous, timeout)
-//  catchAndSendErr(err)
+//  throwErr(err)
 // 	defer handle.Close()
 // 	return readPackets(handle)
 // }
@@ -100,7 +100,7 @@ func catchAndSendErr(err error, msg ...string) {
 // func readDeviceWithFilter(deviceToRead string) <-chan gopacket.Packet {
 // 	// Open device
 // 	handle, err := pcap.OpenLive(deviceToRead, snapshotLen, promiscuous, timeout)
-//  catchAndSendErr(err)
+//  throwErr(err)
 // 	defer handle.Close()
 
 // 	// Set filter
@@ -120,7 +120,7 @@ func catchAndSendErr(err error, msg ...string) {
 func find() {
 	// Find all devices
 	devices, err := pcap.FindAllDevs()
-	catchAndSendErr(err)
+	throwErr(err)
 
 	// Print device information
 	fmt.Println("Devices found:")
@@ -156,7 +156,7 @@ func printPacketInfo(packet gopacket.Packet) {
 	// var tcp layers.TCP
 	// parser := gopacket.NewDecodingLayerParser(layers.LayerTypeEthernet, &eth, &ip4, &ip6, &tcp)
 	// decoded := []gopacket.LayerType{}
-	// catchAndSendErr(parser.DecodeLayers(packet.Data(), &decoded))
+	// throwErr(parser.DecodeLayers(packet.Data(), &decoded))
 	// for _, layerType := range decoded {
 	// 	switch layerType {
 	// 	case layers.LayerTypeIPv6:
@@ -168,24 +168,41 @@ func printPacketInfo(packet gopacket.Packet) {
 	// 	}
 	// }
 
-	// fmt.Println("Layers:", packet.Layers())
-	// for _, layer := range packet.Layers() {
-	// 	fmt.Println("layer type:", layer.LayerType())
-	// 	fmt.Println("dump", layer)
-	// 	fmt.Println()
-	// }
+	fmt.Println("Layers:", packet.Layers())
+	for _, layer := range packet.Layers() {
+		lType := layer.LayerType()
+		fmt.Println("layer type:", lType)
+		// fmt.Println("lType decode:", lType.Decode([]byte, PacketBuilder)) // puts decoded data into packet builder
+		// fmt.Println("lType contains:", lType.Contains(LayerType)) // LayerClass method returns bool
+		// fmt.Println("lType layertypes:", lType.LayerTypes()) // LayerClass method
+		fmt.Println("lType string:", lType.String())
+		fmt.Println("dump", layer)
+		fmt.Println()
+	}
 
 	// TODO: put this in a function or method that works for all layertypes.
 	var linkFlow gopacket.Flow
-	if packet.LinkLayer() != nil {
-		linkFlow = packet.LinkLayer().LinkFlow()
-		fmt.Println("link layer type:", packet.LinkLayer().LayerType())
+	linkLayer := packet.LinkLayer()
+	if linkLayer != nil {
+		linkFlow = linkLayer.LinkFlow()
+		lType := linkLayer.LayerType()
+		// if lType.Contains(layers.LayerTypeEthernet) {
+		// 	if ethernetLayer, ok := linkLayer.(*layers.Ethernet); ok {
+		// 		fmt.Println("ethernet can decode:", ethernetLayer.CanDecode())
+		// 		// fmt.Println("ethernet decode from bytes:", ethernetLayer.DecodeFromBytes(ethernetLayer.LayerPayload()), NilDecodeFeedback) // for changing the internal state of the layer
+		// 		fmt.Println("ethernet next layer type:", ethernetLayer.NextLayerType())
+		// 	}
+		// }
+		fmt.Println("link layer type:", lType)
+		fmt.Println("link contents:", linkLayer.LayerContents()) // header, metadata, etc.
+		fmt.Println("link payload:", linkLayer.LayerPayload())
 		fmt.Println("link flow (src->dst):", linkFlow)
 		// fmt.Println(linkFlow.Endpoints()) // .Src(), .Dst()
 		// fmt.Println(linkFlow.Src())
 		// fmt.Println(linkFlow.Dst())
+		// fmt.Println(linkFlow.FastHash()) // use this to compare flows if required -- the src->dst hash is guaranteed to match the dst->src hash
 		fmt.Println("endpoint type:", linkFlow.EndpointType())
-		fmt.Println("link layer dump:", packet.LinkLayer())
+		fmt.Println("link layer dump:", linkLayer)
 	}
 
 	fmt.Println()
@@ -285,7 +302,7 @@ func printPacketInfo(packet gopacket.Packet) {
 	// }
 
 	// // Check for errors
-	// catchAndSendErr(packet.ErrorLayer().Error(), "Error decoding some part of the packet:")
+	// throwErr(packet.ErrorLayer().Error(), "Error decoding some part of the packet:")
 }
 
 func createPacketFromUnknownRawBytes() {
@@ -349,13 +366,13 @@ func createPacketFromUnknownRawBytes() {
 func createAndSendPacket(handle *pcap.Handle) {
 	// Open device
 	// handle, err = pcap.OpenLive(device, snapshotLen, promiscuous, timeout)
-	// catchAndSendErr(err)
+	// throwErr(err)
 	// defer handle.Close()
 
 	// Send raw bytes over wire
 	rawBytes := []byte{10, 20, 30}
 	err = handle.WritePacketData(rawBytes)
-	catchAndSendErr(err)
+	throwErr(err)
 
 	// Create a properly formed packet, just with
 	// empty details. Should fill out MAC addresses,
@@ -370,7 +387,7 @@ func createAndSendPacket(handle *pcap.Handle) {
 	outgoingPacket := buffer.Bytes()
 	// Send our packet
 	err = handle.WritePacketData(outgoingPacket)
-	catchAndSendErr(err)
+	throwErr(err)
 
 	// This time lets fill out some information
 	ipLayer := &layers.IPv4{
@@ -458,35 +475,168 @@ func decodeCustomLayer(data []byte, p gopacket.PacketBuilder) error {
 	return p.NextDecoder(gopacket.LayerTypePayload)
 }
 
-func moreEfficientPacketDecode(handle *pcap.Handle) {
+func efficientPacketDecode(packet gopacket.Packet) error {
 	// Open device
 	// handle, err = pcap.OpenLive(device, snapshotLen, promiscuous, timeout)
-	// catchAndSendErr(err)
+	// throwErr(err)
 	// defer handle.Close()
 
-	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
-	for packet := range packetSource.Packets() {
-		parser := gopacket.NewDecodingLayerParser(
-			layers.LayerTypeEthernet,
-			&ethLayer,
-			&ipLayer,
-			&tcpLayer,
-		)
-		foundLayerTypes := []gopacket.LayerType{}
-
-		err := parser.DecodeLayers(packet.Data(), &foundLayerTypes)
-		catchAndSendErr(err, "Trouble decoding layers: ")
-
-		for _, layerType := range foundLayerTypes {
-			if layerType == layers.LayerTypeIPv4 {
-				fmt.Println("IPv4: ", ipLayer.SrcIP, "->", ipLayer.DstIP)
-			}
-			if layerType == layers.LayerTypeTCP {
-				fmt.Println("TCP Port: ", tcpLayer.SrcPort, "->", tcpLayer.DstPort)
-				fmt.Println("TCP SYN:", tcpLayer.SYN, " | ACK:", tcpLayer.ACK)
-			}
-		}
+	var arp layers.ARP
+	var eth layers.Ethernet
+	var ip4 layers.IPv4
+	var ip6 layers.IPv6
+	var tcp layers.TCP
+	var udp layers.UDP
+	var payload gopacket.Payload
+	parser := gopacket.NewDecodingLayerParser(layers.LayerTypeEthernet, &eth, &arp, &ip4, &ip6, &tcp, &udp, &payload)
+	decodedLayers := make([]gopacket.LayerType, 0, 10)
+	// TODO: add dns
+	if err := parser.DecodeLayers(packet.Data(), &decodedLayers); err != nil {
+		return err
 	}
+	for _, typ := range decodedLayers {
+		fmt.Println("Successfully decoded layer type:", typ)
+		fmt.Println("type:", reflect.TypeOf(typ))
+		switch typ {
+		case layers.LayerTypeARP:
+			fmt.Println("AddrType", arp.AddrType) // LinkType
+			fmt.Println("Protocol", arp.Protocol) // EthernetType
+			// TODO: consider this:
+			// EthernetTypeLLC                         EthernetType = 0
+			// EthernetTypeIPv4                        EthernetType = 0x0800
+			// EthernetTypeARP                         EthernetType = 0x0806
+			// EthernetTypeIPv6                        EthernetType = 0x86DD
+			// EthernetTypeCiscoDiscovery              EthernetType = 0x2000
+			// EthernetTypeNortelDiscovery             EthernetType = 0x01a2
+			// EthernetTypeTransparentEthernetBridging EthernetType = 0x6558
+			// EthernetTypeDot1Q                       EthernetType = 0x8100
+			// EthernetTypePPPoEDiscovery              EthernetType = 0x8863
+			// EthernetTypePPPoESession                EthernetType = 0x8864
+			// EthernetTypeMPLSUnicast                 EthernetType = 0x8847
+			// EthernetTypeMPLSMulticast               EthernetType = 0x8848
+			// EthernetTypeEAPOL                       EthernetType = 0x888e
+			// EthernetTypeQinQ                        EthernetType = 0x88a8
+			// EthernetTypeLinkLayerDiscovery          EthernetType = 0x88cc
+			// EthernetTypeEthernetCTP                 EthernetType = 0x9000
+			fmt.Println("HwAddressSize", arp.HwAddressSize)         // uint8
+			fmt.Println("ProtAddressSize", arp.ProtAddressSize)     // uint8
+			fmt.Println("Operation", arp.Operation)                 // uint16
+			fmt.Println("SourceHwAddress", arp.SourceHwAddress)     // []byte
+			fmt.Println("SourceProtAddress", arp.SourceProtAddress) // []byte
+			fmt.Println("DstHwAddress", arp.DstHwAddress)           // []byte
+			fmt.Println("DstProtAddress", arp.DstProtAddress)       // []byte
+
+		case layers.LayerTypeEthernet:
+			fmt.Println("Eth", eth.SrcMAC, eth.DstMAC)
+			fmt.Println("type -- if 802.3, length is set and type is 0. if not, length is 0 and type is 2048)", eth.EthernetType, eth.Length)
+		case layers.LayerTypeIPv4:
+			fmt.Println("Version", ip4.Version)
+			fmt.Println("IHL", ip4.IHL)
+			fmt.Println("TOS", ip4.TOS)
+			fmt.Println("Length", ip4.Length)
+			fmt.Println("Id", ip4.Id)
+			if ip4.Flags > 0 {
+				fmt.Println("Flags raw value:", ip4.Flags)
+				if ip4.Flags&layers.IPv4EvilBit == layers.IPv4EvilBit {
+					fmt.Println("\tthis packet has been marked unsafe! -- the evil bit is set (see http://tools.ietf.org/html/rfc3514)") //
+				}
+				if ip4.Flags&layers.IPv4DontFragment == layers.IPv4DontFragment {
+					fmt.Println("\tthe 'don't fragment' flag is set")
+				}
+				if ip4.Flags&layers.IPv4MoreFragments == layers.IPv4MoreFragments {
+					fmt.Println("\tthe 'more fragments' flag is set")
+				}
+			}
+			fmt.Println("FragOffset", ip4.FragOffset)
+			fmt.Println("TTL", ip4.TTL)
+			fmt.Println("Protocol", ip4.Protocol)
+			fmt.Println("Checksum", ip4.Checksum)
+			fmt.Println("SrcIP", ip4.SrcIP)
+			fmt.Println("DstIP", ip4.DstIP)
+			fmt.Println("Options", ip4.Options)
+			// fmt.Println("Options string", ip4.Options.String())
+			// fmt.Println("Options type", ip4.Options.OptionType)
+			// fmt.Println("Options length", ip4.Options.OptionLength)
+			// fmt.Println("Options data", ip4.Options.OptionData)
+			fmt.Println("Padding", ip4.Padding)
+			fmt.Println("AddressTo4", ip4.AddressTo4())
+		case layers.LayerTypeIPv6:
+			fmt.Println("IP6 ", ip6.SrcIP, ip6.DstIP)
+			// methods to look at:
+			// ipv6.AddressTo16()
+
+			// available fields:
+			// Version      uint8
+			// TrafficClass uint8
+			// FlowLabel    uint32
+			// Length       uint16
+			// NextHeader   IPProtocol
+			// HopLimit     uint8
+			// SrcIP        net.IP
+			// DstIP        net.IP
+			// HopByHop     *IPv6HopByHop
+		case layers.LayerTypeTCP:
+			fmt.Println("TCP ", tcp.SrcPort, tcp.DstPort)
+			// methods to look at:
+			// tcp.ComputeChecksum()
+			// tcp.SrcPort.LayerType()
+			// tcp.DstPort.LayerType()
+
+			// available fields:
+			// SrcPort, DstPort                           TCPPort
+			// Seq                                        uint32
+			// Ack                                        uint32
+			// DataOffset                                 uint8
+			// FIN, SYN, RST, PSH, ACK, URG, ECE, CWR, NS bool
+			// Window                                     uint16
+			// Checksum                                   uint16
+			// Urgent                                     uint16
+			// Options []TCPOption
+			// fmt.Println("Options string", ip4.Options.String())
+			// fmt.Println("Options type", ip4.Options.OptionType)
+			// fmt.Println("Options type", ip4.Options.OptionType.String())
+			// fmt.Println("Options length", ip4.Options.OptionLength)
+			// fmt.Println("Options data", ip4.Options.OptionData)
+			// Padding []byte
+		case layers.LayerTypeUDP:
+			fmt.Println("UDP", udp.SrcPort, udp.DstPort, udp.Length, udp.Checksum)
+		case gopacket.LayerTypePayload:
+			// fmt.Println("payload", payload.GoString())
+			fmt.Println("payload", payload, payload.Payload())
+		}
+		fmt.Println()
+	}
+	fmt.Println()
+	fmt.Println()
+	// if decodedLayers.Truncated {
+	if parser.Truncated {
+		fmt.Println("  Packet has been truncated")
+	}
+	return err
+
+	// packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
+	// for packet := range packetSource.Packets() {
+	// 	parser := gopacket.NewDecodingLayerParser(
+	// 		layers.LayerTypeEthernet,
+	// 		&ethLayer,
+	// 		&ipLayer,
+	// 		&tcpLayer,
+	// 	)
+	// 	foundLayerTypes := []gopacket.LayerType{}
+
+	// 	err := parser.DecodeLayers(packet.Data(), &foundLayerTypes)
+	// 	throwErr(err, "Trouble decoding layers: ")
+
+	// 	for _, layerType := range foundLayerTypes {
+	// 		if layerType == layers.LayerTypeIPv4 {
+	// 			fmt.Println("IPv4: ", ipLayer.SrcIP, "->", ipLayer.DstIP)
+	// 		}
+	// 		if layerType == layers.LayerTypeTCP {
+	// 			fmt.Println("TCP Port: ", tcpLayer.SrcPort, "->", tcpLayer.DstPort)
+	// 			fmt.Println("TCP SYN:", tcpLayer.SYN, " | ACK:", tcpLayer.ACK)
+	// 		}
+	// 	}
+	// }
 }
 
 func main() {
@@ -524,13 +674,11 @@ func main() {
 	} else { // from device
 		handle, err = pcap.OpenLive(deviceToRead, snapshotLen, promiscuous, timeout)
 	}
-	catchAndSendErr(err)
+	throwErr(err)
 
 	if filter {
-		var filter string = "tcp and port 80"
-		if err := handle.SetBPFFilter(filter); err != nil {
-			log.Fatal(err)
-		}
+		var bpf string = "tcp and port 80"
+		throwErr(handle.SetBPFFilter(bpf))
 	}
 
 	// var f *os.File
@@ -538,7 +686,7 @@ func main() {
 	packetCount := 0
 	if writeToFile { // TODO: fix scopes
 		f, err := os.Create(Join("", filename))
-		catchAndSendErr(err)
+		throwErr(err)
 		w := pcapgo.NewWriter(f)
 		w.WriteFileHeader(uint32(snapshotLen), layers.LinkTypeEthernet)
 		defer f.Close()
@@ -558,6 +706,19 @@ func main() {
 				// send packet.Data()
 			}
 		}
-		printPacketInfo(packet)
+		if err := efficientPacketDecode(packet); err != nil {
+			fmt.Println()
+			fmt.Println(err)
+			fmt.Println()
+			fmt.Println()
+			fmt.Println()
+			fmt.Println()
+			fmt.Println()
+			fmt.Println()
+			fmt.Println()
+			fmt.Println()
+			fmt.Println()
+			printPacketInfo(packet)
+		}
 	}
 }
