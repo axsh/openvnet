@@ -51,11 +51,17 @@ module Vnspec
       end
 
       Vnet.aggregate_logs(job_id, name) do
-        setup(name)
-        sleep(1)
 
-        result = SPec.exec(name)
+        result = if config[:vna_start_time] == :both
+          result_before_dataset = run_specs(name, :before)
+          result_after_dataset  = run_specs(name, :after)
 
+          result_before_dataset && result_after_dataset
+        else
+          run_specs(name, config[:vna_start_time])
+        end
+
+        #TODO: Show logs only for failed tests on 2-pass run
         if !result
           Vnet.dump_logs
           Vnet.dump_flows
@@ -66,7 +72,20 @@ module Vnspec
       end
     end
 
-    def setup(name = :all)
+    def run_specs(name, vna_start_time = :after)
+      puts ""
+      puts "#============================================#"
+      puts " Starting VNA #{vna_start_time} running vnctl commands "
+      puts "#============================================#"
+      puts ""
+
+      setup(name, vna_start_time)
+      sleep(1)
+
+      SPec.exec(name)
+    end
+
+    def setup(name = :all, vna_start_time = :after)
       unless VM.ready?(10)
         logger.error("vm not ready")
         raise
@@ -82,9 +101,13 @@ module Vnspec
       Vnet.start(:vnmgr)
       Vnet.start(:webapi)
 
-      Dataset.setup(name)
-
-      Vnet.start(:vna)
+      if vna_start_time == :before
+        Vnet.start(:vna)
+        Dataset.setup(name)
+      else
+        Dataset.setup(name)
+        Vnet.start(:vna)
+      end
 
       true
     end
