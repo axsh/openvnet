@@ -73,11 +73,10 @@ module Vnspec
     end
 
     def run_specs(name, vna_start_time = :after)
-      puts ""
-      puts "#============================================#"
-      puts " Starting VNA #{vna_start_time} running vnctl commands "
-      puts "#============================================#"
-      puts ""
+      log_string = "Starting VNA #{vna_start_time} running vnctl commands"
+      logger.info("\n#=" + ("=" * log_string.length) + "=#")
+      logger.info("# #{log_string} #")
+      logger.info("#=" + ("=" * log_string.length) + "=#\n")
 
       setup(name, vna_start_time)
       sleep(1)
