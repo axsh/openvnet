@@ -32,6 +32,16 @@ module Vnspec
             @config.merge!(YAML.load_file(file).symbolize_keys)
           end
         end
+
+        if vna_start_time = ENV['VNA_START_TIME']
+          valid = ['before', 'after', 'both']
+          if !valid.member?(vna_start_time)
+            raise "Invalid VNA start time: '#{vna_start_time}'. Valid start times are: #{valid}"
+          end
+
+          @config[:vna_start_time] = vna_start_time.to_sym
+        end
+
         @config
       end
     end

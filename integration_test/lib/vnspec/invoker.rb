@@ -41,7 +41,7 @@ module Vnspec
       if config[:vna_start_time] == :both
         vna_start_times = [:before, :after]
       else
-        vna_start_times = config[:vna_start_time]
+        vna_start_times = [config[:vna_start_time]]
       end
 
       statuses = {}
