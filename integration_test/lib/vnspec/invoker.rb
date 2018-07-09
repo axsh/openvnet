@@ -36,6 +36,8 @@ module Vnspec
       if name.to_sym == :all
         specs = config[:specs]
         specs += config[:specs_ext] if config[:specs_ext]
+      else
+        specs = [name]
       end
 
       if config[:vna_start_time] == :both
