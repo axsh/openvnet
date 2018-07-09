@@ -33,13 +33,11 @@ module Vnspec
           end
         end
 
-        if vna_start_time = ENV['VNA_START_TIME']
-          valid = ['before', 'after', 'both']
-          if !valid.member?(vna_start_time)
-            raise "Invalid VNA start time: '#{vna_start_time}'. Valid start times are: #{valid}"
-          end
+        @config[:vna_start_time] = vna_start_time.to_sym if vna_start_time = ENV['VNA_START_TIME']
 
-          @config[:vna_start_time] = vna_start_time.to_sym
+        valid = [:before, :after, :both]
+        if !valid.member?(@config[:vna_start_time])
+          raise "Invalid VNA start time: '#{@config[:vna_start_time]}'. Valid start times are: #{valid}"
         end
 
         @config
