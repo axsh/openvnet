@@ -12,7 +12,11 @@ module Vnspec
       log_level: :info,
       vna_waittime: 0,
       ssh_quiet_mode: false,
-      aggregate_logs: true
+      aggregate_logs: true,
+      # Can be :before or :after to start VNA before or after
+      # all entries in the OpenVNet database have been made.
+      # Setting it to :both will cause both cases to be tested.
+      vna_start_time: :both
     }
 
     class << self
@@ -28,6 +32,14 @@ module Vnspec
             @config.merge!(YAML.load_file(file).symbolize_keys)
           end
         end
+
+        @config[:vna_start_time] = vna_start_time.to_sym if vna_start_time = ENV['VNA_START_TIME']
+
+        valid = [:before, :after, :both]
+        if !valid.member?(@config[:vna_start_time])
+          raise "Invalid VNA start time: '#{@config[:vna_start_time]}'. Valid start times are: #{valid}"
+        end
+
         @config
       end
     end
