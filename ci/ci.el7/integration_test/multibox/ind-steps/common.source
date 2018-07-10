@@ -98,3 +98,14 @@ function run_cmd () {
     [[ $(get_env_state) -gt $boot ]] && { run_ssh root@${IP_ADDR} "${@}" ; return $? ; }
     sudo chroot ${TMP_ROOT} /bin/bash -c "${@}"
 }
+
+function install_package () {
+    local package="$1"
+
+    (
+        $starting_step "Install ${package}"
+        run_cmd "rpm -q --quiet ${package}"
+        $skip_step_if_already_done; set -xe
+        run_cmd "yum install -y ${package}"
+    ) ; prev_cmd_failed
+}
