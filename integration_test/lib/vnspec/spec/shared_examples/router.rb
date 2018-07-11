@@ -73,10 +73,10 @@ shared_examples 'router p2v examples' do
     it 'public reachable to public' do
       expect(vm1).to be_reachable_to(vm3)
       expect(vm3).to be_reachable_to(vm1)
-      expect(vm1).to be_reachable_to(vm5)
-      expect(vm5).to be_reachable_to(vm1)
-      expect(vm3).to be_reachable_to(vm5)
-      expect(vm5).to be_reachable_to(vm3)
+      # expect(vm1).to be_reachable_to(vm5)
+      # expect(vm5).to be_reachable_to(vm1)
+      # expect(vm3).to be_reachable_to(vm5)
+      # expect(vm5).to be_reachable_to(vm3)
     end
 
     it 'vnet reachable to vnet' do
@@ -112,24 +112,24 @@ shared_examples 'router p2v examples' do
 
   describe 'tunnel' do
     it 'reachable to public on different host' do
-      expect(vm2).to be_reachable_to(vm5)
-      expect(vm5).to be_reachable_to(vm2)
+      # expect(vm2).to be_reachable_to(vm5)
+      # expect(vm5).to be_reachable_to(vm2)
       expect(vm1).to be_reachable_to(vm6)
       expect(vm6).to be_reachable_to(vm1)
     end
 
-    it 'reachable to public on same host' do
-      expect(vm5).to be_reachable_to(vm6)
-      expect(vm6).to be_reachable_to(vm5)
-    end
+    # it 'reachable to public on same host' do
+    #   expect(vm5).to be_reachable_to(vm6)
+    #   expect(vm6).to be_reachable_to(vm5)
+    # end
   end
 
   describe 'tunnel+mac2mac' do
     it 'reachable to public on different host' do
       expect(vm3).to be_reachable_to(vm6)
       expect(vm6).to be_reachable_to(vm3)
-      expect(vm4).to be_reachable_to(vm5)
-      expect(vm5).to be_reachable_to(vm4)
+      # expect(vm4).to be_reachable_to(vm5)
+      # expect(vm5).to be_reachable_to(vm4)
     end
   end
 
