@@ -89,6 +89,14 @@ describe '/topologies' do
     end
   end
 
+  describe 'Many to many relation calls for mac_range_groups' do
+    let!(:base_object) { Fabricate(fabricator) }
+    let(:relation_fabricator) { :mac_range_group }
+
+    include_examples 'many_to_many_relation', 'mac_range_groups', {
+    }
+  end
+
   describe 'Many to many relation calls for networks' do
     let!(:base_object) { Fabricate(fabricator) }
     let(:relation_fabricator) { :network }

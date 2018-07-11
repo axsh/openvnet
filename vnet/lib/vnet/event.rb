@@ -206,6 +206,13 @@ module Vnet
     FILTER_REMOVED_STATIC = "filter_removed_static"
 
     #
+    # Filter events:
+    #
+
+    MAC_RANGE_GROUP_CREATED_ITEM = "mac_range_group_created_item"
+    MAC_RANGE_GROUP_DELETED_ITEM = "mac_range_group_deleted_item"
+
+    #
     # Network event:
     #
 
@@ -294,11 +301,12 @@ module Vnet
     TOPOLOGY_CREATED_ITEM = 'topology_created_item'
     TOPOLOGY_DELETED_ITEM = 'topology_deleted_item'
 
-    TOPOLOGY_ADDED_LAYER = 'topology_added_layer'
-    TOPOLOGY_REMOVED_LAYER = 'topology_removed_layer'
-
     TOPOLOGY_ADDED_DATAPATH = 'topology_added_datapath'
     TOPOLOGY_REMOVED_DATAPATH = 'topology_removed_datapath'
+    TOPOLOGY_ADDED_LAYER = 'topology_added_layer'
+    TOPOLOGY_REMOVED_LAYER = 'topology_removed_layer'
+    TOPOLOGY_ADDED_MAC_RANGE_GROUP = 'topology_added_mac_range_group'
+    TOPOLOGY_REMOVED_MAC_RANGE_GROUP = 'topology_removed_mac_range_group'
 
     TOPOLOGY_ADDED_NETWORK = 'topology_added_network'
     TOPOLOGY_REMOVED_NETWORK = 'topology_removed_network'

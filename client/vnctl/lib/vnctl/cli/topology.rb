@@ -21,6 +21,9 @@ module Vnctl::Cli
     define_relation :underlays do |relation|
     end
 
+    define_relation :mac_range_groups do |relation|
+    end
+
     define_relation :networks do |relation|
     end
 

@@ -8,6 +8,10 @@ Fabricator(:topology_datapath, class_name: Vnet::Models::TopologyDatapath) do
   id { id_sequence(:topology_datapath_ids) }
 end
 
+Fabricator(:topology_mac_range_group, class_name: Vnet::Models::TopologyMacRangeGroup) do
+  id { id_sequence(:topology_mac_range_group_ids) }
+end
+
 Fabricator(:topology_network, class_name: Vnet::Models::TopologyNetwork) do
   id { id_sequence(:topology_network_ids) }
 end

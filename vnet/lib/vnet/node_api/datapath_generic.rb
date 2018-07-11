@@ -28,6 +28,7 @@ module Vnet::NodeApi
       def create_single(options)
         options = options.dup
         lease_detection = options.delete(:lease_detection)
+        mac_range_group_id = options.delete(:mac_range_group_id)
 
         if lease_detection
           lease_detection.merge!(datapath_id: options[:datapath_id])
@@ -39,7 +40,15 @@ module Vnet::NodeApi
           options[:ip_lease_id] = find_ip_lease_id(options[:interface_id])
         end
 
-        mac_address_random_assign(options)
+        if mac_range_group_id
+          M::MacRangeGroup[id: mac_range_group_id].tap { |mrg|
+            mac_address = (mrg && mrg.address_random) || return
+            options[:mac_address_id] = mac_address.id
+          }
+        else
+          mac_address_random_assign(options)
+        end
+
         internal_create(options)
       end
 
