@@ -45,7 +45,7 @@ interfaces:
   - uuid: if-v5
     mode: vif
     port_name: if-v5
-    network_uuid: nw-public1
+    network_uuid: nw-public2
     mac_address: "02:00:00:00:00:05"
     ipv4_address: <%= public_ipv4_address3 %>
 
