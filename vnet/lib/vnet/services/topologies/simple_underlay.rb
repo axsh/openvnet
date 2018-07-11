@@ -147,6 +147,14 @@ module Vnet::Services::Topologies
 
         @vnet_info.topology_manager.publish('topology_underlay_added_datapath', u_dp)
       }
+      @mac_range_groups.each { |_, other_map|
+        u_dp = other_map.dup
+        u_dp[:id] = overlay_id
+        u_dp[:layer_id] = layer_id
+        u_dp[:underlay_id] = @id
+
+        @vnet_info.topology_manager.publish('topology_underlay_added_mac_range_group', u_dp)
+      }
     end
 
     def handle_removed_overlay(assoc_id, assoc_map)
@@ -162,6 +170,14 @@ module Vnet::Services::Topologies
         u_dp[:underlay_id] = @id
 
         @vnet_info.topology_manager.publish('topology_underlay_removed_datapath', u_dp)
+      }
+      @mac_range_groups.each { |_, other_map|
+        u_dp = other_map.dup
+        u_dp[:id] = overlay_id
+        u_dp[:layer_id] = layer_id
+        u_dp[:underlay_id] = @id
+
+        @vnet_info.topology_manager.publish('topology_underlay_removed_mac_range_group', u_dp)
       }
     end
 

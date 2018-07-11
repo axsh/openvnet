@@ -374,8 +374,16 @@ module Vnspec
 
     class Topology < Base
       class << self
+        def add(tp_uuid, tp_mode)
+          API.request(:post, "topologies", uuid: tp_uuid, mode: tp_mode)
+        end
+
         def delete(tp_uuid)
           API.request(:delete, "topologies/#{tp_uuid}")
+        end
+
+        def add_underlay(tp_uuid, underlay_uuid)
+          API.request(:post, "topologies/#{tp_uuid}/underlays/#{underlay_uuid}")
         end
 
         def add_mrg(tp_uuid, mrg_uuid)
