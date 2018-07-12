@@ -1,10 +1,19 @@
 package main
 
+// Note that this pcap api is artificially limited to only the devices
+// registered in OpenVnet's database. OpenVnet can only see host OS interfaces
+// -- i.e. real interfaces, host virtual interfaces, and virtual hypervisor
+// interfaces. It will not be able to see non-hypervisor virtual devices created
+// inside the guest (for example virtual devices sharing a single hypervisor
+// bridge).
+
 import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"log"
 	"net"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -13,6 +22,7 @@ import (
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
 	"github.com/google/gopacket/pcapgo"
+	"github.com/gorilla/websocket"
 )
 
 const (
@@ -27,9 +37,30 @@ const (
 )
 
 var (
+	// TODO: decide on a max for this based on hardware limits
+	// if linux only, Available = (roughly)
+	//   /proc/meminfo/MemFree
+	//   + /proc/meminfo/ActiveFile
+	//   + /proc/meminfo/InactiveFile
+	//   - $(cat /proc/sys/vm/min_free_kbytes)
+
+	// goroutineStackMem = int32(4096)
+	// if snapshotlen > 4096{goroutineStackMem = snapshotLen}
+	// golimit = memQuicklyAvailableForProcesses/goroutineStackMem
+	// this gives roughly 250,000 per GB of RAM for packet sizes up to 4kB
+	// superJumboPackets could take up to 16 times more memory, giving roughly
+	// 15,000 per GB of RAM as a slightly conservative value.
+
+	// TODO: This is more likely to be cpu bound, so something like the above
+	// should be computed for the cpu usage...
+	golimit = 10000
+	limiter = make(chan struct{}, golimit)
+
+	widthOfOne = make(chan struct{}, 1)
+
 	//tmp
-	deviceToRead = flag.String("device", "en3", "Use -device <device name> to set the device to be read for testing purposes. Default is 'en3'")
-	filter       = flag.String("filter", "not tcp and not udp", "set a berkley packet filter using standard bpf syntax. Default is 'not tcp and not udp'") // tcp and port 80
+	ifaceToRead = flag.String("iface", "en3", "Use -iface <iface name> to set the iface to be read for testing purposes. Default is 'en3'")
+	filter      = flag.String("filter", "not tcp and not udp", "set a berkley packet filter using standard bpf syntax. Default is 'not tcp and not udp'") // tcp and port 80
 
 	// custom max packet size in bytes (packet will be truncated if larger than this)
 	// use the constants for non-custom sizes
@@ -38,6 +69,10 @@ var (
 	timeout     time.Duration = 30 * time.Second
 	options     gopacket.SerializeOptions
 )
+
+type wsCon struct {
+	*websocket.Conn
+}
 
 // TODO: find start and stop session packets -- not sure how to do this yet...
 
@@ -55,71 +90,88 @@ func JoinWithSep(separator string, args ...string) string {
 	return strings.Join(args, separator)
 }
 
-func throwErr(err error, msg ...string) {
+func (ws *wsCon) throwErr(err error, msg ...string) {
 	if err != nil {
-		// send Join(JoinWithSep(" ", msg), err.Error())
+		ws.sendData(
+			[]byte(
+				Join(
+					JoinWithSep(" ", msg...), err.Error(),
+				),
+			),
+		)
+	}
+}
+
+func catchErr(err error, msg ...string) {
+	if err != nil {
+		log.Println(msg, err)
 	}
 }
 
 func find() {
-	// Find all devices
-	devices, err := pcap.FindAllDevs()
-	throwErr(err)
+	// Find all ifaces
+	ifaces, err := pcap.FindAllDevs()
+	catchErr(err)
 
-	// Print device information
-	fmt.Println("Devices found:")
-	for _, device := range devices {
-		fmt.Println("\nName: ", device.Name)
-		fmt.Println("Description: ", device.Description)
-		fmt.Println("Devices addresses: ", device.Description)
-		for _, address := range device.Addresses {
+	// Print iface information
+	// fmt.Println("Ifaces:", ifaces)
+	fmt.Println("Ifaces found:")
+	for _, iface := range ifaces {
+		fmt.Println("\nName: ", iface.Name)
+		fmt.Println("Description: ", iface.Description)
+		fmt.Println("Ifaces addresses: ", iface.Description)
+		for _, address := range iface.Addresses {
 			fmt.Println("- IP address: ", address.IP)
 			fmt.Println("- Subnet mask: ", address.Netmask)
 		}
 	}
 }
 
-// generalDecode decodes into 4 layers corresponding with the
-// tcp/ip layering scheme (similar to OSI layers 2,3,4, and 7)
-// Because this generalized solution must always include the payload,
-// it is substantially slower than the "efficientDecode" function.
-// As such, it should only be used as a fallback for protocols not
-// covered by the efficientDecode decoder.
-func generalDecode(packet gopacket.Packet) {
-	if packet.LinkLayer() != nil {
-		j, err := json.Marshal(packet.LinkLayer())
-		throwErr(err)
-		fmt.Println()
-		fmt.Println("link layer:")
-		fmt.Println(string(j))
-	}
-	if packet.NetworkLayer() != nil {
-		j, err := json.Marshal(packet.NetworkLayer())
-		throwErr(err)
-		fmt.Println()
-		fmt.Println("network layer:")
-		fmt.Println(string(j))
-	}
-	if packet.TransportLayer() != nil {
-		j, err := json.Marshal(packet.TransportLayer())
-		throwErr(err)
-		fmt.Println()
-		fmt.Println("transport layer:")
-		fmt.Println(string(j))
-	}
-	if packet.ApplicationLayer() != nil {
-		j, err := json.Marshal(packet.ApplicationLayer())
-		throwErr(err)
-		fmt.Println()
-		fmt.Println("application layer:")
-		fmt.Println(string(j))
-	}
-	fmt.Println("metadata:", packet.Metadata())
+// generalDecode decodes into 4 layers corresponding with the tcp/ip layering
+// scheme (similar to OSI layers 2,3,4, and 7). Because this generalized
+// solution can't preallocate memory, it is substantially slower (at least an
+// order of magnitude) than the "efficientDecode" function. As such, it should
+// only be used as a fallback for protocols not covered by the efficientDecode
+// decoder.
+func (ws *wsCon) generalDecode(packet gopacket.Packet) {
+	// Run asynchronously so that packets aren't missed or truncated
+	limitedGo(func() {
+		if packet.LinkLayer() != nil {
+			j, err := json.Marshal(packet.LinkLayer().LayerContents())
+			ws.throwErr(err)
+			ws.sendData(j)
+			fmt.Println()
+			fmt.Println("link layer:")
+			fmt.Println(string(j))
+		}
+		if packet.NetworkLayer() != nil {
+			j, err := json.Marshal(packet.NetworkLayer().LayerContents())
+			ws.throwErr(err)
+			fmt.Println()
+			fmt.Println("network layer:")
+			fmt.Println(string(j))
+		}
+		if packet.TransportLayer() != nil {
+			j, err := json.Marshal(packet.TransportLayer().LayerContents())
+			ws.throwErr(err)
+			fmt.Println()
+			fmt.Println("transport layer:")
+			fmt.Println(string(j))
+		}
+		if packet.ApplicationLayer() != nil {
+			j, err := json.Marshal(packet.ApplicationLayer())
+			ws.throwErr(err)
+			fmt.Println()
+			fmt.Println("application layer:")
+			fmt.Println(string(j))
+		}
+		fmt.Println("metadata:", packet.Metadata())
+	})
 }
 
 // TODO: make this a method on a tcpPacket typed struct or better yet,
 // think of something more generic and flexible than a tcp restriction
-func createAndSendTCPpacket(handle *pcap.Handle, rawBytes []byte) {
+func (ws *wsCon) createAndSendTCPpacket(handle *pcap.Handle, rawBytes []byte) {
 	// these layers should be fields in the struct
 	ipLayer := &layers.IPv4{
 		SrcIP: net.IP{127, 0, 0, 1},
@@ -140,23 +192,24 @@ func createAndSendTCPpacket(handle *pcap.Handle, rawBytes []byte) {
 		tcpLayer,
 		gopacket.Payload(rawBytes),
 	)
-	throwErr(handle.WritePacketData(buffer.Bytes()))
+	ws.throwErr(handle.WritePacketData(buffer.Bytes()))
 
 	// for packets formed elsewhere --
 	// or just raw data...better hope it has an address somewhere!
-	// throwErr(handle.WritePacketData(rawBytes))
+	// ws.throwErr(handle.WritePacketData(rawBytes))
 	// to make this safer, it could be checked with something like:
 	// packet := gopacket.NewPacket(
 	// 	rawBytes,
 	// 	layers.LayerTypeEthernet,
 	// 	gopacket.Default,
 	// )
-	// throwErr(handle.WritePacketData(packet.Data()))
+	// ws.throwErr(handle.WritePacketData(packet.Data()))
 	// but that requires it to have an ethernet layer
 }
 
-func efficientDecode(packet gopacket.Packet, decodeProtocolData bool) error {
-	// TODO: Continue adding layers and change the "fmt.Println" tests to conditional struct setting for returning api calls
+func (ws *wsCon) efficientDecode(packet gopacket.Packet, decodeProtocolData bool) error {
+	// TODO: Continue adding layers and change the "fmt.Println" tests to
+	// conditional struct setting for returning api calls
 	// layers to consider adding:
 
 	// higher priority
@@ -270,11 +323,10 @@ func efficientDecode(packet gopacket.Packet, decodeProtocolData bool) error {
 					Ethernet: &eth,
 				})
 			} else {
-				j, err := json.Marshal(eth.Contents)
+				j, err = json.Marshal(eth.Contents)
 			}
-			throwErr(err)
-			fmt.Println(string(j))
-			fmt.Println()
+			ws.throwErr(err)
+			ws.sendData(j)
 
 		// 	// fmt.Println("Eth", eth.SrcMAC, eth.DstMAC)
 		// 	// if eth.EthernetType == layers.EthernetTypeLLC {
@@ -398,13 +450,70 @@ func efficientDecode(packet gopacket.Packet, decodeProtocolData bool) error {
 	return nil
 }
 
-func main() {
+// limitedGo is a wrapper to launch goroutines with a limit of golimit. This
+// could be done with waitgroups, but not without either introducing race
+// conditions or using substantially more resources and dangerous recursive
+// calls. It could also be done with semaphores, but at the time of writing this
+// (2018.07.12) the golang.org/x/sync/semaphore package is designed to use
+// context.Context objects. limitedGo acts very similarly to semaphores.
+// limitedGo is synchronous and concurrency safe with minimal resource usage.
+func limitedGo(f func()) {
+	limiter <- struct{}{}
+	go func() {
+		defer func() { <-limiter }()
+		f()
+	}()
+}
+
+// oneAtaTime is a wrapper to launch goroutines with a limit of one. It works
+// the same way that limitedGo does.
+func oneAtaTime(f func()) {
+	widthOfOne <- struct{}{}
+	go func() {
+		defer func() { <-widthOfOne }()
+		f()
+	}()
+}
+
+// sendData sends msg to the websocket ws
+// Each websocket can only be written to by one process at a time, so some care
+// has been taken to ensure that only one goroutine is writing to the websocket
+// at any given time.
+func (ws *wsCon) sendData(msg []byte) {
+	// never block the parent process
+	limitedGo(func() {
+		oneAtaTime(func() {
+			fmt.Println(string(msg))
+			catchErr(ws.WriteMessage(websocket.BinaryMessage, msg))
+		})
+	})
+}
+
+func pcapApi(w http.ResponseWriter, r *http.Request) {
+	upgrader := websocket.Upgrader{}
+	wsC, err := upgrader.Upgrade(w, r, nil)
+	ws := wsCon{Conn: wsC}
+	ws.throwErr(err, "upgrade:")
+	defer ws.Close()
+	for {
+		mt, reqMsg, err := ws.ReadMessage()
+		if websocket.IsCloseError(err) {
+			break
+		} else {
+			ws.throwErr(err, "read:")
+		}
+		log.Println("received message:", reqMsg, "message type:", mt)
+		limitedGo(func() { ws.doPcap(reqMsg) })
+	}
+}
+
+func (ws *wsCon) doPcap(reqMsg []byte) {
 	var (
 		handle *pcap.Handle
 		err    error
 
 		// TODO: get all of the following from an api call (through a websocket or maybe grpc)
-		packetLimit = 10000 // TODO: decide on a max for this based on hardware limits
+		packetLimit = golimit
 
 		// as a sanity check, might as well set these to have
 		// the username or something identifiable in them
@@ -422,14 +531,14 @@ func main() {
 		decodePacket  = true  // if this is true and sendRawPacket is not specified, sendRawPacket should be false by default
 	)
 
-	find()
+	// find()
 
 	if readFromFile {
 		handle, err = pcap.OpenOffline(readFile)
-	} else { // read from device
-		handle, err = pcap.OpenLive(*deviceToRead, snapshotLen, promiscuous, timeout)
+	} else { // read from iface
+		handle, err = pcap.OpenLive(*ifaceToRead, snapshotLen, promiscuous, timeout)
 	}
-	throwErr(err)
+	ws.throwErr(err)
 
 	if *filter != "" {
 		// subnet can be dotted quad, triple, double, or single -- the netmask will
@@ -447,13 +556,13 @@ func main() {
 		// *filter = "ip6"
 		*filter = ""
 
-		throwErr(handle.SetBPFFilter(*filter))
+		ws.throwErr(handle.SetBPFFilter(*filter))
 	}
 
 	var w *pcapgo.Writer
 	if writeToFile {
 		f, err := os.Create(Join("", writeFile))
-		throwErr(err)
+		ws.throwErr(err)
 		defer f.Close()
 		w = pcapgo.NewWriter(f)
 		// w.WriteFileHeader(uint32(snapshotLen), layers.LinkTypeEthernet)
@@ -461,31 +570,36 @@ func main() {
 	}
 
 	packetCount := 0
-	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
-	for packet := range packetSource.Packets() {
-		go func() {
-			if writeToFile {
-				w.WritePacket(packet.Metadata().CaptureInfo, packet.Data())
-			}
-			if sendRawPacket {
-				// send packet.Data()
-			}
-			if decodePacket {
-				// TODO: do something more sensible than passing "decodeProtocolData" in as a variable...
-				if err := efficientDecode(packet, decodeProtocolData); err != nil {
-					if !strings.Contains(err.Error(), "No decoder for layer type") {
-						throwErr(err)
-					}
-					fmt.Println()
-					generalDecode(packet)
-				}
-			}
-		}()
+	for packet := range gopacket.NewPacketSource(handle, handle.LinkType()).Packets() {
+		// Run asynchronously so new packets don't get blocked.
+		if sendRawPacket {
+			ws.sendData(packet.Data())
+		}
+		if writeToFile {
+			limitedGo(func() { w.WritePacket(packet.Metadata().CaptureInfo, packet.Data()) })
+		}
 
-		// Only capture to limit and then stop
+		if decodePacket {
+			// TODO: do something more sensible than passing "decodeProtocolData" in as a variable...
+			// TODO: for large packets or fast traffic, this should be in parallel -- also consider reading several ifaces in parallel...
+			if err := ws.efficientDecode(packet, decodeProtocolData); err != nil {
+				if !strings.Contains(err.Error(), "No decoder for layer type") {
+					ws.throwErr(err)
+				}
+				fmt.Println()
+				ws.generalDecode(packet)
+			}
+		}
+
+		// Only capture to packetLimit and then stop
 		packetCount++
 		if packetCount > packetLimit {
 			break
 		}
 	}
+}
+
+func main() {
+	http.HandleFunc("/pcap", pcapApi)
+	log.Fatal(http.ListenAndServe("localhost:8080", nil))
 }
