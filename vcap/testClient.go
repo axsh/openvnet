@@ -11,7 +11,6 @@ import (
 
 	"github.com/axsh/openvnet/vcap/vpcap"
 	"github.com/axsh/openvnet/vcap/wsoc"
-	"github.com/google/gopacket/pcap"
 	"github.com/gorilla/websocket"
 )
 
@@ -36,35 +35,21 @@ func main() {
 	ws.ThrowErr(err, "upgrade:")
 	ws.ReadData()
 	ws.WriteData()
-	j, err := json.Marshal([]struct {
-		*vpcap.Vpacket
-		Handle             *pcap.Handle  `json:"Handle,omitempty"`
-		Filter             string        `json:"Filter,omitempty"`
-		SnapshotLen        int32         `json:"SnapshotLen,omitempty"`
-		Promiscuous        bool          `json:"Promiscuous,omitempty"`
-		Timeout            time.Duration `json:"Timeout,omitempty"`
-		Limit              int           `json:"Limit,omitempty"`
-		IfaceToRead        string        `json:"IfaceToRead,omitempty"`
-		ReadFile           string        `json:"ReadFile,omitempty"`
-		WriteFile          string        `json:"WriteFile,omitempty"`
-		SendRawPacket      bool          `json:"SendRawPacket,omitempty"`
-		DecodePacket       bool          `json:"DecodePacket,omitempty"`
-		DecodeProtocolData bool          `json:"DecodeProtocolData,omitempty"`
-	}{
+	j, err := json.Marshal([]vpcap.Vpacket{
 		{
 			Handle: nil, // zero value is ignored
 			Filter: "icmp",
 			// Filter:             "eth",
-			SnapshotLen:   1538,
-			Promiscuous:   false, // zero value is ignored
-			Timeout:       30 * time.Second,
-			Limit:         100,
-			IfaceToRead:   "en3",
-			ReadFile:      "",    // zero value is ignored
-			WriteFile:     "",    // zero value is ignored
-			SendRawPacket: false, // zero value is ignored
-			DecodePacket:  true,
-			// DecodeProtocolData: true,
+			SnapshotLen:        1538,
+			Promiscuous:        false, // zero value is ignored
+			Timeout:            30 * time.Second,
+			Limit:              100,
+			IfaceToRead:        "en3",
+			ReadFile:           "",    // zero value is ignored
+			WriteFile:          "",    // zero value is ignored
+			SendRawPacket:      false, // zero value is ignored
+			DecodePacket:       true,
+			DecodeProtocolData: true,
 		},
 		// {
 		// 	Filter:             "icmp",

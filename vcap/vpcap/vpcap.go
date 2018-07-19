@@ -28,22 +28,19 @@ const (
 )
 
 type Vpacket struct {
-	Handle *pcap.Handle
-
-	Filter      string
-	SnapshotLen int32
-	Promiscuous bool
-	Timeout     time.Duration
-
-	Limit int
-
-	IfaceToRead string
-	ReadFile    string
-	WriteFile   string
-
-	SendRawPacket      bool
-	DecodePacket       bool
-	DecodeProtocolData bool
+	Handle             *pcap.Handle  `json:"Handle,omitempty"`
+	Filter             string        `json:"Filter,omitempty"`
+	SnapshotLen        int32         `json:"SnapshotLen,omitempty"`
+	Promiscuous        bool          `json:"Promiscuous,omitempty"`
+	Timeout            time.Duration `json:"Timeout,omitempty"`
+	Limit              int           `json:"Limit,omitempty"`
+	IfaceToRead        string        `json:"IfaceToRead,omitempty"`
+	ReadFile           string        `json:"ReadFile,omitempty"`
+	WriteFile          string        `json:"WriteFile,omitempty"`
+	SendRawPacket      bool          `json:"SendRawPacket,omitempty"`
+	SendMetadata       bool          `json:"SendMetadata,omitempty"`
+	DecodePacket       bool          `json:"DecodePacket,omitempty"`
+	DecodeProtocolData bool          `json:"DecodeProtocolData,omitempty"`
 }
 
 type RawTcpIpPacket struct {
