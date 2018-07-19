@@ -9,18 +9,11 @@ require 'vnet'
 require 'celluloid'
 require 'celluloid/autostart'
 require 'dcell'
+require 'trema'
 
 #Vnet::Initializers::Logger.run("vna.log")
 
 conf = Vnet::Configurations::Vna.conf
-
-# Start the switch manager before any celluloid services in order to
-# avoid cloned file descriptors to e.g. zmq remaining open.
-switch_manager_new = Vnet::NodeModules::SwitchManager.new
-switch_manager_new.configure_trema
-switch_manager_new.cleanup_current_session
-switch_manager_new.kill_old_switches
-switch_manager_new.start
 
 Vnet::NodeApi.set_proxy(conf.node_api_proxy)
 Vnet::NodeApi.raise_on_error = false # dont raise any errors
@@ -46,11 +39,15 @@ params.merge!(:public => conf.node.pub_addr_string) if conf.node.addr.public != 
 
 DCell.start(params)
 
+@sleeper = Thread.current
 
-trap 'TTIN' do
-  Celluloid.stack_dump
-end
+trap(:TTIN) { Celluloid.stack_dump }
+trap(:TERM) { Thread.new { @sleeper&.run } }
+trap(:INT) { Thread.new { @sleeper&.run } }
+
+Trema.logger = Trema::Logger.new('trema')
 
 Vnet::NodeModules::ServiceOpenflow.supervise_as :service_openflow
+Kernel.sleep
 
-sleep
+Celluloid::Actor[:service_openflow].handle_exit

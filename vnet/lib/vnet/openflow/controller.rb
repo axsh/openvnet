@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 
 require 'racket'
-require 'trema/actions'
-require 'trema/instructions'
-require 'trema/messages'
+require 'trema/controller'
 
 module Vnet::Openflow
 
@@ -15,11 +13,13 @@ module Vnet::Openflow
     attr_reader :datapaths
     attr_accessor :trema_thread
 
-    def initialize
+    def initialize(port_number, logging_level)
       @datapaths = {}
+
+      super
     end
 
-    def start
+    def start(args)
       info "starting OpenFlow controller."
     end
 

@@ -541,6 +541,7 @@ module Vnet
 
   module Openflow
     autoload :ArpLookup, 'vnet/openflow/arp_lookup'
+    autoload :Command, 'vnet/openflow/command'
     autoload :Controller, 'vnet/openflow/controller'
     autoload :Datapath, 'vnet/openflow/datapath'
     autoload :DatapathInfo, 'vnet/openflow/datapath'
