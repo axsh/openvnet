@@ -108,7 +108,7 @@ module Vnet::Core::Datapaths
       flow_cookie = dpg_map[:id] | COOKIE_TYPE_DP_NETWORK
 
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
-                           goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
+                           goto_table: TABLE_INTERFACE_INGRESS_NW_DPNW,
                            priority: 30,
 
                            match: {
@@ -121,15 +121,25 @@ module Vnet::Core::Datapaths
                            },
                            write_value_pair_flag: true,
                            write_value_pair_first: dpg_map[:network_id],
+                           write_value_pair_second: dpg_map[:id],
 
                            cookie: flow_cookie)
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_NW_IF,
+                           goto_table: TABLE_INTERFACE_INGRESS_NW_DPNW,
+                           priority: 1,
+
+                           match_value_pair_first: dpg_map[:network_id],
+                           match_value_pair_second: dpg_map[:interface_id],
+
+                           write_value_pair_second: dpg_map[:id],
+
+                           cookie: flow_cookie)
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_NW_DPNW,
                            goto_table: TABLE_NETWORK_SRC_CLASSIFIER,
                            priority: 1,
 
-                           match_value_pair_flag: true,
                            match_value_pair_first: dpg_map[:network_id],
-                           match_value_pair_second: dpg_map[:interface_id],
+                           match_value_pair_second: dpg_map[:id],
 
                            clear_all: true,
                            write_remote: true,
@@ -149,18 +159,26 @@ module Vnet::Core::Datapaths
                            priority: 1,
 
                            match_value_pair_first: dpg_map[:network_id],
+
                            write_value_pair_first: dpg_map[:interface_id],
 
                            cookie: flow_cookie)
 
       flows_for_filtering_mac_address(flows, dpg_map[:mac_address], flow_cookie)
+
+      if dpg_map[:mode] == 'virtual'
+        ovs_flows = []
+        ovs_flows << create_learn_network_arp(dpg_map, 51, "tun_id=0,")
+        ovs_flows << create_learn_network_arp(dpg_map, 50, "", "load:NXM_NX_TUN_ID[]->NXM_NX_TUN_ID[],")
+        ovs_flows.each { |flow| @dp_info.add_ovs_flow(flow) }
+      end
     end
 
     def flows_for_dp_segment(flows, dpg_map)
       flow_cookie = dpg_map[:id] | COOKIE_TYPE_DP_SEGMENT
 
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
-                           goto_table: TABLE_INTERFACE_INGRESS_SEG_IF,
+                           goto_table: TABLE_INTERFACE_INGRESS_SEG_DPSEG,
                            priority: 30,
 
                            match: {
@@ -173,18 +191,30 @@ module Vnet::Core::Datapaths
                            },
                            write_value_pair_flag: true,
                            write_value_pair_first: dpg_map[:segment_id],
+                           write_value_pair_second: dpg_map[:id],
+
                            cookie: flow_cookie)
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_SEG_IF,
+                           goto_table: TABLE_INTERFACE_INGRESS_SEG_DPSEG,
+                           priority: 1,
+
+                           match_value_pair_first: dpg_map[:segment_id],
+                           match_value_pair_second: dpg_map[:interface_id],
+
+                           write_value_pair_second: dpg_map[:id],
+
+                           cookie: flow_cookie)
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_SEG_DPSEG,
                            goto_table: TABLE_SEGMENT_SRC_CLASSIFIER,
                            priority: 1,
 
-                           match_value_pair_flag: true,
                            match_value_pair_first: dpg_map[:segment_id],
-                           match_value_pair_second: dpg_map[:interface_id],
+                           match_value_pair_second: dpg_map[:id],
 
                            clear_all: true,
                            write_remote: true,
                            write_segment: dpg_map[:segment_id],
+
                            cookie: flow_cookie)
       flows << flow_create(table: TABLE_LOOKUP_SEGMENT_TO_HOST_IF_EGRESS,
                            goto_table: TABLE_OUT_PORT_INTERFACE_EGRESS,
@@ -198,6 +228,7 @@ module Vnet::Core::Datapaths
                            priority: 1,
 
                            match_value_pair_first: dpg_map[:segment_id],
+
                            write_value_pair_first: dpg_map[:interface_id],
                            cookie: flow_cookie)
 
@@ -229,6 +260,13 @@ module Vnet::Core::Datapaths
                              :output => OFPP_CONTROLLER
                            },
                            cookie: flow_cookie)
+
+      if dpg_map[:mode] == 'virtual'
+        ovs_flows = []
+        ovs_flows << create_learn_segment_arp(dpg_map, 51, "tun_id=0,")
+        ovs_flows << create_learn_segment_arp(dpg_map, 50, "", "load:NXM_NX_TUN_ID[]->NXM_NX_TUN_ID[],")
+        ovs_flows.each { |flow| @dp_info.add_ovs_flow(flow) }
+      end
     end
 
     def flows_for_dp_route_link(flows, dpg_map)
@@ -287,6 +325,56 @@ module Vnet::Core::Datapaths
                            cookie: flow_cookie)
 
       flows_for_filtering_mac_address(flows, dpg_map[:mac_address], flow_cookie)
+    end
+
+    def create_learn_segment_arp(dpg_map, priority, match_options = "", learn_options = "")
+      #
+      # Work around the current limitations of trema / openflow 1.3 using ovs-ofctl directly.
+      #
+      match_dpg_md = md_create(match_value_pair_flag: true, match_value_pair_first: dpg_map[:segment_id], match_value_pair_second: dpg_map[:id])
+      write_md = md_create(clear_all: true, write_remote: true, write_segment: dpg_map[:segment_id])
+
+      flow_cookie = dpg_map[:id] | COOKIE_TYPE_DP_SEGMENT
+
+      flow_learn_arp = "table=%d,priority=%d,cookie=0x%x,arp,metadata=0x%x/0x%x,%sactions=" %
+        [TABLE_INTERFACE_INGRESS_SEG_DPSEG, priority, flow_cookie, match_dpg_md[:metadata], match_dpg_md[:metadata_mask], match_options]
+
+      [md_create(match_segment: dpg_map[:segment_id], match_local: nil),
+       md_create(segment: dpg_map[:segment_id], match_reflection: true)
+      ].each { |metadata|
+        flow_learn_arp << "learn(table=%d,cookie=0x%x,idle_timeout=36000,priority=35,metadata:0x%x,NXM_OF_ETH_DST[]=NXM_OF_ETH_SRC[]," %
+          [TABLE_SEGMENT_DST_MAC_LOOKUP, flow_cookie, metadata[:metadata]]
+        flow_learn_arp << learn_options
+        flow_learn_arp << "output:NXM_OF_IN_PORT[]),"
+      }
+
+      flow_learn_arp << "write_metadata:0x%x/0x%x,goto_table:%d" % [write_md[:metadata], write_md[:metadata_mask], TABLE_SEGMENT_SRC_CLASSIFIER]
+      flow_learn_arp
+    end
+
+    def create_learn_network_arp(dpg_map, priority, match_options = "", learn_options = "")
+      #
+      # Work around the current limitations of trema / openflow 1.3 using ovs-ofctl directly.
+      #
+      match_dpg_md = md_create(match_value_pair_flag: true, match_value_pair_first: dpg_map[:network_id], match_value_pair_second: dpg_map[:id])
+      write_md = md_create(clear_all: true, write_remote: true, write_network: dpg_map[:network_id])
+
+      flow_cookie = dpg_map[:id] | COOKIE_TYPE_DP_NETWORK
+
+      flow_learn_arp = "table=%d,priority=%d,cookie=0x%x,arp,metadata=0x%x/0x%x,%sactions=" %
+        [TABLE_INTERFACE_INGRESS_NW_DPNW, priority, flow_cookie, match_dpg_md[:metadata], match_dpg_md[:metadata_mask], match_options]
+
+      [md_create(match_network: dpg_map[:network_id], match_local: nil),
+       md_create(network: dpg_map[:network_id], match_reflection: true)
+      ].each { |metadata|
+        flow_learn_arp << "learn(table=%d,cookie=0x%x,idle_timeout=36000,priority=35,metadata:0x%x,NXM_OF_ETH_DST[]=NXM_OF_ETH_SRC[]," %
+          [TABLE_NETWORK_DST_MAC_LOOKUP, flow_cookie, metadata[:metadata]]
+        flow_learn_arp << learn_options
+        flow_learn_arp << "output:NXM_OF_IN_PORT[]),"
+      }
+
+      flow_learn_arp << "write_metadata:0x%x/0x%x,goto_table:%d" % [write_md[:metadata], write_md[:metadata_mask], TABLE_NETWORK_SRC_CLASSIFIER]
+      flow_learn_arp
     end
 
   end

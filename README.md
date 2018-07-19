@@ -10,9 +10,9 @@ If you have any questions about OpenVNet or just want to hang out, don't hesitat
 System requirements
 -------------------
 
-* Ruby 2.1.1
-* CentOS 6.6
-* Open vSwitch 2.3.1
+* Ruby 2.3
+* CentOS 6 or 7
+* Open vSwitch 2.4.1
 
 Other versions or operating systems may or may not work.
 

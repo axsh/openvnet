@@ -16,6 +16,7 @@ module Vnet::Services
     subscribe_event TOPOLOGY_DELETED_ITEM, :unload_item
 
     subscribe_assoc_other_events :topology, :datapath
+    subscribe_assoc_other_events :topology, :mac_range_group
     subscribe_assoc_other_events :topology, :network
     subscribe_assoc_other_events :topology, :segment
     subscribe_assoc_other_events :topology, :route_link
@@ -24,6 +25,8 @@ module Vnet::Services
 
     subscribe_item_event 'topology_underlay_added_datapath', :underlay_added_datapath
     subscribe_item_event 'topology_underlay_removed_datapath', :underlay_removed_datapath
+    subscribe_item_event 'topology_underlay_added_mac_range_group', :underlay_added_mac_range_group
+    subscribe_item_event 'topology_underlay_removed_mac_range_group', :underlay_removed_mac_range_group
 
     def do_initialize
       info log_format('loading all topologies')
@@ -92,11 +95,12 @@ module Vnet::Services
     #
 
     def item_post_install(item, item_map)
+      MW::TopologyMacRangeGroup.dispatch_added_assocs_for_parent_id(item.id)
       MW::TopologyDatapath.dispatch_added_assocs_for_parent_id(item.id)
+      MW::TopologyLayer.dispatch_added_assocs_for_parent_id(item.id)
       MW::TopologyNetwork.dispatch_added_assocs_for_parent_id(item.id)
       MW::TopologySegment.dispatch_added_assocs_for_parent_id(item.id)
       MW::TopologyRouteLink.dispatch_added_assocs_for_parent_id(item.id)
-      # TODO: Add over/underlays.
     end
 
     # item created in db on queue 'item.id'

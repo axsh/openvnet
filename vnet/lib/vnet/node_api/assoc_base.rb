@@ -8,7 +8,7 @@ module Vnet::NodeApi
       # Send events to load all item assocs for a parent item.
       def dispatch_added_assocs_for_parent_id(parent_id)
         transaction {
-          assoc_class.dataset.where(parent_id_type => parent_id).all { |assoc_model|
+          assoc_dataset.where(parent_id_type => parent_id).all { |assoc_model|
             dispatch_created_item_events(assoc_model)
           }
         }
@@ -24,7 +24,7 @@ module Vnet::NodeApi
         raise NotImplementedError
       end
 
-      def assoc_class
+      def assoc_dataset
         raise NotImplementedError
       end
 
@@ -46,6 +46,7 @@ module Vnet::NodeApi
       # id keys.
       def event_created_hash(map)
         map.to_hash.tap { |params|
+          params[:assoc_id] = params[:id]
           params[:id] = params.delete(parent_id_type)
 
           params.delete(:created_at)
@@ -57,6 +58,7 @@ module Vnet::NodeApi
 
       def event_deleted_hash(map)
         { :id => map[parent_id_type],
+          :assoc_id => map[:id],
           assoc_id_type => map[assoc_id_type]
         }
       end

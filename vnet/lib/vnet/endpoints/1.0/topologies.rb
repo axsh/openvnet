@@ -32,10 +32,9 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/topologies' do
     ['datapath', true],
     ['network', nil],
     ['segment', nil],
-    ['route_link', nil]
-  ].freeze
-
-  TOPOLOGY_ASSOCS.each { |other_name, with_interface|
+    ['route_link', nil],
+    ['mac_range_group', nil],
+  ].each { |other_name, with_interface|
     other_id = "#{other_name}_id".to_sym
     other_uuid = "#{other_name}_uuid".to_sym
     assoc_table = "topology_#{other_name}s".to_sym

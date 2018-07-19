@@ -104,7 +104,7 @@ module Vnet::Core::Interfaces
                              :eth_dst => mac_info[:mac_address],
                            },
                            match_interface: @id,
-                           write_value_pair_flag: true,
+                           write_value_pair_flag: false,
                            write_value_pair_first: ipv4_info[:network_id],
 
                            cookie: cookie)
@@ -116,7 +116,7 @@ module Vnet::Core::Interfaces
                              :eth_dst => MAC_BROADCAST
                            },
                            match_interface: @id,
-                           write_value_pair_flag: true,
+                           write_value_pair_flag: false,
                            write_value_pair_first: ipv4_info[:network_id],
 
                            cookie: cookie)

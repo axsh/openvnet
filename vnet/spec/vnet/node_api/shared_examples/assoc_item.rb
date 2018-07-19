@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-shared_examples 'assoc item on node_api' do |parent_assoc_name|
+shared_examples 'assoc item on node_api' do |parent_assoc_name, extra_model_params = {}|
 
   before(:each) { use_mock_event_handler }
 
@@ -13,7 +13,7 @@ shared_examples 'assoc item on node_api' do |parent_assoc_name|
   let(:model_params) {
     { assoc_id_sym => assoc_model.id,
       parent_id_sym => parent_model.id
-    }
+    }.merge(extra_model_params)
   }
 
   let(:added_event) {

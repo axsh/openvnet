@@ -20,4 +20,7 @@ module Vnet::ModelWrappers
   class TopologyRouteLink < Base
   end
 
+  class TopologyMacRangeGroup < Base
+  end
+
 end

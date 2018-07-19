@@ -29,7 +29,7 @@ describe Vnet::Event::Notifications do
         end
 
         def wait_for_events_done
-          sleep 0.01 while @event_queues.present?
+          sleep 0.01 while @event_queues.present? || @queue_statuses.present?
         end
 
         def find_db_item(id, sleep = false)
@@ -149,21 +149,6 @@ describe Vnet::Event::Notifications do
 
       expect(item_manager.items.size).to eq 0
       expect(item_manager.executed_methods.size).to eq 2
-    end
-
-    it "does not create any item" do
-      item_manager = manager_class.new
-
-      item_manager.db_items.push({ id: 1, name: :foo })
-      notifier.publish("item_created", id: 1)
-
-      item_manager.db_items.delete_if{|i| i[:id] == 1}
-      notifier.publish("item_deleted", id: 1)
-
-      item_manager.wait_for_events_done
-
-      expect(item_manager.items.size).to eq 0
-      expect(item_manager.executed_methods.size).to eq 0
     end
 
     it "handle events correctly" do

@@ -15,7 +15,7 @@ module Vnet
       # destination mac address, which includes all non-virtual
       # networks.
       TABLE_TUNNEL_PORTS = 3
-      TABLE_TUNNEL_IDS = 4
+      TABLE_TUNNEL_IDS   = 4
 
       # For packets explicitly marked as being from the controller.
       #
@@ -32,16 +32,18 @@ module Vnet
       TABLE_INTERFACE_INGRESS_CLASSIFIER = 10
       TABLE_INTERFACE_INGRESS_MAC        = 11
       TABLE_INTERFACE_INGRESS_SEG_IF     = 12
-      TABLE_INTERFACE_INGRESS_NW_IF      = 13
-      TABLE_INTERFACE_INGRESS_ROUTE_LINK = 14
+      TABLE_INTERFACE_INGRESS_SEG_DPSEG  = 13
+      TABLE_INTERFACE_INGRESS_NW_IF      = 14
+      TABLE_INTERFACE_INGRESS_NW_DPNW    = 15
+      TABLE_INTERFACE_INGRESS_ROUTE_LINK = 16
 
       # Handle egress packets from managed interfaces.
-      TABLE_INTERFACE_EGRESS_CLASSIFIER  = 15
-      TABLE_INTERFACE_EGRESS_STATEFUL    = 16
-      TABLE_INTERFACE_EGRESS_FILTER      = 17
-      TABLE_INTERFACE_EGRESS_VALIDATE    = 18
-      TABLE_INTERFACE_EGRESS_ROUTES      = 19
-      TABLE_INTERFACE_EGRESS_MAC         = 20
+      TABLE_INTERFACE_EGRESS_CLASSIFIER  = 17
+      TABLE_INTERFACE_EGRESS_STATEFUL    = 18
+      TABLE_INTERFACE_EGRESS_FILTER      = 19
+      TABLE_INTERFACE_EGRESS_VALIDATE    = 20
+      TABLE_INTERFACE_EGRESS_ROUTES      = 21
+      TABLE_INTERFACE_EGRESS_MAC         = 22
 
       # Initial verification of network/segment id and application of
       # global filtering rules. 
@@ -56,12 +58,9 @@ module Vnet
       # remote metdata flag is the responsibility of the flow that
       # sends the packet to these tables.
 
-      TABLE_SEGMENT_SRC_CLASSIFIER    = 21
-      TABLE_SEGMENT_SRC_MAC_LEARNING  = 22
-
-      TABLE_NETWORK_CONNECTION        = 23
-      TABLE_NETWORK_SRC_CLASSIFIER    = 24
-      TABLE_NETWORK_SRC_MAC_LEARNING  = 25
+      TABLE_SEGMENT_SRC_CLASSIFIER    = 25
+      TABLE_NETWORK_CONNECTION        = 26
+      TABLE_NETWORK_SRC_CLASSIFIER    = 27
 
       # In the transition from TABLE_ROUTER_EGRESS_LOOKUP to
       # TABLE_ROUTE_EGRESS_LOOKUP the packet loses it's metadata flags.

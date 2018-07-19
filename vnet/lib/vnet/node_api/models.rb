@@ -30,12 +30,4 @@ module Vnet::NodeApi
     valid_update_fields []
   end
 
-  class MacRange < LegacyBase
-    valid_update_fields []
-  end
-
-  class MacRangeGroup < LegacyBase
-    valid_update_fields [:allocation_type]
-  end
-
 end

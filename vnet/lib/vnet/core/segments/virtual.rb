@@ -23,63 +23,21 @@ module Vnet::Core::Segments
     def install
       flows = []
       flows << flow_create(table: TABLE_TUNNEL_IDS,
-                           goto_table: TABLE_SEGMENT_SRC_CLASSIFIER,
+                           goto_table: TABLE_INTERFACE_INGRESS_SEG_IF,
                            match: {
                              :tunnel_id => flow_tunnel_id
                            },
                            priority: 20,
-                           write_segment: @id)
+                           write_value_pair_flag: true,
+                           write_value_pair_first: @id)
       flows << flow_create(table: TABLE_SEGMENT_SRC_CLASSIFIER,
                            goto_table: TABLE_SEGMENT_DST_CLASSIFIER,
                            priority: 30,
-                           match_segment: @id)
-      flows << flow_create(table: TABLE_SEGMENT_SRC_CLASSIFIER,
-                           goto_table: TABLE_SEGMENT_SRC_MAC_LEARNING,
-                           priority: 40,
-                           match: {
-                             :eth_type => 0x0806
-                           },
-                           match_remote: true,
                            match_segment: @id)
       flows << flow_create(table: TABLE_SEGMENT_DST_CLASSIFIER,
                            goto_table: TABLE_SEGMENT_DST_MAC_LOOKUP,
                            priority: 30,
                            match_segment: @id)
-
-      if @datapath_info.enable_ovs_learn_action
-        ovs_flows = []
-        ovs_flows << create_ovs_flow_learn_arp(45, "tun_id=0,")
-        ovs_flows << create_ovs_flow_learn_arp(5, "", "load:NXM_NX_TUN_ID[]->NXM_NX_TUN_ID[],")
-        ovs_flows.each { |flow| @dp_info.add_ovs_flow(flow) }
-      else
-        # TODO: How correct is it to just catch broadcast packets?
-        # Perhaps not needed as the packet should be a return packet
-        # so the flow should already have been learned.
-        [ [6, {}],
-          [46, { tunnel_id: 0 }],
-        ].each { |priority, match|
-          flows << flow_create(table: TABLE_SEGMENT_SRC_MAC_LEARNING,
-                               goto_table: TABLE_OUTPUT_DP_TO_CONTROLLER,
-                               priority: priority,
-                               match: {
-                                 :eth_type => 0x0806,
-                                 :eth_dst => MAC_BROADCAST,
-                               }.merge(match),
-                               match_segment: @id)
-        }
-
-        [ [5, {}],
-          [45, { tunnel_id: 0 }],
-        ].each { |priority, match|
-          flows << flow_create(table: TABLE_SEGMENT_SRC_MAC_LEARNING,
-                               priority: priority,
-                               match: match.merge(:eth_type => 0x0806),
-                               match_segment: @id,
-                               actions: {
-                                 :output => OFPP_CONTROLLER
-                               })
-        }
-      end
 
       @dp_info.add_flows(flows)
     end
@@ -97,27 +55,10 @@ module Vnet::Core::Segments
       @dp_info.add_flows(flows)
     end
 
-    def create_ovs_flow_learn_arp(priority, match_options = "", learn_options = "")
-      #
-      # Work around the current limitations of trema / openflow 1.3 using ovs-ofctl directly.
-      #
-      match_md = md_create(segment: @id)
-      learn_md = md_create(segment: @id, local: nil)
-
-      flow_learn_arp = "table=#{TABLE_SEGMENT_SRC_MAC_LEARNING},priority=#{priority},cookie=0x%x,arp,metadata=0x%x/0x%x,#{match_options}actions=" %
-        [@cookie, match_md[:metadata], match_md[:metadata_mask]]
-      flow_learn_arp << "learn(table=%d,cookie=0x%x,idle_timeout=36000,priority=35,metadata:0x%x,NXM_OF_ETH_DST[]=NXM_OF_ETH_SRC[]," %
-        [TABLE_SEGMENT_DST_MAC_LOOKUP, cookie, learn_md[:metadata]]
-
-      flow_learn_arp << learn_options
-
-      flow_learn_arp << "output:NXM_OF_IN_PORT[]),goto_table:%d" % TABLE_SEGMENT_DST_CLASSIFIER
-      flow_learn_arp
-    end
-
     def packet_in(message)
       if @datapath_info.enable_ovs_learn_action
-        error log_format_h('packet_in however enable_ovs_learn_action is true', in_port: message.in_port, eth_dst: message.eth_dst, eth_src: message.eth_src)
+        error log_format_h('packet_in however enable_ovs_learn_action is true',
+                           in_port: message.in_port, eth_dst: message.eth_dst, eth_src: message.eth_src)
         return
       end
 
@@ -145,13 +86,14 @@ module Vnet::Core::Segments
       # match in_port(?). The hard_timeout would still be required in
       # the case that the dst_mac_lookup flow times out.
 
-      flows << flow_create(table: TABLE_SEGMENT_SRC_MAC_LEARNING,
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_SEG_DPSEG,
                            goto_table: TABLE_SEGMENT_DST_CLASSIFIER,
                            priority: 60,
                            idle_timeout: 60,
                            hard_timeout: 600,
                            match: {
                              :in_port => message.in_port,
+                             :eth_type => 0x0806,
                              :eth_src => message.eth_src
                            },
                            match_segment: @id)
@@ -165,7 +107,7 @@ module Vnet::Core::Segments
       case message.table_id
       when TABLE_OUTPUT_DP_TO_CONTROLLER
         message.match.in_port = OFPP_CONTROLLER
-      when TABLE_SEGMENT_SRC_MAC_LEARNING
+      when TABLE_INTERFACE_INGRESS_SEG_DPSEG
       else
         warn log_format("packet in from wrong table", message.inspect)
       end
