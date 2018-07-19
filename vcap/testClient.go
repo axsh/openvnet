@@ -52,18 +52,19 @@ func main() {
 		DecodeProtocolData bool          `json:"DecodeProtocolData,omitempty"`
 	}{
 		{
-			Handle:             nil, // zero value is ignored
-			Filter:             "icmp",
-			SnapshotLen:        1538,
-			Promiscuous:        false, // zero value is ignored
-			Timeout:            30 * time.Second,
-			Limit:              100,
-			IfaceToRead:        "en3",
-			ReadFile:           "",    // zero value is ignored
-			WriteFile:          "",    // zero value is ignored
-			SendRawPacket:      false, // zero value is ignored
-			DecodePacket:       true,
-			DecodeProtocolData: true,
+			Handle: nil, // zero value is ignored
+			Filter: "icmp",
+			// Filter:             "eth",
+			SnapshotLen:   1538,
+			Promiscuous:   false, // zero value is ignored
+			Timeout:       30 * time.Second,
+			Limit:         100,
+			IfaceToRead:   "en3",
+			ReadFile:      "",    // zero value is ignored
+			WriteFile:     "",    // zero value is ignored
+			SendRawPacket: false, // zero value is ignored
+			DecodePacket:  true,
+			// DecodeProtocolData: true,
 		},
 		// {
 		// 	Filter:             "icmp",

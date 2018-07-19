@@ -46,6 +46,39 @@ type Vpacket struct {
 	DecodeProtocolData bool
 }
 
+type RawTcpIpPacket struct {
+	Metadata  gopacket.PacketMetadata `json:"metadata,omitempty"`
+	Link      []byte                  `json:"link,omitempty"`
+	Network   []byte                  `json:"network,omitempty"`
+	Transport []byte                  `json:"transport,omitempty"`
+	Payload   []byte                  `json:"payload,omitempty"`
+}
+
+type DecodedTcpIpPacket struct {
+	Metadata  gopacket.PacketMetadata `json:"metadata,omitempty"`
+	Link      gopacket.Layer          `json:"link,omitempty"`
+	Network   gopacket.Layer          `json:"network,omitempty"`
+	Transport gopacket.Layer          `json:"transport,omitempty"`
+	Payload   []byte                  `json:"payload,omitempty"`
+}
+
+func (p *DecodedTcpIpPacket) findPayload(packet gopacket.Packet) {
+	if packet.ApplicationLayer() != nil {
+		p.Payload = packet.ApplicationLayer().LayerContents()
+	} else if p.Transport != nil {
+		p.Payload = p.Transport.LayerPayload()
+	} else if p.Network != nil {
+		p.Payload = p.Network.LayerPayload()
+	}
+	if len(p.Payload) == 0 {
+		if p.Link != nil {
+			p.Payload = p.Link.LayerPayload()
+		} else {
+			p.Payload = packet.Data()
+		}
+	}
+}
+
 func find() {
 	// Find all ifaces
 	ifaces, err := pcap.FindAllDevs()
@@ -66,55 +99,45 @@ func find() {
 }
 
 // TODO: find start and stop session packets -- not sure how to do this yet...
+// some sort of filter surely...don't call me Shirly :-)
 
 // generalDecode decodes into 4 layers corresponding with the tcp/ip layering
 // scheme (similar to OSI layers 2,3,4, and 7). Because this generalized
 // solution can't preallocate memory, it is substantially slower (at least an
 // order of magnitude) than the "efficientDecode" function. As such, it should
 // only be used as a fallback for protocols not covered by the efficientDecode
-// decoder.
-func (vp *Vpacket) generalDecode(packet gopacket.Packet, j *[]byte) {
-	var (
-		// err can't be assigned as normal without also assigning j
-		err     error
-		temp    []byte
-		newline = byte('\n')
-	)
+// decoder. This decoder should work on anything with a standardized link layer,
+// but for packets lacking this, the raw packet data will be returned instead.
+func (vp *Vpacket) generalDecode(packet gopacket.Packet, j *[]byte) error {
+	// err can't be assigned as normal without also assigning a local j
+	var err error
 
-	fmt.Println("testdecode")
-
-	addLayer := func(b []byte, j *[]byte) {
-		if len(*j) != 0 {
-			*j = append(*j, newline)
-			temp, err = json.Marshal(b)
-			*j = append(*j, temp...)
-		} else {
-			*j, err = json.Marshal(b)
+	dpkt := DecodedTcpIpPacket{
+		Metadata:  *packet.Metadata(),
+		Link:      packet.LinkLayer(),
+		Network:   packet.NetworkLayer(),
+		Transport: packet.TransportLayer(),
+	}
+	dpkt.findPayload(packet)
+	if !vp.DecodeProtocolData {
+		pkt := RawTcpIpPacket{
+			Metadata: *packet.Metadata(),
+			Payload:  dpkt.Payload,
 		}
-		utils.ReturnErr(err)
+		if packet.LinkLayer() != nil {
+			pkt.Link = packet.LinkLayer().LayerContents()
+		}
+		if packet.NetworkLayer() != nil {
+			pkt.Network = packet.NetworkLayer().LayerContents()
+		}
+		if packet.TransportLayer() != nil {
+			pkt.Transport = packet.TransportLayer().LayerContents()
+		}
+		*j, err = json.Marshal(&pkt)
+	} else {
+		*j, err = json.Marshal(&dpkt)
 	}
-	// Run asynchronously so that packets aren't missed or truncated
-	// utils.LimitedGo(func() {
-	if packet.LinkLayer() != nil {
-		addLayer(packet.LinkLayer().LayerContents(), j)
-		fmt.Println("link:", string(*j))
-	}
-	if packet.NetworkLayer() != nil {
-		addLayer(packet.NetworkLayer().LayerContents(), j)
-		fmt.Println("network:", string(*j))
-	}
-	if packet.TransportLayer() != nil {
-		addLayer(packet.TransportLayer().LayerContents(), j)
-		fmt.Println("transport:", string(*j))
-	}
-	if packet.ApplicationLayer() != nil {
-		addLayer(packet.ApplicationLayer().LayerContents(), j)
-		addLayer(packet.ApplicationLayer().LayerPayload(), j)
-		fmt.Println("application:", string(*j))
-	}
-	fmt.Println("total:", string(*j))
-	// fmt.Println("metadata:", packet.Metadata())
-	// })
+	return err
 }
 
 // TODO: think of something more generic and flexible than a tcp restriction
@@ -462,16 +485,16 @@ func (vp *Vpacket) DoPcap(reqMsg []byte, ws *wsoc.Con) {
 
 		if vp.DecodePacket {
 			utils.LimitedGo(func() {
-				var j *[]byte
-				if err := vp.efficientDecode(packet, j); err != nil {
+				j := []byte{}
+				if err := vp.efficientDecode(packet, &j); err != nil {
 					if !strings.Contains(err.Error(), "No decoder for layer type") {
 						utils.ReturnErr(err)
 					}
+					vp.generalDecode(packet, &j)
 					fmt.Println()
-					vp.generalDecode(packet, j)
 				}
-				fmt.Println(*j)
-				ws.Out <- *j
+				fmt.Println(string(j))
+				ws.Out <- j
 			})
 		}
 
