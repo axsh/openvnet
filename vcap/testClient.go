@@ -11,6 +11,7 @@ import (
 
 	"github.com/axsh/openvnet/vcap/vpcap"
 	"github.com/axsh/openvnet/vcap/wsoc"
+	"github.com/google/gopacket/pcap"
 	"github.com/gorilla/websocket"
 )
 
@@ -35,14 +36,44 @@ func main() {
 	ws.ThrowErr(err, "upgrade:")
 	ws.ReadData()
 	ws.WriteData()
-	j, err := json.Marshal(vpcap.Vpacket{
-		IfaceToRead:        "en3",
-		Filter:             "icmp",
-		DecodePacket:       true,
-		DecodeProtocolData: true,
-		SnapshotLen:        1538,
-		Timeout:            30 * time.Second,
-		Limit:              100,
+	j, err := json.Marshal([]struct {
+		*vpcap.Vpacket
+		Handle             *pcap.Handle  `json:"Handle,omitempty"`
+		Filter             string        `json:"Filter,omitempty"`
+		SnapshotLen        int32         `json:"SnapshotLen,omitempty"`
+		Promiscuous        bool          `json:"Promiscuous,omitempty"`
+		Timeout            time.Duration `json:"Timeout,omitempty"`
+		Limit              int           `json:"Limit,omitempty"`
+		IfaceToRead        string        `json:"IfaceToRead,omitempty"`
+		ReadFile           string        `json:"ReadFile,omitempty"`
+		WriteFile          string        `json:"WriteFile,omitempty"`
+		SendRawPacket      bool          `json:"SendRawPacket,omitempty"`
+		DecodePacket       bool          `json:"DecodePacket,omitempty"`
+		DecodeProtocolData bool          `json:"DecodeProtocolData,omitempty"`
+	}{
+		{
+			Handle:             nil, // zero value is ignored
+			Filter:             "icmp",
+			SnapshotLen:        1538,
+			Promiscuous:        false, // zero value is ignored
+			Timeout:            30 * time.Second,
+			Limit:              100,
+			IfaceToRead:        "en3",
+			ReadFile:           "",    // zero value is ignored
+			WriteFile:          "",    // zero value is ignored
+			SendRawPacket:      false, // zero value is ignored
+			DecodePacket:       true,
+			DecodeProtocolData: true,
+		},
+		// {
+		// 	Filter:             "icmp",
+		// 	SnapshotLen:        1538,
+		// 	Timeout:            30 * time.Second,
+		// 	Limit:              100,
+		// 	IfaceToRead:        "vboxnet0",
+		// 	DecodePacket:       true,
+		// 	DecodeProtocolData: true,
+		// },
 	})
 	if err != nil {
 		log.Println("marshal:", err)
@@ -53,23 +84,13 @@ func main() {
 	signal.Notify(interrupt, os.Interrupt)
 	go func() {
 		for {
-			select {
-			case <-interrupt:
-				return
-			default:
-				log.Println("received:", string(<-ws.In))
-			}
+			log.Println("received:", string(<-ws.In))
 		}
 	}()
 	go func() {
 		for {
-			select {
-			case <-interrupt:
-				return
-			default:
-				ws.Out <- j
-				time.Sleep(10 * time.Second)
-			}
+			ws.Out <- j
+			time.Sleep(10 * time.Second)
 		}
 	}()
 

@@ -28,8 +28,6 @@ const (
 )
 
 type Vpacket struct {
-	// *gopacket.Packet
-
 	Handle *pcap.Handle
 
 	Filter      string
@@ -75,40 +73,48 @@ func find() {
 // order of magnitude) than the "efficientDecode" function. As such, it should
 // only be used as a fallback for protocols not covered by the efficientDecode
 // decoder.
-func (vp *Vpacket) generalDecode(packet gopacket.Packet) {
+func (vp *Vpacket) generalDecode(packet gopacket.Packet, j *[]byte) {
+	var (
+		// err can't be assigned as normal without also assigning j
+		err     error
+		temp    []byte
+		newline = byte('\n')
+	)
+
+	fmt.Println("testdecode")
+
+	addLayer := func(b []byte, j *[]byte) {
+		if len(*j) != 0 {
+			*j = append(*j, newline)
+			temp, err = json.Marshal(b)
+			*j = append(*j, temp...)
+		} else {
+			*j, err = json.Marshal(b)
+		}
+		utils.ReturnErr(err)
+	}
 	// Run asynchronously so that packets aren't missed or truncated
-	utils.LimitedGo(func() {
-		if packet.LinkLayer() != nil {
-			j, err := json.Marshal(packet.LinkLayer().LayerContents())
-			utils.ReturnErr(err)
-			// ws.WriteData(j)
-			fmt.Println()
-			fmt.Println("link layer:")
-			fmt.Println(string(j))
-		}
-		if packet.NetworkLayer() != nil {
-			j, err := json.Marshal(packet.NetworkLayer().LayerContents())
-			utils.ReturnErr(err)
-			fmt.Println()
-			fmt.Println("network layer:")
-			fmt.Println(string(j))
-		}
-		if packet.TransportLayer() != nil {
-			j, err := json.Marshal(packet.TransportLayer().LayerContents())
-			utils.ReturnErr(err)
-			fmt.Println()
-			fmt.Println("transport layer:")
-			fmt.Println(string(j))
-		}
-		if packet.ApplicationLayer() != nil {
-			j, err := json.Marshal(packet.ApplicationLayer())
-			utils.ReturnErr(err)
-			fmt.Println()
-			fmt.Println("application layer:")
-			fmt.Println(string(j))
-		}
-		fmt.Println("metadata:", packet.Metadata())
-	})
+	// utils.LimitedGo(func() {
+	if packet.LinkLayer() != nil {
+		addLayer(packet.LinkLayer().LayerContents(), j)
+		fmt.Println("link:", string(*j))
+	}
+	if packet.NetworkLayer() != nil {
+		addLayer(packet.NetworkLayer().LayerContents(), j)
+		fmt.Println("network:", string(*j))
+	}
+	if packet.TransportLayer() != nil {
+		addLayer(packet.TransportLayer().LayerContents(), j)
+		fmt.Println("transport:", string(*j))
+	}
+	if packet.ApplicationLayer() != nil {
+		addLayer(packet.ApplicationLayer().LayerContents(), j)
+		addLayer(packet.ApplicationLayer().LayerPayload(), j)
+		fmt.Println("application:", string(*j))
+	}
+	fmt.Println("total:", string(*j))
+	// fmt.Println("metadata:", packet.Metadata())
+	// })
 }
 
 // TODO: think of something more generic and flexible than a tcp restriction
@@ -149,7 +155,7 @@ func (vp *Vpacket) createAndSendTCPpacket(rawBytes []byte) {
 	// but that requires it to have an ethernet layer
 }
 
-func (vp *Vpacket) efficientDecode(packet gopacket.Packet) error {
+func (vp *Vpacket) efficientDecode(packet gopacket.Packet, j *[]byte) error {
 	// TODO: Continue adding layers and change the "fmt.Println" tests to
 	// conditional struct setting for returning api calls
 	// layers to consider adding:
@@ -251,13 +257,10 @@ func (vp *Vpacket) efficientDecode(packet gopacket.Packet) error {
 
 		case layers.LayerTypeEthernet:
 			// eth.Payload = nil
-			var (
-				j   []byte
-				err error
-			)
+			var err error
 			// Either send Contents, or send the other fields -- not both as they contain the same data
 			if vp.DecodeProtocolData {
-				j, err = json.Marshal(struct {
+				*j, err = json.Marshal(struct {
 					*layers.Ethernet
 					Contents bool `json:"Contents,omitempty"`
 					Payload  bool `json:"Payload,omitempty"`
@@ -265,12 +268,10 @@ func (vp *Vpacket) efficientDecode(packet gopacket.Packet) error {
 					Ethernet: &eth,
 				})
 			} else {
-				j, err = json.Marshal(eth.Contents)
+				*j, err = json.Marshal(eth.Contents)
 			}
 			utils.ReturnErr(err)
-			// TODO: decide on how to send this back to ws.Out <- j
-			// -- probably just pass in a pointer to j
-			fmt.Println(string(j))
+			// fmt.Println(string(*j))
 
 		// 	// fmt.Println("Eth", eth.SrcMAC, eth.DstMAC)
 		// 	// if eth.EthernetType == layers.EthernetTypeLLC {
@@ -446,30 +447,32 @@ func (vp *Vpacket) DoPcap(reqMsg []byte, ws *wsoc.Con) {
 		utils.ReturnErr(err)
 		defer f.Close()
 		w = pcapgo.NewWriter(f)
-		// w.WriteFileHeader(uint32(vp.SnapshotLen), layers.LinkTypeEthernet)
 		w.WriteFileHeader(uint32(vp.SnapshotLen), vp.Handle.LinkType())
 	}
 
+	fmt.Println(vp.Handle)
 	packetCount := 0
 	for packet := range gopacket.NewPacketSource(vp.Handle, vp.Handle.LinkType()).Packets() {
-		// Run asynchronously so new packets don't get blocked.
 		if vp.SendRawPacket {
-			ws.Out <- packet.Data()
+			utils.LimitedGo(func() { ws.Out <- packet.Data() })
 		}
 		if vp.WriteFile != "" {
 			utils.LimitedGo(func() { w.WritePacket(packet.Metadata().CaptureInfo, packet.Data()) })
 		}
 
 		if vp.DecodePacket {
-			// TODO: do something more sensible than passing "decodeProtocolData" in as a variable...
-			// TODO: for large packets or fast traffic, this should be in parallel -- also consider reading several ifaces in parallel from the same api call...
-			if err := vp.efficientDecode(packet); err != nil {
-				if !strings.Contains(err.Error(), "No decoder for layer type") {
-					utils.ReturnErr(err)
+			utils.LimitedGo(func() {
+				var j *[]byte
+				if err := vp.efficientDecode(packet, j); err != nil {
+					if !strings.Contains(err.Error(), "No decoder for layer type") {
+						utils.ReturnErr(err)
+					}
+					fmt.Println()
+					vp.generalDecode(packet, j)
 				}
-				fmt.Println()
-				vp.generalDecode(packet)
-			}
+				fmt.Println(*j)
+				ws.Out <- *j
+			})
 		}
 
 		// Only capture to vp.Limit and then stop

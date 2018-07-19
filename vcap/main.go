@@ -9,6 +9,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -20,12 +21,22 @@ import (
 func pcapApi(w http.ResponseWriter, r *http.Request) {
 	ws := wsoc.NewWS(w, r)
 	for msg := range ws.In {
+		fmt.Println(string(msg))
 		utils.LimitedGo(func() {
-			var vp vpcap.Vpacket
-			json.Unmarshal(msg, &vp)
-			log.Println("received message:", vp)
-			//TODO: check the msg before DoPcap
-			vp.DoPcap(msg, &ws)
+			var vps []vpcap.Vpacket
+			json.Unmarshal(msg, &vps)
+			// var vp vpcap.Vpacket
+			// json.Unmarshal(msg, &vp)
+			for _, vp := range vps {
+				log.Println("received message:", vp)
+				//TODO: can't close over vp in anonymous func as argument to LimitedGo
+				// -- find a workaround or allow utils.LimitedGo to pass in args
+				// go func(vp vpcap.Vpacket) {
+				//TODO: check the msg before DoPcap
+				vp.DoPcap(msg, &ws)
+				// }(vp)
+				// vp.DoPcap(msg, &ws)
+			}
 		})
 	}
 }
