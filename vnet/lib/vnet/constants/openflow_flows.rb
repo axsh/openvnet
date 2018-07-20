@@ -21,8 +21,7 @@ module Vnet
       #
       # Some packets are handed to the controller after modifications,
       # and as such can't be handled again by the classifier in the
-      # normal fashion. The in_port is explicitly set to
-      # OFPP_CONTROLLER.
+      # normal fashion. The in_port is explicitly set to :controller.
       TABLE_CONTROLLER_PORT  = 5
       TABLE_LOCAL_PORT       = 6
       TABLE_PROMISCUOUS_PORT = 7

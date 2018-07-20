@@ -37,7 +37,7 @@ module Vnet::Core::Networks
 
       # Include port LOCAL until we implement interfaces for local eth
       # ports.
-      local_actions << { :output => OFPP_LOCAL }
+      local_actions << { :output => :local }
 
       flows = []
       flows << flow_create(table: TABLE_FLOOD_LOCAL,

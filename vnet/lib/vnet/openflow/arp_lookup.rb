@@ -25,7 +25,7 @@ module Vnet::Openflow
                            },
                            match_interface: @arp_lookup[:interface_id],
                            actions: {
-                             :output => Controller::OFPP_CONTROLLER
+                             :output => :controller
                            },
                            cookie: @arp_lookup[:reply_cookie])
     end
@@ -59,7 +59,7 @@ module Vnet::Openflow
                              match_network: ipv4_info[:network_id],
                              match_not_no_controller: true,
                              actions: {
-                               :output => Controller::OFPP_CONTROLLER
+                               :output => :controller
                              },
                              cookie: @arp_lookup[:lookup_cookie])
       }
@@ -301,7 +301,7 @@ module Vnet::Openflow
                          attempts: params[:attempts])
 
       packet_arp_out({ :out_port => OFPP_TABLE,
-                       :in_port => OFPP_CONTROLLER,
+                       :in_port => :controller,
                        :eth_src => params[:interface_mac],
                        :op_code => Racket::L3::ARP::ARPOP_REQUEST,
                        :sha => params[:interface_mac],
@@ -390,14 +390,14 @@ module Vnet::Openflow
       return if messages.nil?
 
       messages.each { |message|
-        # Set the in_port to OFPP_CONTROLLER since the packets stored
+        # Set the in_port to :controller since the packets stored
         # have already been processed by TABLE_CLASSIFIER to
         # TABLE_ARP_LOOKUP, and as such no longer match the fields
         # required by the old in_port.
         #
         # The route link is identified by eth_dst, which was set in
         # TABLE_ROUTER_LINK prior to be sent to the controller.
-        message[:message].match.in_port = OFPP_CONTROLLER
+        message[:message].match.in_port = :controller
 
         @dp_info.send_packet_out(message[:message], OFPP_TABLE)
       }

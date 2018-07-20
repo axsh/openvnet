@@ -118,7 +118,7 @@ module Vnet::Core::Interfaces
         return if mac_info.nil? || ipv4_info.nil?
 
         packet_arp_out({ :out_port => message.in_port,
-                         :in_port => OFPP_CONTROLLER,
+                         :in_port => :controller,
                          :eth_src => mac_info[:mac_address],
                          :eth_dst => message.eth_src,
                          :op_code => Racket::L3::ARP::ARPOP_REPLY,
@@ -179,7 +179,7 @@ module Vnet::Core::Interfaces
                            },
                            match_interface: @id,
                            actions: {
-                             :output => Vnet::Openflow::Controller::OFPP_CONTROLLER
+                             :output => :controller
                            },
                            cookie: self.cookie_for_tag(TAG_ARP_REQUEST_INTERFACE))
       flows << flow_create(table: TABLE_OUT_PORT_INTERFACE_INGRESS,
@@ -191,7 +191,7 @@ module Vnet::Core::Interfaces
                            },
                            match_interface: @id,
                            actions: {
-                             :output => Vnet::Openflow::Controller::OFPP_CONTROLLER
+                             :output => :controller
                            },
                            cookie: self.cookie_for_tag(TAG_ICMP_REQUEST))
     end

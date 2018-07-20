@@ -257,7 +257,7 @@ module Vnet::Core::Datapaths
                            match_segment: dpg_map[:segment_id],
                            actions: {
                              :eth_dst => dpg_map[:mac_address],
-                             :output => OFPP_CONTROLLER
+                             :output => :controller
                            },
                            cookie: flow_cookie)
 

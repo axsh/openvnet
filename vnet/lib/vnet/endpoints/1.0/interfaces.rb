@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-require 'trema/mac'
-
 Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   def self.put_post_shared_params
     param_uuid M::Datapath, :owner_datapath_uuid

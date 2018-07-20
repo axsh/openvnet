@@ -158,14 +158,14 @@ module Vnet::Openflow
                            goto_table: TABLE_LOCAL_PORT,
                            priority: 2,
                            match: {
-                             :in_port => OFPP_LOCAL
+                             in_port: :local
                            },
                            write_local: true)
       flows << flow_create(table: TABLE_CLASSIFIER,
                            goto_table: TABLE_CONTROLLER_PORT,
                            priority: 2,
                            match: {
-                             :in_port => OFPP_CONTROLLER
+                             in_port: :controller
                            },
                            write_local: true,
                            write_no_controller: true)
@@ -179,7 +179,7 @@ module Vnet::Openflow
                              priority: 1,
 
                              actions: {
-                               output: OFPP_CONTROLLER
+                               output: :controller
                              },
 
                              cookie: cookie_type | COOKIE_DYNAMIC_LOAD_MASK)

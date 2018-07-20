@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
-#require 'trema'
+require 'trema'
 
 module Vnet::Openflow
-
   class Command < Trema::Command
     include Celluloid::Logger
 

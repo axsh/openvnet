@@ -29,7 +29,7 @@ module Vnet::Core::Services
                            },
                            match_interface: @interface_id,
                            actions: {
-                             :output => Vnet::Openflow::Controller::OFPP_CONTROLLER
+                             :output => :controller
                            })
 
       @dp_info.add_flows(flows)
@@ -191,7 +191,7 @@ module Vnet::Core::Services
 
     def find_client_infos(port_number, server_mac_info, server_ipv4_info)
       case port_number
-      when OFPP_LOCAL
+      when :local
         find_local_interface(port_number, server_mac_info, server_ipv4_info)
       else
         find_client_interface(port_number, server_mac_info, server_ipv4_info)

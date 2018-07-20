@@ -33,7 +33,7 @@ module Vnet::Core::Networks
 
       # Include port LOCAL until we implement interfaces for local eth
       # ports.
-      local_actions << { :output => OFPP_LOCAL }
+      local_actions << { :output => :local }
 
       # TODO: Require matching IPv4? Probably do it in TABLE_NETWORK_DST_MAC_LOOKUP.
 

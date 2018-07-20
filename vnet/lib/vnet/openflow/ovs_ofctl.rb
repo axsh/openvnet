@@ -116,7 +116,7 @@ module Vnet::Openflow
             when :no_receive then 'no-receive'
             end
 
-      port_no = get_bridge_name(@dpid) if port_no == Controller::OFPP_LOCAL
+      port_no = get_bridge_name(@dpid) if port_no == :local
 
       system("#{@ovs_ofctl_10} mod-port #{switch_name} #{port_no} #{arg}")
     end

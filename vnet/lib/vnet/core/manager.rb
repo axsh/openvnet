@@ -46,7 +46,7 @@ module Vnet::Core
 
       messages.each { |message|
         packet = message[:message]
-        packet.match.in_port = OFPP_CONTROLLER
+        packet.match.in_port = :controller
         packet.match.eth_src = mac_address
 
         @dp_info.send_packet_out(packet, OFPP_TABLE)

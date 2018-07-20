@@ -47,7 +47,7 @@ module Vnet::Core::Interfaces
                            priority: 10,
                            match_interface: @id,
                            actions: {
-                             :output => OFPP_LOCAL
+                             :output => :local
                            })
     end
 

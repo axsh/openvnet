@@ -235,7 +235,7 @@ module Vnet::Core::Filters
         when 'conn'
           flows << flow_create(flow_base.merge(table: TABLE_INTERFACE_EGRESS_FILTER,
                                                match: egress_rule,
-                                               actions: { output: Vnet::Openflow::Controller::OFPP_CONTROLLER }))
+                                               actions: { output: :controller }))
         when 'pass'
           flows << flow_create(flow_base.merge(table: TABLE_INTERFACE_INGRESS_FILTER,
                                                goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
