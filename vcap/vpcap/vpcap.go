@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"reflect"
 	"strings"
 	"time"
 
@@ -43,6 +44,12 @@ type Vpacket struct {
 	DecodeProtocolData bool          `json:"DecodeProtocolData,omitempty"`
 }
 
+type DecodedLayer struct {
+	*layers.BaseLayer
+	Contents bool `json:"Contents,omitempty"`
+	Payload  bool `json:"Payload,omitempty"`
+}
+
 type RawTcpIpPacket struct {
 	Metadata  gopacket.PacketMetadata `json:"metadata,omitempty"`
 	Link      []byte                  `json:"link,omitempty"`
@@ -59,20 +66,47 @@ type DecodedTcpIpPacket struct {
 	Payload   []byte                  `json:"payload,omitempty"`
 }
 
-func (p *DecodedTcpIpPacket) findPayload(packet gopacket.Packet) {
+func (p *DecodedTcpIpPacket) setPayload(packet gopacket.Packet) {
 	if packet.ApplicationLayer() != nil {
 		p.Payload = packet.ApplicationLayer().LayerContents()
-	} else if p.Transport != nil {
-		p.Payload = p.Transport.LayerPayload()
-	} else if p.Network != nil {
-		p.Payload = p.Network.LayerPayload()
+	} else if packet.TransportLayer() != nil {
+		p.Payload = packet.TransportLayer().LayerPayload()
+	} else if packet.NetworkLayer() != nil {
+		p.Payload = packet.NetworkLayer().LayerPayload()
 	}
 	if len(p.Payload) == 0 {
-		if p.Link != nil {
-			p.Payload = p.Link.LayerPayload()
+		if packet.LinkLayer() != nil {
+			p.Payload = packet.LinkLayer().LayerPayload()
 		} else {
 			p.Payload = packet.Data()
 		}
+	}
+}
+
+func setZeroVal(v reflect.Value) {
+	if v.IsValid() && v.CanSet() {
+		v.Set(reflect.Zero(v.Type()))
+	}
+}
+
+func setNoJSON(t reflect.Type) {
+
+}
+
+func (p *DecodedTcpIpPacket) dedupe() {
+	if p.Link != nil {
+		// setZeroVal(reflect.ValueOf(p.Link).Elem().FieldByName("Payload"))
+		typ, _ := reflect.TypeOf(p.Link).Elem().FieldByName("Payload")
+		typ.Tag = `json:"-"`
+		setZeroVal(reflect.ValueOf(p.Link).Elem().FieldByName("Contents"))
+	}
+	if p.Network != nil {
+		setZeroVal(reflect.ValueOf(p.Network).Elem().FieldByName("Payload"))
+		setZeroVal(reflect.ValueOf(p.Network).Elem().FieldByName("Contents"))
+	}
+	if p.Transport != nil {
+		setZeroVal(reflect.ValueOf(p.Transport).Elem().FieldByName("Payload"))
+		setZeroVal(reflect.ValueOf(p.Transport).Elem().FieldByName("Contents"))
 	}
 }
 
@@ -95,8 +129,7 @@ func find() {
 	}
 }
 
-// TODO: find start and stop session packets -- not sure how to do this yet...
-// some sort of filter surely...don't call me Shirly :-)
+// TODO: set up filter templates to find start and stop session packets
 
 // generalDecode decodes into 4 layers corresponding with the tcp/ip layering
 // scheme (similar to OSI layers 2,3,4, and 7). Because this generalized
@@ -109,29 +142,33 @@ func (vp *Vpacket) generalDecode(packet gopacket.Packet, j *[]byte) error {
 	// err can't be assigned as normal without also assigning a local j
 	var err error
 
+	// TODO: stop sending contents and payload for each layer when
+	// vp.DecodeProtocolData is true -- it is duplicate data
+	// (when it exists)
 	dpkt := DecodedTcpIpPacket{
 		Metadata:  *packet.Metadata(),
 		Link:      packet.LinkLayer(),
 		Network:   packet.NetworkLayer(),
 		Transport: packet.TransportLayer(),
 	}
-	dpkt.findPayload(packet)
+	dpkt.setPayload(packet)
 	if !vp.DecodeProtocolData {
-		pkt := RawTcpIpPacket{
+		rpkt := RawTcpIpPacket{
 			Metadata: *packet.Metadata(),
 			Payload:  dpkt.Payload,
 		}
 		if packet.LinkLayer() != nil {
-			pkt.Link = packet.LinkLayer().LayerContents()
+			rpkt.Link = packet.LinkLayer().LayerContents()
 		}
 		if packet.NetworkLayer() != nil {
-			pkt.Network = packet.NetworkLayer().LayerContents()
+			rpkt.Network = packet.NetworkLayer().LayerContents()
 		}
 		if packet.TransportLayer() != nil {
-			pkt.Transport = packet.TransportLayer().LayerContents()
+			rpkt.Transport = packet.TransportLayer().LayerContents()
 		}
-		*j, err = json.Marshal(&pkt)
+		*j, err = json.Marshal(&rpkt)
 	} else {
+		dpkt.dedupe()
 		*j, err = json.Marshal(&dpkt)
 	}
 	return err
