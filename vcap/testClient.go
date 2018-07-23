@@ -37,9 +37,8 @@ func main() {
 	ws.WriteData()
 	j, err := json.Marshal([]vpcap.Vpacket{
 		{
-			Handle: nil, // zero value is ignored
-			Filter: "icmp",
-			// Filter:             "eth",
+			// Filter: "icmp",
+			Filter:             "eth",
 			SnapshotLen:        1538,
 			Promiscuous:        false, // zero value is ignored
 			Timeout:            30 * time.Second,
@@ -51,15 +50,15 @@ func main() {
 			DecodePacket:       true,
 			DecodeProtocolData: true,
 		},
-		// {
-		// 	Filter:             "icmp",
-		// 	SnapshotLen:        1538,
-		// 	Timeout:            30 * time.Second,
-		// 	Limit:              100,
-		// 	IfaceToRead:        "vboxnet0",
-		// 	DecodePacket:       true,
-		// 	DecodeProtocolData: true,
-		// },
+		{
+			Filter:             "icmp",
+			SnapshotLen:        1538,
+			Timeout:            30 * time.Second,
+			Limit:              100,
+			IfaceToRead:        "vboxnet0",
+			DecodePacket:       true,
+			DecodeProtocolData: true,
+		},
 	})
 	if err != nil {
 		log.Println("marshal:", err)
@@ -70,7 +69,8 @@ func main() {
 	signal.Notify(interrupt, os.Interrupt)
 	go func() {
 		for {
-			log.Println("received:", string(<-ws.In))
+			msg := <-ws.In
+			log.Println("received:", string(msg))
 		}
 	}()
 	go func() {

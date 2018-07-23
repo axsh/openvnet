@@ -29,8 +29,9 @@ const (
 
 type Con struct {
 	*websocket.Conn
-	In  chan []byte
-	Out chan []byte
+	In       chan []byte
+	Out      chan []byte
+	IsClosed bool
 }
 
 func (ws *Con) ThrowErr(err error, msg ...string) {
@@ -49,7 +50,12 @@ func (ws *Con) ThrowErr(err error, msg ...string) {
 // at any given time.
 func (ws *Con) ReadData() {
 	utils.LimitedGo(func() {
-		defer ws.Close()
+		defer func() {
+			if err := ws.Close(); err != nil {
+				log.Println(err)
+			}
+			ws.IsClosed = true
+		}()
 
 		// ws.SetReadLimit(maxMessageSize)
 		ws.SetReadDeadline(time.Now().Add(pongWait))
@@ -57,9 +63,9 @@ func (ws *Con) ReadData() {
 		for {
 			_, message, err := ws.ReadMessage()
 			if err != nil {
-				if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-					log.Printf("error: %v", err)
-				}
+				log.Printf("error: %v", err)
+				// if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				// }
 				break
 			}
 			ws.In <- message
@@ -76,7 +82,10 @@ func (ws *Con) WriteData() {
 		ticker := time.NewTicker(pingPeriod)
 		defer func() {
 			ticker.Stop()
-			ws.Close()
+			if err := ws.Close(); err != nil {
+				log.Println(err)
+			}
+			ws.IsClosed = true
 		}()
 		for {
 			select {
@@ -90,6 +99,7 @@ func (ws *Con) WriteData() {
 
 				w, err := ws.NextWriter(websocket.TextMessage)
 				if err != nil {
+					log.Println(err)
 					return
 				}
 				w.Write(message)
@@ -101,11 +111,13 @@ func (ws *Con) WriteData() {
 				}
 
 				if err := w.Close(); err != nil {
+					log.Println(err)
 					return
 				}
 			case <-ticker.C:
 				ws.SetWriteDeadline(time.Now().Add(writeWait))
 				if err := ws.WriteMessage(websocket.PingMessage, nil); err != nil {
+					log.Println(err)
 					return
 				}
 			}
@@ -114,7 +126,7 @@ func (ws *Con) WriteData() {
 }
 
 // NewWS returns a new Con object with read and write chans already initialized
-func NewWS(w http.ResponseWriter, r *http.Request) Con {
+func NewWS(w http.ResponseWriter, r *http.Request) *Con {
 	upgrader := websocket.Upgrader{}
 	wsC, err := upgrader.Upgrade(w, r, nil)
 	ws := Con{
@@ -129,5 +141,5 @@ func NewWS(w http.ResponseWriter, r *http.Request) Con {
 	ws.ReadData()
 	ws.WriteData()
 
-	return ws
+	return &ws
 }

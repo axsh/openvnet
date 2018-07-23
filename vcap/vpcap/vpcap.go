@@ -1,22 +1,19 @@
 package vpcap
 
 import (
-	"encoding/json"
 	"fmt"
-	"net"
 	"os"
-	"reflect"
 	"strings"
 	"time"
 
 	"github.com/axsh/openvnet/vcap/utils"
 	"github.com/axsh/openvnet/vcap/wsoc"
 	"github.com/google/gopacket"
-	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
 	"github.com/google/gopacket/pcapgo"
 )
 
+// standard packet sizes
 const (
 	StandardPacketMaxLen   int32 = 1538
 	BabyGiantPacketMaxLen  int32 = 1600
@@ -29,85 +26,20 @@ const (
 )
 
 type Vpacket struct {
-	Handle             *pcap.Handle  `json:"Handle,omitempty"`
-	Filter             string        `json:"Filter,omitempty"`
-	SnapshotLen        int32         `json:"SnapshotLen,omitempty"`
-	Promiscuous        bool          `json:"Promiscuous,omitempty"`
-	Timeout            time.Duration `json:"Timeout,omitempty"`
-	Limit              int           `json:"Limit,omitempty"`
-	IfaceToRead        string        `json:"IfaceToRead,omitempty"`
-	ReadFile           string        `json:"ReadFile,omitempty"`
-	WriteFile          string        `json:"WriteFile,omitempty"`
-	SendRawPacket      bool          `json:"SendRawPacket,omitempty"`
-	SendMetadata       bool          `json:"SendMetadata,omitempty"`
-	DecodePacket       bool          `json:"DecodePacket,omitempty"`
-	DecodeProtocolData bool          `json:"DecodeProtocolData,omitempty"`
-}
-
-type DecodedLayer struct {
-	*layers.BaseLayer
-	Contents bool `json:"Contents,omitempty"`
-	Payload  bool `json:"Payload,omitempty"`
-}
-
-type RawTcpIpPacket struct {
-	Metadata  gopacket.PacketMetadata `json:"metadata,omitempty"`
-	Link      []byte                  `json:"link,omitempty"`
-	Network   []byte                  `json:"network,omitempty"`
-	Transport []byte                  `json:"transport,omitempty"`
-	Payload   []byte                  `json:"payload,omitempty"`
-}
-
-type DecodedTcpIpPacket struct {
-	Metadata  gopacket.PacketMetadata `json:"metadata,omitempty"`
-	Link      gopacket.Layer          `json:"link,omitempty"`
-	Network   gopacket.Layer          `json:"network,omitempty"`
-	Transport gopacket.Layer          `json:"transport,omitempty"`
-	Payload   []byte                  `json:"payload,omitempty"`
-}
-
-func (p *DecodedTcpIpPacket) setPayload(packet gopacket.Packet) {
-	if packet.ApplicationLayer() != nil {
-		p.Payload = packet.ApplicationLayer().LayerContents()
-	} else if packet.TransportLayer() != nil {
-		p.Payload = packet.TransportLayer().LayerPayload()
-	} else if packet.NetworkLayer() != nil {
-		p.Payload = packet.NetworkLayer().LayerPayload()
-	}
-	if len(p.Payload) == 0 {
-		if packet.LinkLayer() != nil {
-			p.Payload = packet.LinkLayer().LayerPayload()
-		} else {
-			p.Payload = packet.Data()
-		}
-	}
-}
-
-func setZeroVal(v reflect.Value) {
-	if v.IsValid() && v.CanSet() {
-		v.Set(reflect.Zero(v.Type()))
-	}
-}
-
-func setNoJSON(t reflect.Type) {
-
-}
-
-func (p *DecodedTcpIpPacket) dedupe() {
-	if p.Link != nil {
-		// setZeroVal(reflect.ValueOf(p.Link).Elem().FieldByName("Payload"))
-		typ, _ := reflect.TypeOf(p.Link).Elem().FieldByName("Payload")
-		typ.Tag = `json:"-"`
-		setZeroVal(reflect.ValueOf(p.Link).Elem().FieldByName("Contents"))
-	}
-	if p.Network != nil {
-		setZeroVal(reflect.ValueOf(p.Network).Elem().FieldByName("Payload"))
-		setZeroVal(reflect.ValueOf(p.Network).Elem().FieldByName("Contents"))
-	}
-	if p.Transport != nil {
-		setZeroVal(reflect.ValueOf(p.Transport).Elem().FieldByName("Payload"))
-		setZeroVal(reflect.ValueOf(p.Transport).Elem().FieldByName("Contents"))
-	}
+	handle             *pcap.Handle //`json:"handle,omitempty"`
+	w                  *pcapgo.Writer
+	Filter             string        `json:"filter,omitempty"`
+	SnapshotLen        int32         `json:"snapshotLen,omitempty"`
+	Promiscuous        bool          `json:"promiscuous,omitempty"`
+	Timeout            time.Duration `json:"timeout,omitempty"`
+	Limit              int           `json:"limit,omitempty"`
+	IfaceToRead        string        `json:"ifaceToRead,omitempty"`
+	ReadFile           string        `json:"readFile,omitempty"`
+	WriteFile          string        `json:"writeFile,omitempty"`
+	SendRawPacket      bool          `json:"sendRawPacket,omitempty"`
+	SendMetadata       bool          `json:"sendMetadata,omitempty"`
+	DecodePacket       bool          `json:"decodePacket,omitempty"`
+	DecodeProtocolData bool          `json:"decodeProtocolData,omitempty"`
 }
 
 func find() {
@@ -129,353 +61,62 @@ func find() {
 	}
 }
 
+func (vp *Vpacket) Validate(ws *wsoc.Con) bool {
+	// //check syntax, etc...
+	// vp.Filter             string        `json:"filter,omitempty"`
+
+	// //check min, max
+	// vp.SnapshotLen        int32         `json:"snapshotLen,omitempty"`
+
+	// //check min, max
+	// Timeout            time.Duration `json:"timeout,omitempty"`
+
+	// //check min, max
+	// Limit              int           `json:"limit,omitempty"`
+
+	// //check against openvnet database
+	// IfaceToRead        string        `json:"ifaceToRead,omitempty"`
+
+	// // as a sanity check, might as well set these to have
+	// // the username or something identifiable in them
+	// // readFile  = "" //"readTest.pcap"
+	// // writeFile = "" //"writeTest.pcap"
+
+	// //check if file exists
+	// ReadFile           string        `json:"readFile,omitempty"`
+
+	// //check if file already exists or if can be created
+	// WriteFile          string        `json:"writeFile,omitempty"`
+
+	// // defaults should be as shown with specified dependencies
+	// // sendRawPacket = false // if this is true and decodePacket is not specified, decodePacket should be false by default
+	// // decodePacket  = true  // if this is true and sendRawPacket is not specified, sendRawPacket should be false by default
+
+	// SendRawPacket      bool          `json:"sendRawPacket,omitempty"`
+
+	// SendMetadata       bool          `json:"sendMetadata,omitempty"`
+
+	// DecodePacket       bool          `json:"decodePacket,omitempty"`
+
+	// // decodeProtocolData = true
+	// DecodeProtocolData bool          `json:"decodeProtocolData,omitempty"`
+
+	return true
+}
+
 // TODO: set up filter templates to find start and stop session packets
 
-// generalDecode decodes into 4 layers corresponding with the tcp/ip layering
-// scheme (similar to OSI layers 2,3,4, and 7). Because this generalized
-// solution can't preallocate memory, it is substantially slower (at least an
-// order of magnitude) than the "efficientDecode" function. As such, it should
-// only be used as a fallback for protocols not covered by the efficientDecode
-// decoder. This decoder should work on anything with a standardized link layer,
-// but for packets lacking this, the raw packet data will be returned instead.
-func (vp *Vpacket) generalDecode(packet gopacket.Packet, j *[]byte) error {
-	// err can't be assigned as normal without also assigning a local j
-	var err error
-
-	// TODO: stop sending contents and payload for each layer when
-	// vp.DecodeProtocolData is true -- it is duplicate data
-	// (when it exists)
-	dpkt := DecodedTcpIpPacket{
-		Metadata:  *packet.Metadata(),
-		Link:      packet.LinkLayer(),
-		Network:   packet.NetworkLayer(),
-		Transport: packet.TransportLayer(),
-	}
-	dpkt.setPayload(packet)
-	if !vp.DecodeProtocolData {
-		rpkt := RawTcpIpPacket{
-			Metadata: *packet.Metadata(),
-			Payload:  dpkt.Payload,
-		}
-		if packet.LinkLayer() != nil {
-			rpkt.Link = packet.LinkLayer().LayerContents()
-		}
-		if packet.NetworkLayer() != nil {
-			rpkt.Network = packet.NetworkLayer().LayerContents()
-		}
-		if packet.TransportLayer() != nil {
-			rpkt.Transport = packet.TransportLayer().LayerContents()
-		}
-		*j, err = json.Marshal(&rpkt)
-	} else {
-		dpkt.dedupe()
-		*j, err = json.Marshal(&dpkt)
-	}
-	return err
-}
-
-// TODO: think of something more generic and flexible than a tcp restriction
-func (vp *Vpacket) createAndSendTCPpacket(rawBytes []byte) {
-	// these layers should be fields in the struct
-	ipLayer := &layers.IPv4{
-		SrcIP: net.IP{127, 0, 0, 1},
-		DstIP: net.IP{8, 8, 8, 8},
-	}
-	ethernetLayer := &layers.Ethernet{
-		SrcMAC: net.HardwareAddr{0xFF, 0xAA, 0xFA, 0xAA, 0xFF, 0xAA},
-		DstMAC: net.HardwareAddr{0xBD, 0xBD, 0xBD, 0xBD, 0xBD, 0xBD},
-	}
-	tcpLayer := &layers.TCP{
-		SrcPort: layers.TCPPort(4321),
-		DstPort: layers.TCPPort(80),
-	}
-	buffer := gopacket.NewSerializeBuffer()
-	var options gopacket.SerializeOptions
-	gopacket.SerializeLayers(buffer, options,
-		ethernetLayer,
-		ipLayer,
-		tcpLayer,
-		gopacket.Payload(rawBytes),
-	)
-	utils.ReturnErr(vp.Handle.WritePacketData(buffer.Bytes()))
-
-	// for packets formed elsewhere --
-	// or just raw data...better hope it has an address somewhere!
-	// utils.ReturnErr(handle.WritePacketData(rawBytes))
-	// to make this safer, it could be checked with something like:
-	// packet := gopacket.NewPacket(
-	// 	rawBytes,
-	// 	layers.LayerTypeEthernet,
-	// 	gopacket.Default,
-	// )
-	// utils.ReturnErr(handle.WritePacketData(packet.Data()))
-	// but that requires it to have an ethernet layer
-}
-
-func (vp *Vpacket) efficientDecode(packet gopacket.Packet, j *[]byte) error {
-	// TODO: Continue adding layers and change the "fmt.Println" tests to
-	// conditional struct setting for returning api calls
-	// layers to consider adding:
-
-	// higher priority
-
-	/* ICMPv4
-	   TypeCode ICMPv4TypeCode
-	   Checksum uint16
-	   Id       uint16
-	   Seq      uint16 */
-
-	/* ICMPv6
-	   TypeCode ICMPv6TypeCode
-	   Checksum uint16
-	   // TypeBytes is deprecated and always nil. See the different ICMPv6 message types
-	   // instead (e.g. ICMPv6TypeRouterSolicitation).
-	   // TypeBytes []byte*/
-
-	/* ICMPv6Echo
-	   Identifier uint16
-	   SeqNumber  uint16 */
-
-	/* ICMPv6NeighborSolicitation
-	   TargetAddress net.IP
-	   Options       ICMPv6Options */
-
-	/* ICMPv6NeighborAdvertisement
-	   Flags         uint8
-	   TargetAddress net.IP
-	   Options       ICMPv6Options */
-
-	/* LinkLayerDiscovery
-	   ChassisID LLDPChassisID
-	   PortID    LLDPPortID
-	   TTL       uint16
-	   Values    []LinkLayerDiscoveryValue */
-
-	/* LinkLayerDiscoveryInfo
-	   PortDescription string
-	   SysName         string
-	   SysDescription  string
-	   SysCapabilities LLDPSysCapabilities
-	   MgmtAddress     LLDPMgmtAddress
-	   OrgTLVs         []LLDPOrgSpecificTLV      // Private TLVs
-	   Unknown         []LinkLayerDiscoveryValue // undecoded TLVs */
-
-	// lower priority
-	// Loopback
-	// GRE
-	// vxlan
-	// IPSec
-	// dhcp
-	// UDPLite
-	// Router
-	// dot11 (this is really big...)
-	// IPProtocol
-	// IGMP
-	// NTP
-	// OSPF
-	// PPP
-	// PPPoE
-	// USB
-	// RadioTap
-
-	var (
-		arp     layers.ARP
-		eth     layers.Ethernet
-		ip4     layers.IPv4
-		ip6     layers.IPv6
-		tcp     layers.TCP
-		udp     layers.UDP
-		dns     layers.DNS
-		payload gopacket.Payload
-	)
-	parser := gopacket.NewDecodingLayerParser(layers.LayerTypeEthernet,
-		&eth, &arp, &ip4, &ip6, &tcp, &udp, &dns, &payload)
-
-	decodedLayers := make([]gopacket.LayerType, 0, 10)
-	if err := parser.DecodeLayers(packet.Data(), &decodedLayers); err != nil {
-		fmt.Println(decodedLayers)
-		return err
-	}
-	for _, typ := range decodedLayers {
-		// fmt.Println("Successfully decoded layer type:", typ)
-		// fmt.Println("type:", reflect.TypeOf(typ))
-		switch typ {
-		case layers.LayerTypeARP:
-			// fmt.Println("ARP:")
-			// fmt.Println("AddrType", arp.AddrType)                   // LinkType
-			// fmt.Println("Protocol", arp.Protocol)                   // EthernetType
-			// fmt.Println("HwAddressSize", arp.HwAddressSize)         // uint8
-			// fmt.Println("ProtAddressSize", arp.ProtAddressSize)     // uint8
-			// fmt.Println("Operation", arp.Operation)                 // uint16
-			// fmt.Println("SourceHwAddress", arp.SourceHwAddress)     // []byte
-			// fmt.Println("SourceProtAddress", arp.SourceProtAddress) // []byte
-			// fmt.Println("DstHwAddress", arp.DstHwAddress)           // []byte
-			// fmt.Println("DstProtAddress", arp.DstProtAddress)       // []byte
-
-		case layers.LayerTypeEthernet:
-			// eth.Payload = nil
-			var err error
-			// Either send Contents, or send the other fields -- not both as they contain the same data
-			if vp.DecodeProtocolData {
-				*j, err = json.Marshal(struct {
-					*layers.Ethernet
-					Contents bool `json:"Contents,omitempty"`
-					Payload  bool `json:"Payload,omitempty"`
-				}{
-					Ethernet: &eth,
-				})
-			} else {
-				*j, err = json.Marshal(eth.Contents)
-			}
-			utils.ReturnErr(err)
-			// fmt.Println(string(*j))
-
-		// 	// fmt.Println("Eth", eth.SrcMAC, eth.DstMAC)
-		// 	// if eth.EthernetType == layers.EthernetTypeLLC {
-		// 	// 	fmt.Println("type:", eth.EthernetType, "length:", eth.Length)
-		// 	// }
-
-		case layers.LayerTypeIPv4:
-			// fmt.Println("Version", ip4.Version)
-			// fmt.Println("IHL", ip4.IHL)
-			// fmt.Println("TOS", ip4.TOS)
-			// fmt.Println("Length", ip4.Length)
-			// fmt.Println("Id", ip4.Id)
-			// if ip4.Flags > 0 {
-			// 	fmt.Println("Flags:", ip4.Flags)
-			// 	// if ip4.Flags&layers.IPv4EvilBit == layers.IPv4EvilBit {
-			// 	// 	fmt.Println("\tthis packet has been marked unsafe! -- the evil bit is set (see http://tools.ietf.org/html/rfc3514)") //
-			// 	// }
-			// 	// if ip4.Flags&layers.IPv4DontFragment == layers.IPv4DontFragment {
-			// 	// 	fmt.Println("\tthe 'don't fragment' flag is set")
-			// 	// }
-			// 	// if ip4.Flags&layers.IPv4MoreFragments == layers.IPv4MoreFragments {
-			// 	// 	fmt.Println("\tthe 'more fragments' flag is set")
-			// 	// }
-			// }
-			// fmt.Println("FragOffset", ip4.FragOffset)
-			// fmt.Println("TTL", ip4.TTL)
-			// fmt.Println("Protocol", ip4.Protocol)
-			// fmt.Println("Checksum", ip4.Checksum)
-			// fmt.Println("SrcIP", ip4.SrcIP)
-			// fmt.Println("DstIP", ip4.DstIP)
-			// fmt.Println("Options", ip4.Options)
-			// // fmt.Println("Options string", ip4.Options.String())
-			// // fmt.Println("Options type", ip4.Options.OptionType)
-			// // fmt.Println("Options length", ip4.Options.OptionLength)
-			// // fmt.Println("Options data", ip4.Options.OptionData)
-			// fmt.Println("Padding", ip4.Padding)
-
-		case layers.LayerTypeIPv6:
-			// fmt.Println("IP6 ", ip6.SrcIP, ip6.DstIP)
-			// fmt.Println("Version", ip6.Version)           // uint8
-			// fmt.Println("TrafficClass", ip6.TrafficClass) // uint8
-			// fmt.Println("FlowLabel", ip6.FlowLabel)       // uint32
-			// fmt.Println("Length", ip6.Length)             // uint16
-			// fmt.Println("NextHeader", ip6.NextHeader)     // IPProtocol
-			// fmt.Println("HopLimit", ip6.HopLimit)         // uint8
-			// fmt.Println("SrcIP", ip6.SrcIP)               // net.IP
-			// fmt.Println("DstIP", ip6.DstIP)               // net.IP
-			// fmt.Println("HopByHop", ip6.HopByHop)         // *IPv6HopByHop
-
-		case layers.LayerTypeTCP:
-		// 	fmt.Println("SrcPort:", tcp.SrcPort,
-		// 		"src.layertype:", tcp.SrcPort.LayerType()) // TCPPort
-		// 	fmt.Println("DstPort:", tcp.DstPort,
-		// 		"dst.layertype:", tcp.DstPort.LayerType()) // TCPPort
-		// 	fmt.Println("Seq", tcp.Seq)               // uint32
-		// 	fmt.Println("Ack", tcp.Ack)               // uint32
-		// 	fmt.Println("DataOffset", tcp.DataOffset) // uint8
-		// 	fmt.Println("FIN", tcp.FIN)               // bool
-		// 	fmt.Println("SYN", tcp.SYN)               // bool
-		// 	fmt.Println("RST", tcp.RST)               // bool
-		// 	fmt.Println("PSH", tcp.PSH)               // bool
-		// 	fmt.Println("ACK", tcp.ACK)               // bool
-		// 	fmt.Println("URG", tcp.URG)               // bool
-		// 	fmt.Println("ECE", tcp.ECE)               // bool
-		// 	fmt.Println("CWR", tcp.CWR)               // bool
-		// 	fmt.Println("NS", tcp.NS)                 // bool
-		// 	fmt.Println("Window", tcp.Window)         // uint16
-		// 	fmt.Println("Checksum", tcp.Checksum)     // uint16
-		// 	fmt.Println("Urgent", tcp.Urgent)         // uint16
-		// 	fmt.Println("Options ", tcp.Options)      // []TCPOption
-		// 	// fmt.Println("Options string", ip4.Options.String())
-		// 	// fmt.Println("Options type", ip4.Options.OptionType)
-		// 	// fmt.Println("Options type", ip4.Options.OptionType.String())
-		// 	// fmt.Println("Options length", ip4.Options.OptionLength)
-		// 	// fmt.Println("Options data", ip4.Options.OptionData)
-		// 	fmt.Println("Padding ", tcp.Padding) // []byte
-
-		case layers.LayerTypeUDP:
-			// fmt.Println("UDP", udp.SrcPort, udp.DstPort, udp.Length, udp.Checksum)
-
-		case layers.LayerTypeDNS:
-			// fmt.Println("DNS:")
-			// fmt.Println("Header fields")
-			// fmt.Println("ID", dns.ID)         // uint16
-			// fmt.Println("QR", dns.QR)         // bool
-			// fmt.Println("OpCode", dns.OpCode) // DNSOpCode
-
-			// fmt.Println("Authoritative answer (AA):", dns.AA)  // bool
-			// fmt.Println("Truncated (TC):", dns.TC)             // bool
-			// fmt.Println("Recursion desired (RD):", dns.RD)     // bool
-			// fmt.Println("Recursion available (RA):", dns.RA)   // bool
-			// fmt.Println("Reserved for future use (Z):", dns.Z) // uint8
-
-			// fmt.Println("ResponseCode DNSResponseCode")
-			// fmt.Println("QDCount", dns.QDCount) // uint16 // Number of questions to expect
-			// fmt.Println("ANCount", dns.ANCount) // uint16 // Number of answers to expect
-			// fmt.Println("NSCount", dns.NSCount) // uint16 // Number of authorities to expect
-			// fmt.Println("ARCount", dns.ARCount) // uint16 // Number of additional records to expect
-
-			// fmt.Println("Entries")
-			// fmt.Println("Questions", dns.Questions)     // []DNSQuestion
-			// fmt.Println("Answers", dns.Answers)         // []DNSResourceRecord
-			// fmt.Println("Authorities", dns.Authorities) // []DNSResourceRecord
-			// fmt.Println("Additionals", dns.Additionals) // []DNSResourceRecord
-
-		case gopacket.LayerTypePayload:
-			// fmt.Println("payload", payload.GoString())
-			// fmt.Println("payload", payload, payload.Payload())
-			// fmt.Println("payload", payload, ":\n", hex.Dump(payload))
-
-		default:
-
-		}
-		// fmt.Println()
-	}
-	// fmt.Println()
-	// fmt.Println()
-	if parser.Truncated {
-		fmt.Println("Packet has been truncated")
-	}
-	return nil
-}
-
-func (vp *Vpacket) DoPcap(reqMsg []byte, ws *wsoc.Con) {
+func (vp *Vpacket) DoPcap(ws *wsoc.Con) {
 	var (
 		err error
-
-		// TODO: get all of the following from an api call (through a websocket or maybe grpc)
-
-		// as a sanity check, might as well set these to have
-		// the username or something identifiable in them
-		// readFile  = "" //"readTest.pcap"
-		// writeFile = "" //"writeTest.pcap"
-
-		// decodeProtocolData = true
-
-		// defaults should be as shown with specified dependencies
-		// sendRawPacket = false // if this is true and decodePacket is not specified, decodePacket should be false by default
-		// decodePacket  = true  // if this is true and sendRawPacket is not specified, sendRawPacket should be false by default
 	)
 
 	// find()
 
 	if vp.ReadFile != "" {
-		vp.Handle, err = pcap.OpenOffline(vp.ReadFile)
+		vp.handle, err = pcap.OpenOffline(vp.ReadFile)
 	} else { // read from iface
-		vp.Handle, err = pcap.OpenLive(vp.IfaceToRead, vp.SnapshotLen, vp.Promiscuous, vp.Timeout)
+		vp.handle, err = pcap.OpenLive(vp.IfaceToRead, vp.SnapshotLen, vp.Promiscuous, vp.Timeout)
 	}
 	ws.ThrowErr(err)
 
@@ -495,26 +136,28 @@ func (vp *Vpacket) DoPcap(reqMsg []byte, ws *wsoc.Con) {
 		// vp.Filter = "ip6"
 		// vp.Filter = ""
 
-		utils.ReturnErr(vp.Handle.SetBPFFilter(vp.Filter))
+		utils.ReturnErr(vp.handle.SetBPFFilter(vp.Filter))
 	}
 
-	var w *pcapgo.Writer
 	if vp.WriteFile != "" {
 		f, err := os.Create(utils.Join("", vp.WriteFile))
 		utils.ReturnErr(err)
 		defer f.Close()
-		w = pcapgo.NewWriter(f)
-		w.WriteFileHeader(uint32(vp.SnapshotLen), vp.Handle.LinkType())
+		vp.w = pcapgo.NewWriter(f)
+		vp.w.WriteFileHeader(uint32(vp.SnapshotLen), vp.handle.LinkType())
 	}
 
-	fmt.Println(vp.Handle)
+	fmt.Println(vp.handle)
 	packetCount := 0
-	for packet := range gopacket.NewPacketSource(vp.Handle, vp.Handle.LinkType()).Packets() {
+	for packet := range gopacket.NewPacketSource(vp.handle, vp.handle.LinkType()).Packets() {
+		if ws.IsClosed {
+			break
+		}
 		if vp.SendRawPacket {
 			utils.LimitedGo(func() { ws.Out <- packet.Data() })
 		}
 		if vp.WriteFile != "" {
-			utils.LimitedGo(func() { w.WritePacket(packet.Metadata().CaptureInfo, packet.Data()) })
+			utils.LimitedGo(func() { vp.w.WritePacket(packet.Metadata().CaptureInfo, packet.Data()) })
 		}
 
 		if vp.DecodePacket {
@@ -537,5 +180,6 @@ func (vp *Vpacket) DoPcap(reqMsg []byte, ws *wsoc.Con) {
 		if packetCount > vp.Limit {
 			break
 		}
+		// fmt.Println(packetCount)
 	}
 }

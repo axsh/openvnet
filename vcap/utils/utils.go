@@ -26,7 +26,7 @@ var (
 	// goCpuLimit = ...
 	// if goCpuLimit > golimit { golimit=goCpuLimit }
 	golimit = 10000
-	limiter = make(chan struct{}, golimit)
+	Limiter = make(chan struct{}, golimit)
 )
 
 // LimitedGo is a wrapper to launch goroutines with a limit of golimit. This
@@ -37,9 +37,9 @@ var (
 // context.Context objects. LimitedGo acts very similarly to semaphores.
 // LimitedGo is synchronous and concurrency safe with minimal resource usage.
 func LimitedGo(f func()) {
-	limiter <- struct{}{}
+	Limiter <- struct{}{}
 	go func() {
-		defer func() { <-limiter }()
+		defer func() { <-Limiter }()
 		f()
 	}()
 }
