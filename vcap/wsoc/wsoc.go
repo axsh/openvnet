@@ -14,13 +14,13 @@ const (
 	writeWait = 10 * time.Second
 
 	// Time allowed to read the next pong message from the peer.
-	pongWait = 60 * time.Second
+	PongWait = 60 * time.Second
 
 	// Maximum supported network latency
-	maxLatency = 5 * time.Second
+	MaxLatency = 5 * time.Second
 
 	// Send pings to peer with this period. Must be less than pongWait.
-	pingPeriod = pongWait - maxLatency
+	pingPeriod = PongWait - MaxLatency
 
 	// Maximum message size allowed from peer.
 	// Vpacket.SnapshotLen + whatever else needs to be returned + json overhead
@@ -58,8 +58,8 @@ func (ws *Con) ReadData() {
 		}()
 
 		// ws.SetReadLimit(maxMessageSize)
-		ws.SetReadDeadline(time.Now().Add(pongWait))
-		ws.SetPongHandler(func(string) error { ws.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+		ws.SetReadDeadline(time.Now().Add(PongWait))
+		ws.SetPongHandler(func(string) error { ws.SetReadDeadline(time.Now().Add(PongWait)); return nil })
 		for {
 			_, message, err := ws.ReadMessage()
 			if err != nil {

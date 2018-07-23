@@ -30,10 +30,11 @@ func pcapApi(w http.ResponseWriter, r *http.Request) {
 			for _, vp := range vps {
 				log.Println("received message:", vp)
 				//TODO: can't close over vp in anonymous func as argument to LimitedGo
-				// (if not passed explicitly, all values are updated as the for loop progresses)
-				// -- find a better workaround or allow utils.LimitedGo to pass in args
+				// (if not passed explicitly, all values seem to be updated as the for loop progresses)
+				// -- find a better workaround (vps[i] also doesn't work...) or allow utils.LimitedGo to pass in args
 				utils.Limiter <- struct{}{}
 				go func(vp vpcap.Vpacket) {
+					defer func() { <-utils.Limiter }()
 					//TODO: check the msg before DoPcap
 					if ok := vp.Validate(ws); ok {
 						vp.DoPcap(ws)

@@ -1,8 +1,10 @@
 package vpcap
 
 import (
+	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -62,56 +64,8 @@ func find() {
 }
 
 func (vp *Vpacket) Validate(ws *wsoc.Con) bool {
-	// //check syntax, etc...
-	// vp.Filter             string        `json:"filter,omitempty"`
 
-	// //check min, max
-	// vp.SnapshotLen        int32         `json:"snapshotLen,omitempty"`
-
-	// //check min, max
-	// Timeout            time.Duration `json:"timeout,omitempty"`
-
-	// //check min, max
-	// Limit              int           `json:"limit,omitempty"`
-
-	// //check against openvnet database
-	// IfaceToRead        string        `json:"ifaceToRead,omitempty"`
-
-	// // as a sanity check, might as well set these to have
-	// // the username or something identifiable in them
-	// // readFile  = "" //"readTest.pcap"
-	// // writeFile = "" //"writeTest.pcap"
-
-	// //check if file exists
-	// ReadFile           string        `json:"readFile,omitempty"`
-
-	// //check if file already exists or if can be created
-	// WriteFile          string        `json:"writeFile,omitempty"`
-
-	// // defaults should be as shown with specified dependencies
-	// // sendRawPacket = false // if this is true and decodePacket is not specified, decodePacket should be false by default
-	// // decodePacket  = true  // if this is true and sendRawPacket is not specified, sendRawPacket should be false by default
-
-	// SendRawPacket      bool          `json:"sendRawPacket,omitempty"`
-
-	// SendMetadata       bool          `json:"sendMetadata,omitempty"`
-
-	// DecodePacket       bool          `json:"decodePacket,omitempty"`
-
-	// // decodeProtocolData = true
-	// DecodeProtocolData bool          `json:"decodeProtocolData,omitempty"`
-
-	return true
-}
-
-// TODO: set up filter templates to find start and stop session packets
-
-func (vp *Vpacket) DoPcap(ws *wsoc.Con) {
-	var (
-		err error
-	)
-
-	// find()
+	var err error
 
 	if vp.ReadFile != "" {
 		vp.handle, err = pcap.OpenOffline(vp.ReadFile)
@@ -120,6 +74,7 @@ func (vp *Vpacket) DoPcap(ws *wsoc.Con) {
 	}
 	ws.ThrowErr(err)
 
+	//check syntax, etc...
 	if vp.Filter != "" {
 		// subnet can be dotted quad, triple, double, or single -- the netmask will
 		// be set accordingly (i.e. a quad gets a mask of 255.255.255.255, a triple
@@ -136,7 +91,7 @@ func (vp *Vpacket) DoPcap(ws *wsoc.Con) {
 		// vp.Filter = "ip6"
 		// vp.Filter = ""
 
-		utils.ReturnErr(vp.handle.SetBPFFilter(vp.Filter))
+		ws.ThrowErr(vp.handle.SetBPFFilter(vp.Filter))
 	}
 
 	if vp.WriteFile != "" {
@@ -146,6 +101,56 @@ func (vp *Vpacket) DoPcap(ws *wsoc.Con) {
 		vp.w = pcapgo.NewWriter(f)
 		vp.w.WriteFileHeader(uint32(vp.SnapshotLen), vp.handle.LinkType())
 	}
+
+	//check min, max
+	if vp.SnapshotLen < 12 || vp.SnapshotLen > SuperJumboPacketMaxLen {
+		ws.ThrowErr(errors.New(utils.Join("SnapshotLen must be between 12 and ", strconv.Itoa(int(SuperJumboPacketMaxLen)), " bytes.")))
+	}
+
+	//check min, max
+	if vp.Timeout < wsoc.MaxLatency || vp.Timeout > wsoc.PongWait {
+		ws.ThrowErr(errors.New(utils.Join("Timeout must be between ", strconv.Itoa(int(wsoc.MaxLatency)), " and ", strconv.Itoa(int(wsoc.PongWait)), " seconds.")))
+	}
+
+	//check min, max
+	if vp.Limit < 1 || vp.Limit > 10000 { //TODO: figure out better limits and implement time limits as well
+		ws.ThrowErr(errors.New(utils.Join("Limit (the packet limit) must be between 1 and 10000 packets.")))
+	}
+
+	// //check against openvnet database
+	// vp.IfaceToRead //string        `json:"ifaceToRead,omitempty"`
+
+	// // as a sanity check, might as well set these to have
+	// // the username or something identifiable in them
+	// // readFile  = "" //"readTest.pcap"
+	// // writeFile = "" //"writeTest.pcap"
+
+	// //check if file exists
+	// vp.ReadFile //string        `json:"readFile,omitempty"`
+
+	// //check if file already exists or if can be created
+	// vp.WriteFile //string        `json:"writeFile,omitempty"`
+
+	// // defaults should be as shown with specified dependencies
+	// // sendRawPacket = false // if this is true and decodePacket is not specified, decodePacket should be false by default
+	// // decodePacket  = true  // if this is true and sendRawPacket is not specified, sendRawPacket should be false by default
+
+	// vp.SendRawPacket //bool          `json:"sendRawPacket,omitempty"`
+
+	// vp.SendMetadata //bool          `json:"sendMetadata,omitempty"`
+
+	// vp.DecodePacket //bool          `json:"decodePacket,omitempty"`
+
+	// // decodeProtocolData = true
+	// vp.DecodeProtocolData //bool          `json:"decodeProtocolData,omitempty"`
+
+	return true
+}
+
+// TODO: set up filter templates to find start and stop session packets
+
+func (vp *Vpacket) DoPcap(ws *wsoc.Con) {
+	// find()
 
 	fmt.Println(vp.handle)
 	packetCount := 0
@@ -165,7 +170,7 @@ func (vp *Vpacket) DoPcap(ws *wsoc.Con) {
 				j := []byte{}
 				if err := vp.efficientDecode(packet, &j); err != nil {
 					if !strings.Contains(err.Error(), "No decoder for layer type") {
-						utils.ReturnErr(err)
+						ws.ThrowErr(err)
 					}
 					vp.generalDecode(packet, &j)
 					fmt.Println()
