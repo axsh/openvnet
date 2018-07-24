@@ -35,7 +35,6 @@ func pcapApi(w http.ResponseWriter, r *http.Request) {
 				utils.Limiter <- struct{}{}
 				go func(vp vpcap.Vpacket) {
 					defer func() { <-utils.Limiter }()
-					//TODO: check the msg before DoPcap
 					if ok := vp.Validate(ws); ok {
 						vp.DoPcap(ws)
 					}

@@ -68,14 +68,27 @@ func (vp *Vpacket) Validate(ws *wsoc.Con) bool {
 	var err error
 
 	if vp.ReadFile != "" {
+		// check if file exists
+		if _, err := os.Stat(vp.ReadFile); err != nil {
+			if os.IsNotExist(err) {
+				ws.ThrowErr(err, vp.ReadFile, " does not exist:")
+				return false
+			}
+			ws.ThrowErr(err, "problem reading ", vp.ReadFile, ":")
+			return false
+		}
 		vp.handle, err = pcap.OpenOffline(vp.ReadFile)
+		ws.ThrowErr(err, "problem opening ", vp.ReadFile, ":")
 	} else { // read from iface
 		vp.handle, err = pcap.OpenLive(vp.IfaceToRead, vp.SnapshotLen, vp.Promiscuous, vp.Timeout)
+		ws.ThrowErr(err, "problem reading ", vp.IfaceToRead, ":")
 	}
-	ws.ThrowErr(err)
 
-	//check syntax, etc...
 	if vp.Filter != "" {
+		// TODO: check syntax, etc...
+		// TODO: set up common filter templates to be called easily from the api.
+		// e.g. to find start and stop session packets
+
 		// subnet can be dotted quad, triple, double, or single -- the netmask will
 		// be set accordingly (i.e. a quad gets a mask of 255.255.255.255, a triple
 		// gets 255.255.255.0, a double is 255.255.0.0, and single 255.0.0.0)
@@ -94,63 +107,58 @@ func (vp *Vpacket) Validate(ws *wsoc.Con) bool {
 		ws.ThrowErr(vp.handle.SetBPFFilter(vp.Filter))
 	}
 
+	// check if file exists
 	if vp.WriteFile != "" {
-		f, err := os.Create(utils.Join("", vp.WriteFile))
-		utils.ReturnErr(err)
-		defer f.Close()
-		vp.w = pcapgo.NewWriter(f)
-		vp.w.WriteFileHeader(uint32(vp.SnapshotLen), vp.handle.LinkType())
+		if _, err := os.Stat(vp.WriteFile); !os.IsNotExist(err) {
+			ws.ThrowErr(err, vp.WriteFile, " already exists:")
+			return false
+		}
 	}
 
-	//check min, max
+	// check min, max
 	if vp.SnapshotLen < 12 || vp.SnapshotLen > SuperJumboPacketMaxLen {
-		ws.ThrowErr(errors.New(utils.Join("SnapshotLen must be between 12 and ", strconv.Itoa(int(SuperJumboPacketMaxLen)), " bytes.")))
+		ws.ThrowErr(errors.New(utils.Join("SnapshotLen must be between 12 and ",
+			strconv.Itoa(int(SuperJumboPacketMaxLen)), " bytes.")))
 	}
 
-	//check min, max
+	// check min, max
 	if vp.Timeout < wsoc.MaxLatency || vp.Timeout > wsoc.PongWait {
-		ws.ThrowErr(errors.New(utils.Join("Timeout must be between ", strconv.Itoa(int(wsoc.MaxLatency)), " and ", strconv.Itoa(int(wsoc.PongWait)), " seconds.")))
+		ws.ThrowErr(errors.New(utils.Join("Timeout must be between ",
+			strconv.Itoa(int(wsoc.MaxLatency)), " and ",
+			strconv.Itoa(int(wsoc.PongWait)), " seconds.")))
 	}
 
+	//TODO: figure out better limits and implement time limits as well
 	//check min, max
-	if vp.Limit < 1 || vp.Limit > 10000 { //TODO: figure out better limits and implement time limits as well
-		ws.ThrowErr(errors.New(utils.Join("Limit (the packet limit) must be between 1 and 10000 packets.")))
+	if vp.Limit < 1 || vp.Limit > 10000 {
+		ws.ThrowErr(errors.New(utils.Join(
+			"Limit (the packet limit) must be between 1 and 10000 packets.")))
 	}
 
-	// //check against openvnet database
-	// vp.IfaceToRead //string        `json:"ifaceToRead,omitempty"`
+	// // TODO: check against openvnet database
+	// vp.IfaceToRead //string
 
-	// // as a sanity check, might as well set these to have
-	// // the username or something identifiable in them
-	// // readFile  = "" //"readTest.pcap"
-	// // writeFile = "" //"writeTest.pcap"
-
-	// //check if file exists
-	// vp.ReadFile //string        `json:"readFile,omitempty"`
-
-	// //check if file already exists or if can be created
-	// vp.WriteFile //string        `json:"writeFile,omitempty"`
-
-	// // defaults should be as shown with specified dependencies
-	// // sendRawPacket = false // if this is true and decodePacket is not specified, decodePacket should be false by default
-	// // decodePacket  = true  // if this is true and sendRawPacket is not specified, sendRawPacket should be false by default
-
-	// vp.SendRawPacket //bool          `json:"sendRawPacket,omitempty"`
-
-	// vp.SendMetadata //bool          `json:"sendMetadata,omitempty"`
-
-	// vp.DecodePacket //bool          `json:"decodePacket,omitempty"`
-
-	// // decodeProtocolData = true
-	// vp.DecodeProtocolData //bool          `json:"decodeProtocolData,omitempty"`
+	// if all of these are false, nothing would be processed
+	if !vp.SendRawPacket && !vp.DecodePacket && !vp.SendMetadata {
+		vp.DecodePacket = true
+	}
 
 	return true
 }
 
-// TODO: set up filter templates to find start and stop session packets
-
 func (vp *Vpacket) DoPcap(ws *wsoc.Con) {
 	// find()
+
+	if vp.WriteFile != "" {
+		f, err := os.Create(utils.Join("", vp.WriteFile))
+		if err != nil {
+			ws.ThrowErr(err, "problem creating ", vp.WriteFile, ":")
+			return
+		}
+		defer f.Close()
+		vp.w = pcapgo.NewWriter(f)
+		vp.w.WriteFileHeader(uint32(vp.SnapshotLen), vp.handle.LinkType())
+	}
 
 	fmt.Println(vp.handle)
 	packetCount := 0
