@@ -235,14 +235,16 @@ func (vp *Vpacket) DoPcap() {
 			break
 		}
 		if vp.SendRawPacket {
-			data, _, err := vp.handle.ZeroCopyReadPacketData()
-			vp.ws.ThrowErr(err, "problem sending raw packet from ", vp.IfaceToRead, ":")
-			utils.LimitedGo(func() { vp.ws.Out <- data })
+			// data, _, err := vp.handle.ZeroCopyReadPacketData()
+			// vp.ws.ThrowErr(err, "problem sending raw packet from ", vp.IfaceToRead, ":")
+			// utils.LimitedGo(func() { vp.ws.Out <- data })
+			utils.LimitedGo(func() { vp.ws.Out <- packet.Data() })
 		}
 		if vp.WriteFile != "" {
-			data, captureInfo, err := vp.handle.ZeroCopyReadPacketData()
-			vp.ws.ThrowErr(err, "problem writing packet from ", vp.IfaceToRead, " to file ", vp.WriteFile, ":")
-			utils.LimitedGo(func() { vp.w.WritePacket(captureInfo, data) })
+			// data, captureInfo, err := vp.handle.ZeroCopyReadPacketData()
+			// vp.ws.ThrowErr(err, "problem writing packet from ", vp.IfaceToRead, " to file ", vp.WriteFile, ":")
+			// utils.LimitedGo(func() { vp.w.WritePacket(captureInfo, data) })
+			utils.LimitedGo(func() { vp.w.WritePacket(packet.Metadata().CaptureInfo, packet.Data()) })
 		}
 
 		if vp.DecodePacket {

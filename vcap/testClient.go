@@ -47,9 +47,9 @@ func main() {
 			ReadFile:      "",    // zero value is ignored
 			WriteFile:     "",    // zero value is ignored
 			SendRawPacket: false, // zero value is ignored
-			SendMetadata:  true,
-			DecodePacket:  true,
-			// DecodeProtocolData: true,
+			// SendMetadata:  true,
+			DecodePacket:       true,
+			DecodeProtocolData: true,
 		},
 		{
 			Filter:             "icmp",

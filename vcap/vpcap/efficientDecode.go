@@ -102,8 +102,8 @@ func (vp *Vpacket) efficientDecode(packet gopacket.Packet, j *[]byte) error {
 		dns     layers.DNS
 		payload gopacket.Payload
 	)
-	// parser := gopacket.NewDecodingLayerParser(layers.LayerTypeEthernet,
-	parser := gopacket.NewDecodingLayerParser(vp.handle.LinkType().LayerType(),
+	parser := gopacket.NewDecodingLayerParser(layers.LayerTypeEthernet,
+		// parser := gopacket.NewDecodingLayerParser(vp.handle.LinkType().LayerType(),
 		&eth, &arp, &ip4, &ip6, &tcp, &udp, &dns, &payload)
 
 	// TODO: find a better way to decide on the capacity of this array rather than an arbitrary 10 layer max
@@ -148,17 +148,18 @@ func (vp *Vpacket) efficientDecode(packet gopacket.Packet, j *[]byte) error {
 		case layers.LayerTypeEthernet:
 			// Either send Contents, or send the other fields -- not both as they contain the same data
 			if vp.DecodeProtocolData {
-				// *j, err = json.Marshal(struct {
 				dpkt.Layers[i] = struct {
+					Layertype string `json:"layertype,omitempty"`
 					*layers.Ethernet
 					Contents bool `json:"Contents,omitempty"`
 					Payload  bool `json:"Payload,omitempty"`
 				}{
-					Ethernet: &eth,
+					Layertype: "ethernet",
+					Ethernet:  &eth,
 				}
 			} else {
-				// *j, err = json.Marshal(eth.Contents)
-				rpkt.Layers[i] = make([]byte, len(eth.Contents), len(eth.Contents))
+				lc := len(eth.Contents)
+				rpkt.Layers[i] = make([]byte, lc, lc)
 				rpkt.Layers[i] = eth.Contents
 			}
 			if err != nil {
