@@ -3,10 +3,8 @@ package vpcap
 import (
 	"bytes"
 	"encoding/json"
-	"net"
 	"reflect"
 
-	"github.com/axsh/openvnet/vcap/utils"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 )
@@ -22,18 +20,18 @@ type DecodedLayer struct {
 }
 
 type RawTcpIpPacket struct {
-	Metadata  gopacket.PacketMetadata `json:"metadata,omitempty"`
-	Link      []byte                  `json:"link,omitempty"`
-	Network   []byte                  `json:"network,omitempty"`
-	Transport []byte                  `json:"transport,omitempty"`
-	Payload   []byte                  `json:"payload,omitempty"`
+	Metadata  *gopacket.PacketMetadata `json:"metadata,omitempty"`
+	Link      []byte                   `json:"link,omitempty"`
+	Network   []byte                   `json:"network,omitempty"`
+	Transport []byte                   `json:"transport,omitempty"`
+	Payload   []byte                   `json:"payload,omitempty"`
 }
 
 type DecodedTcpIpPacket struct {
-	Metadata  gopacket.PacketMetadata `json:"metadata,omitempty"`
-	Link      gopacket.Layer          `json:"link,omitempty"`
-	Network   gopacket.Layer          `json:"network,omitempty"`
-	Transport gopacket.Layer          `json:"transport,omitempty"`
+	Metadata  *gopacket.PacketMetadata `json:"metadata,omitempty"`
+	Link      gopacket.Layer           `json:"link,omitempty"`
+	Network   gopacket.Layer           `json:"network,omitempty"`
+	Transport gopacket.Layer           `json:"transport,omitempty"`
 	// Link      interface{} `json:"link,omitempty"`
 	// Network   interface{} `json:"network,omitempty"`
 	// Transport interface{} `json:"transport,omitempty"`
@@ -95,7 +93,7 @@ func (vp *Vpacket) generalDecode(packet gopacket.Packet, j *[]byte) error {
 		Transport: packet.TransportLayer(),
 	}
 	if vp.SendMetadata {
-		dpkt.Metadata = *packet.Metadata()
+		dpkt.Metadata = packet.Metadata()
 	}
 	dpkt.setPayload(packet)
 	if !vp.DecodeProtocolData {
@@ -120,42 +118,4 @@ func (vp *Vpacket) generalDecode(packet gopacket.Packet, j *[]byte) error {
 		*j = bytes.Replace(b, []byte("\"Contents\":null,\"Payload\":null,"), []byte(""), 3)
 	}
 	return err
-}
-
-// TODO: think of something more generic and flexible than a tcp restriction
-func (vp *Vpacket) createAndSendTCPpacket(rawBytes []byte) {
-	// these layers should be fields in the struct
-	ipLayer := &layers.IPv4{
-		SrcIP: net.IP{127, 0, 0, 1},
-		DstIP: net.IP{8, 8, 8, 8},
-	}
-	ethernetLayer := &layers.Ethernet{
-		SrcMAC: net.HardwareAddr{0xFF, 0xAA, 0xFA, 0xAA, 0xFF, 0xAA},
-		DstMAC: net.HardwareAddr{0xBD, 0xBD, 0xBD, 0xBD, 0xBD, 0xBD},
-	}
-	tcpLayer := &layers.TCP{
-		SrcPort: layers.TCPPort(4321),
-		DstPort: layers.TCPPort(80),
-	}
-	buffer := gopacket.NewSerializeBuffer()
-	var options gopacket.SerializeOptions
-	gopacket.SerializeLayers(buffer, options,
-		ethernetLayer,
-		ipLayer,
-		tcpLayer,
-		gopacket.Payload(rawBytes),
-	)
-	utils.ReturnErr(vp.handle.WritePacketData(buffer.Bytes()))
-
-	// for packets formed elsewhere --
-	// or just raw data...better hope it has an address somewhere!
-	// utils.ReturnErr(handle.WritePacketData(rawBytes))
-	// to make this safer, it could be checked with something like:
-	// packet := gopacket.NewPacket(
-	// 	rawBytes,
-	// 	layers.LayerTypeEthernet,
-	// 	gopacket.Default,
-	// )
-	// utils.ReturnErr(handle.WritePacketData(packet.Data()))
-	// but that requires it to have an ethernet layer
 }

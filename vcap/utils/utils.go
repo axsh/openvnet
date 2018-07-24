@@ -61,8 +61,5 @@ func CatchErr(err error, msg ...string) {
 }
 
 func ReturnErr(err error, msg ...string) error {
-	if err != nil {
-		return errors.New(Join(Join(msg...), err.Error()))
-	}
-	return nil
+	return errors.New(Join(Join(msg...), err.Error()))
 }

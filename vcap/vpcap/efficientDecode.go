@@ -9,7 +9,20 @@ import (
 	"github.com/google/gopacket/layers"
 )
 
+type RawSortedPacket struct {
+	Metadata *gopacket.PacketMetadata `json:"metadata,omitempty"`
+	Layers   [][]byte                 `json:"layers,omitempty"`
+	Payload  []byte                   `json:"payload,omitempty"`
+}
+
+type DecodedPacket struct {
+	Metadata *gopacket.PacketMetadata `json:"metadata,omitempty"`
+	Layers   []gopacket.Layer         `json:"layers,omitempty"`
+	Payload  []byte                   `json:"payload,omitempty"`
+}
+
 func (vp *Vpacket) efficientDecode(packet gopacket.Packet, j *[]byte) error {
+	// func (vp *Vpacket) efficientDecode(j *[]byte) error {
 	// TODO: Continue adding layers and change the "fmt.Println" tests to
 	// conditional struct setting for returning api calls
 	// layers to consider adding:
@@ -76,6 +89,10 @@ func (vp *Vpacket) efficientDecode(packet gopacket.Packet, j *[]byte) error {
 	// RadioTap
 
 	var (
+		err  error
+		dpkt DecodedPacket
+		rpkt RawSortedPacket
+
 		arp     layers.ARP
 		eth     layers.Ethernet
 		ip4     layers.IPv4
@@ -85,15 +102,34 @@ func (vp *Vpacket) efficientDecode(packet gopacket.Packet, j *[]byte) error {
 		dns     layers.DNS
 		payload gopacket.Payload
 	)
-	parser := gopacket.NewDecodingLayerParser(layers.LayerTypeEthernet,
+	// parser := gopacket.NewDecodingLayerParser(layers.LayerTypeEthernet,
+	parser := gopacket.NewDecodingLayerParser(vp.handle.LinkType().LayerType(),
 		&eth, &arp, &ip4, &ip6, &tcp, &udp, &dns, &payload)
 
+	// TODO: find a better way to decide on the capacity of this array rather than an arbitrary 10 layer max
 	decodedLayers := make([]gopacket.LayerType, 0, 10)
 	if err := parser.DecodeLayers(packet.Data(), &decodedLayers); err != nil {
-		fmt.Println(decodedLayers)
+		// data, captureInfo, err := vp.handle.ZeroCopyReadPacketData()
+		// if len(data) == 0 {
+		// 	return nil
+		// }
+		// fmt.Println(captureInfo)
+		// fmt.Println(data)
+		// if err := parser.DecodeLayers(data, &decodedLayers); err != nil {
+		// fmt.Println(decodedLayers)
 		return err
 	}
-	for _, typ := range decodedLayers {
+	dl := len(decodedLayers)
+	if vp.SendMetadata {
+		dpkt.Metadata = packet.Metadata()
+	}
+	if vp.DecodeProtocolData {
+		dpkt.Layers = make([]gopacket.Layer, dl, dl)
+	} else {
+		rpkt.Layers = make([][]byte, dl, dl)
+		rpkt.Metadata = dpkt.Metadata
+	}
+	for i, typ := range decodedLayers {
 		// fmt.Println("Successfully decoded layer type:", typ)
 		// fmt.Println("type:", reflect.TypeOf(typ))
 		switch typ {
@@ -110,21 +146,24 @@ func (vp *Vpacket) efficientDecode(packet gopacket.Packet, j *[]byte) error {
 			// fmt.Println("DstProtAddress", arp.DstProtAddress)       // []byte
 
 		case layers.LayerTypeEthernet:
-			// eth.Payload = nil
-			var err error
 			// Either send Contents, or send the other fields -- not both as they contain the same data
 			if vp.DecodeProtocolData {
-				*j, err = json.Marshal(struct {
+				// *j, err = json.Marshal(struct {
+				dpkt.Layers[i] = struct {
 					*layers.Ethernet
 					Contents bool `json:"Contents,omitempty"`
 					Payload  bool `json:"Payload,omitempty"`
 				}{
 					Ethernet: &eth,
-				})
+				}
 			} else {
-				*j, err = json.Marshal(eth.Contents)
+				// *j, err = json.Marshal(eth.Contents)
+				rpkt.Layers[i] = make([]byte, len(eth.Contents), len(eth.Contents))
+				rpkt.Layers[i] = eth.Contents
 			}
-			utils.ReturnErr(err)
+			if err != nil {
+				return utils.ReturnErr(err, " ethernet")
+			}
 			// fmt.Println(string(*j))
 
 		// 	// fmt.Println("Eth", eth.SrcMAC, eth.DstMAC)
@@ -240,6 +279,12 @@ func (vp *Vpacket) efficientDecode(packet gopacket.Packet, j *[]byte) error {
 
 		}
 		// fmt.Println()
+	}
+	//TODO: return packet rather than write to pointer -- try to add to packet from general decoder if unknown layer...
+	if vp.DecodeProtocolData {
+		*j, err = json.Marshal(dpkt)
+	} else {
+		*j, err = json.Marshal(rpkt)
 	}
 	// fmt.Println()
 	// fmt.Println()

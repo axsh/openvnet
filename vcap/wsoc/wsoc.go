@@ -34,6 +34,10 @@ type Con struct {
 	IsClosed bool
 }
 
+// type Con interface {
+// 	ThrowErr(error, ...string)
+// }
+
 func (ws *Con) ThrowErr(err error, msg ...string) {
 	if err != nil {
 		ws.Out <- []byte(
@@ -129,7 +133,7 @@ func (ws *Con) WriteData() {
 func NewWS(w http.ResponseWriter, r *http.Request) *Con {
 	upgrader := websocket.Upgrader{}
 	wsC, err := upgrader.Upgrade(w, r, nil)
-	ws := Con{
+	ws := &Con{
 		Conn: wsC,
 		// TODO: consider setting the size of these byte arrays
 		// ws.In would be max sizeof(Vpacket) + json
@@ -141,5 +145,5 @@ func NewWS(w http.ResponseWriter, r *http.Request) *Con {
 	ws.ReadData()
 	ws.WriteData()
 
-	return &ws
+	return ws
 }
