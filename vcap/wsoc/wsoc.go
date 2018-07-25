@@ -2,7 +2,6 @@ package wsoc
 
 import (
 	"log"
-	"net/http"
 	"time"
 
 	"github.com/axsh/openvnet/vcap/utils"
@@ -27,20 +26,35 @@ const (
 	// maxMessageSize = 2048
 )
 
-type Con struct {
+type con struct {
 	*websocket.Conn
-	In       chan []byte
-	Out      chan []byte
-	IsClosed bool
+	in       chan []byte
+	out      chan []byte
+	isClosed bool
 }
 
-// type Con interface {
-// 	ThrowErr(error, ...string)
-// }
+type WS interface {
+	ThrowErr(error, ...string)
+	In() chan []byte
+	Out() chan []byte
+	IsClosed() bool
+}
 
-func (ws *Con) ThrowErr(err error, msg ...string) {
+func (ws *con) In() chan []byte {
+	return ws.in
+}
+
+func (ws *con) Out() chan []byte {
+	return ws.out
+}
+
+func (ws *con) IsClosed() bool {
+	return ws.isClosed
+}
+
+func (ws *con) ThrowErr(err error, msg ...string) {
 	if err != nil {
-		ws.Out <- []byte(
+		ws.out <- []byte(
 			utils.Join(
 				utils.JoinWithSep(" ", msg...), err.Error(),
 			),
@@ -48,17 +62,17 @@ func (ws *Con) ThrowErr(err error, msg ...string) {
 	}
 }
 
-// ReadData listens to the websocket ws and writes incoming messages to the ws.In chan
+// readData listens to the websocket ws and writes incoming messages to the ws.in chan
 // Each websocket can only be read from by one process at a time, so some care
 // has been taken to ensure that only one goroutine is reading from the websocket
 // at any given time.
-func (ws *Con) ReadData() {
+func (ws *con) readData() {
 	utils.LimitedGo(func() {
 		defer func() {
 			if err := ws.Close(); err != nil {
 				log.Println(err)
 			}
-			ws.IsClosed = true
+			ws.isClosed = true
 		}()
 
 		// ws.SetReadLimit(maxMessageSize)
@@ -72,16 +86,16 @@ func (ws *Con) ReadData() {
 				// }
 				break
 			}
-			ws.In <- message
+			ws.in <- message
 		}
 	})
 }
 
-// WriteData sends data to the websocket ws from the ws.Out chan
+// writeData sends data to the websocket ws from the ws.out chan
 // Each websocket can only be written to by one process at a time, so some care
 // has been taken to ensure that only one goroutine is writing to the websocket
 // at any given time.
-func (ws *Con) WriteData() {
+func (ws *con) writeData() {
 	utils.LimitedGo(func() {
 		ticker := time.NewTicker(pingPeriod)
 		defer func() {
@@ -89,14 +103,13 @@ func (ws *Con) WriteData() {
 			if err := ws.Close(); err != nil {
 				log.Println(err)
 			}
-			ws.IsClosed = true
+			ws.isClosed = true
 		}()
 		for {
 			select {
-			case message, ok := <-ws.Out:
+			case message, ok := <-ws.out:
 				ws.SetWriteDeadline(time.Now().Add(writeWait))
 				if !ok {
-					// The channel was closed.
 					ws.WriteMessage(websocket.CloseMessage, []byte{})
 					return
 				}
@@ -109,9 +122,9 @@ func (ws *Con) WriteData() {
 				w.Write(message)
 
 				// Send queued messages
-				n := len(ws.Out)
+				n := len(ws.out)
 				for i := 0; i < n; i++ {
-					w.Write(<-ws.Out)
+					w.Write(<-ws.out)
 				}
 
 				if err := w.Close(); err != nil {
@@ -129,21 +142,18 @@ func (ws *Con) WriteData() {
 	})
 }
 
-// NewWS returns a new Con object with read and write chans already initialized
-func NewWS(w http.ResponseWriter, r *http.Request) *Con {
-	upgrader := websocket.Upgrader{}
-	wsC, err := upgrader.Upgrade(w, r, nil)
-	ws := &Con{
+// NewWS returns a new WS object with read and write chans already initialized
+func NewWS(wsC *websocket.Conn) WS {
+	ws := &con{
 		Conn: wsC,
 		// TODO: consider setting the size of these byte arrays
-		// ws.In would be max sizeof(Vpacket) + json
-		In:  make(chan []byte),
-		Out: make(chan []byte), // size == maxMessageSize
+		// ws.in would be max sizeof(Vpacket) + json
+		in:  make(chan []byte),
+		out: make(chan []byte), // size == maxMessageSize
 	}
-	ws.ThrowErr(err, "upgrade:")
 
-	ws.ReadData()
-	ws.WriteData()
+	ws.readData()
+	ws.writeData()
 
 	return ws
 }

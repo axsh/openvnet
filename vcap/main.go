@@ -16,11 +16,15 @@ import (
 	"github.com/axsh/openvnet/vcap/utils"
 	"github.com/axsh/openvnet/vcap/vpcap"
 	"github.com/axsh/openvnet/vcap/wsoc"
+	"github.com/gorilla/websocket"
 )
 
 func pcapApi(w http.ResponseWriter, r *http.Request) {
-	ws := wsoc.NewWS(w, r)
-	for msg := range ws.In {
+	upgrader := websocket.Upgrader{}
+	wsC, err := upgrader.Upgrade(w, r, nil)
+	ws := wsoc.NewWS(wsC)
+	ws.ThrowErr(err, "upgrade:")
+	for msg := range ws.In() {
 		fmt.Println(string(msg))
 		utils.LimitedGo(func() {
 			var vps []vpcap.Vpacket

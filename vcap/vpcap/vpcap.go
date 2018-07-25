@@ -17,7 +17,7 @@ import (
 	"github.com/google/gopacket/pcapgo"
 )
 
-// standard packet sizes
+// standard packet sizes*
 const (
 	StandardPacketMaxLen   int32 = 1538
 	BabyGiantPacketMaxLen  int32 = 1600
@@ -32,7 +32,7 @@ const (
 type Vpacket struct {
 	handle             *pcap.Handle //`json:"handle,omitempty"`
 	w                  *pcapgo.Writer
-	ws                 *wsoc.Con
+	ws                 wsoc.WS
 	Filter             string        `json:"filter,omitempty"`
 	SnapshotLen        int32         `json:"snapshotLen,omitempty"`
 	Promiscuous        bool          `json:"promiscuous,omitempty"`
@@ -116,7 +116,7 @@ func (vp *Vpacket) createAndSendTCPpacket(rawBytes []byte) error {
 }
 
 // TODO: check whether an identical pcap is already running -- if so, don't do anything
-func (vp *Vpacket) Validate(ws *wsoc.Con) bool {
+func (vp *Vpacket) Validate(ws wsoc.WS) bool {
 
 	var err error
 
@@ -133,10 +133,17 @@ func (vp *Vpacket) Validate(ws *wsoc.Con) bool {
 			return false
 		}
 		vp.handle, err = pcap.OpenOffline(vp.ReadFile)
-		ws.ThrowErr(err, "problem opening ", vp.ReadFile, ":")
+		if err != nil {
+			ws.ThrowErr(err, "problem opening ", vp.ReadFile, ":")
+			return false
+		}
 	} else { // read from iface
 		vp.handle, err = pcap.OpenLive(vp.IfaceToRead, vp.SnapshotLen, vp.Promiscuous, vp.Timeout)
-		ws.ThrowErr(err, "problem reading ", vp.IfaceToRead, ":")
+		fmt.Println(vp.handle)
+		if err != nil {
+			ws.ThrowErr(err, "problem reading ", vp.IfaceToRead, ":")
+			return false
+		}
 	}
 
 	if vp.Filter != "" {
@@ -159,7 +166,7 @@ func (vp *Vpacket) Validate(ws *wsoc.Con) bool {
 		// vp.Filter = ""
 
 		if err := vp.handle.SetBPFFilter(vp.Filter); err != nil {
-			ws.ThrowErr(err)
+			ws.ThrowErr(err, "problem setting filter ", vp.Filter, ": ")
 			return false
 		}
 	}
@@ -167,7 +174,7 @@ func (vp *Vpacket) Validate(ws *wsoc.Con) bool {
 	// check if file exists
 	if vp.WriteFile != "" {
 		if _, err := os.Stat(vp.WriteFile); !os.IsNotExist(err) {
-			ws.ThrowErr(err, vp.WriteFile, " already exists:")
+			ws.ThrowErr(err, vp.WriteFile, " already exists: ")
 			return false
 		}
 	}
@@ -176,6 +183,7 @@ func (vp *Vpacket) Validate(ws *wsoc.Con) bool {
 	if vp.SnapshotLen < 12 || vp.SnapshotLen > SuperJumboPacketMaxLen {
 		ws.ThrowErr(errors.New(utils.Join("SnapshotLen must be between 12 and ",
 			strconv.Itoa(int(SuperJumboPacketMaxLen)), " bytes.")))
+		return false
 	}
 
 	// check min, max
@@ -183,21 +191,28 @@ func (vp *Vpacket) Validate(ws *wsoc.Con) bool {
 		ws.ThrowErr(errors.New(utils.Join("Timeout must be between ",
 			strconv.Itoa(int(wsoc.MaxLatency)), " and ",
 			strconv.Itoa(int(wsoc.PongWait)), " seconds.")))
+		return false
 	}
 
 	//TODO: figure out better limits and implement time limits as well
-	//check min, max
+	// check min, max
 	if vp.Limit < 1 || vp.Limit > 10000 {
 		ws.ThrowErr(errors.New(utils.Join(
 			"Limit (the packet limit) must be between 1 and 10000 packets.")))
+		return false
 	}
 
-	// // TODO: check against openvnet database
-	ws.ThrowErr(vp.readIface())
+	// TODO: check against openvnet database (the handle check covers the current readIface functionality)
+	if err := vp.readIface(); err != nil {
+		ws.ThrowErr(err)
+		return false
+	}
 
+	// TODO: think about how to write this so that as new features are added this doesn't have to be maintained...some better way to check and set defaults.
 	// if all of these are false, nothing would be processed
 	if !vp.SendRawPacket && !vp.DecodePacket && !vp.SendMetadata {
 		vp.DecodePacket = true
+		vp.SendMetadata = true
 	}
 
 	return true
@@ -207,8 +222,6 @@ func (vp *Vpacket) Validate(ws *wsoc.Con) bool {
 // that vp point to. Only pcap linktypes are supported
 // (see https://godoc.org/github.com/google/gopacket/layers#LinkType)
 func (vp *Vpacket) DoPcap() {
-	// find()
-
 	if vp.WriteFile != "" {
 		f, err := os.Create(utils.Join("", vp.WriteFile))
 		if err != nil {
@@ -231,14 +244,14 @@ func (vp *Vpacket) DoPcap() {
 	// TODO: test to make sure that EOF in a packet doesn't break out of the loop
 	for packet := range gopacket.NewPacketSource(vp.handle, vp.handle.LinkType()).Packets() {
 		// for {
-		if vp.ws.IsClosed {
+		if vp.ws.IsClosed() {
 			break
 		}
 		if vp.SendRawPacket {
 			// data, _, err := vp.handle.ZeroCopyReadPacketData()
 			// vp.ws.ThrowErr(err, "problem sending raw packet from ", vp.IfaceToRead, ":")
-			// utils.LimitedGo(func() { vp.ws.Out <- data })
-			utils.LimitedGo(func() { vp.ws.Out <- packet.Data() })
+			// utils.LimitedGo(func() { vp.ws.Out() <- data })
+			utils.LimitedGo(func() { vp.ws.Out() <- packet.Data() })
 		}
 		if vp.WriteFile != "" {
 			// data, captureInfo, err := vp.handle.ZeroCopyReadPacketData()
@@ -262,7 +275,7 @@ func (vp *Vpacket) DoPcap() {
 			}
 			if len(*j) != 0 {
 				fmt.Println(string(*j))
-				vp.ws.Out <- *j
+				vp.ws.Out() <- *j
 			}
 			// })
 		}

@@ -2,16 +2,22 @@ package vpcap
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 
-	"github.com/axsh/openvnet/vcap/utils"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 )
 
+type ContentLayer struct {
+	Layertype string `json:"layertype,omitempty"`
+	*layers.BaseLayer
+	// Contents bool `json:"Contents,omitempty"`
+	Payload bool `json:"Payload,omitempty"`
+}
+
 type RawSortedPacket struct {
 	Metadata *gopacket.PacketMetadata `json:"metadata,omitempty"`
-	Layers   [][]byte                 `json:"layers,omitempty"`
+	Layers   []interface{}            `json:"layers,omitempty"`
 	Payload  []byte                   `json:"payload,omitempty"`
 }
 
@@ -89,7 +95,6 @@ func (vp *Vpacket) efficientDecode(packet gopacket.Packet, j *[]byte) error {
 	// RadioTap
 
 	var (
-		err  error
 		dpkt DecodedPacket
 		rpkt RawSortedPacket
 
@@ -126,30 +131,37 @@ func (vp *Vpacket) efficientDecode(packet gopacket.Packet, j *[]byte) error {
 	if vp.DecodeProtocolData {
 		dpkt.Layers = make([]gopacket.Layer, dl, dl)
 	} else {
-		rpkt.Layers = make([][]byte, dl, dl)
+		// rpkt.Layers = make([]*ContentLayer, dl, dl)
+		rpkt.Layers = make([]interface{}, dl, dl)
 		rpkt.Metadata = dpkt.Metadata
 	}
 	for i, typ := range decodedLayers {
-		// fmt.Println("Successfully decoded layer type:", typ)
-		// fmt.Println("type:", reflect.TypeOf(typ))
+
+		// Either send Contents, or send the other fields
+		// -- not both as they contain the same data
 		switch typ {
 		case layers.LayerTypeARP:
-			// fmt.Println("ARP:")
-			// fmt.Println("AddrType", arp.AddrType)                   // LinkType
-			// fmt.Println("Protocol", arp.Protocol)                   // EthernetType
-			// fmt.Println("HwAddressSize", arp.HwAddressSize)         // uint8
-			// fmt.Println("ProtAddressSize", arp.ProtAddressSize)     // uint8
-			// fmt.Println("Operation", arp.Operation)                 // uint16
-			// fmt.Println("SourceHwAddress", arp.SourceHwAddress)     // []byte
-			// fmt.Println("SourceProtAddress", arp.SourceProtAddress) // []byte
-			// fmt.Println("DstHwAddress", arp.DstHwAddress)           // []byte
-			// fmt.Println("DstProtAddress", arp.DstProtAddress)       // []byte
-
-		case layers.LayerTypeEthernet:
-			// Either send Contents, or send the other fields -- not both as they contain the same data
 			if vp.DecodeProtocolData {
 				dpkt.Layers[i] = struct {
-					Layertype string `json:"layertype,omitempty"`
+					Layertype string `json:"layertype"`
+					*layers.ARP
+					Contents bool `json:"Contents,omitempty"`
+					Payload  bool `json:"Payload,omitempty"`
+				}{
+					Layertype: "arp",
+					ARP:       &arp,
+				}
+			} else {
+				rpkt.Layers[i] = &ContentLayer{
+					Layertype: "arp",
+					BaseLayer: &arp.BaseLayer,
+				}
+			}
+
+		case layers.LayerTypeEthernet:
+			if vp.DecodeProtocolData {
+				dpkt.Layers[i] = struct {
+					Layertype string `json:"layertype"`
 					*layers.Ethernet
 					Contents bool `json:"Contents,omitempty"`
 					Payload  bool `json:"Payload,omitempty"`
@@ -158,139 +170,125 @@ func (vp *Vpacket) efficientDecode(packet gopacket.Packet, j *[]byte) error {
 					Ethernet:  &eth,
 				}
 			} else {
-				lc := len(eth.Contents)
-				rpkt.Layers[i] = make([]byte, lc, lc)
-				rpkt.Layers[i] = eth.Contents
+				rpkt.Layers[i] = &ContentLayer{
+					Layertype: "ethernet",
+					BaseLayer: &eth.BaseLayer,
+				}
 			}
-			if err != nil {
-				return utils.ReturnErr(err, " ethernet")
-			}
-			// fmt.Println(string(*j))
-
-		// 	// fmt.Println("Eth", eth.SrcMAC, eth.DstMAC)
-		// 	// if eth.EthernetType == layers.EthernetTypeLLC {
-		// 	// 	fmt.Println("type:", eth.EthernetType, "length:", eth.Length)
-		// 	// }
 
 		case layers.LayerTypeIPv4:
-			// fmt.Println("Version", ip4.Version)
-			// fmt.Println("IHL", ip4.IHL)
-			// fmt.Println("TOS", ip4.TOS)
-			// fmt.Println("Length", ip4.Length)
-			// fmt.Println("Id", ip4.Id)
-			// if ip4.Flags > 0 {
-			// 	fmt.Println("Flags:", ip4.Flags)
-			// 	// if ip4.Flags&layers.IPv4EvilBit == layers.IPv4EvilBit {
-			// 	// 	fmt.Println("\tthis packet has been marked unsafe! -- the evil bit is set (see http://tools.ietf.org/html/rfc3514)") //
-			// 	// }
-			// 	// if ip4.Flags&layers.IPv4DontFragment == layers.IPv4DontFragment {
-			// 	// 	fmt.Println("\tthe 'don't fragment' flag is set")
-			// 	// }
-			// 	// if ip4.Flags&layers.IPv4MoreFragments == layers.IPv4MoreFragments {
-			// 	// 	fmt.Println("\tthe 'more fragments' flag is set")
-			// 	// }
-			// }
-			// fmt.Println("FragOffset", ip4.FragOffset)
-			// fmt.Println("TTL", ip4.TTL)
-			// fmt.Println("Protocol", ip4.Protocol)
-			// fmt.Println("Checksum", ip4.Checksum)
-			// fmt.Println("SrcIP", ip4.SrcIP)
-			// fmt.Println("DstIP", ip4.DstIP)
-			// fmt.Println("Options", ip4.Options)
-			// // fmt.Println("Options string", ip4.Options.String())
-			// // fmt.Println("Options type", ip4.Options.OptionType)
-			// // fmt.Println("Options length", ip4.Options.OptionLength)
-			// // fmt.Println("Options data", ip4.Options.OptionData)
-			// fmt.Println("Padding", ip4.Padding)
+			if vp.DecodeProtocolData {
+				dpkt.Layers[i] = struct {
+					Layertype string `json:"layertype"`
+					*layers.IPv4
+					Contents bool `json:"Contents,omitempty"`
+					Payload  bool `json:"Payload,omitempty"`
+				}{
+					Layertype: "IPv4",
+					IPv4:      &ip4,
+				}
+			} else {
+				rpkt.Layers[i] = &ContentLayer{
+					Layertype: "IPv4",
+					BaseLayer: &ip4.BaseLayer,
+				}
+			}
 
 		case layers.LayerTypeIPv6:
-			// fmt.Println("IP6 ", ip6.SrcIP, ip6.DstIP)
-			// fmt.Println("Version", ip6.Version)           // uint8
-			// fmt.Println("TrafficClass", ip6.TrafficClass) // uint8
-			// fmt.Println("FlowLabel", ip6.FlowLabel)       // uint32
-			// fmt.Println("Length", ip6.Length)             // uint16
-			// fmt.Println("NextHeader", ip6.NextHeader)     // IPProtocol
-			// fmt.Println("HopLimit", ip6.HopLimit)         // uint8
-			// fmt.Println("SrcIP", ip6.SrcIP)               // net.IP
-			// fmt.Println("DstIP", ip6.DstIP)               // net.IP
-			// fmt.Println("HopByHop", ip6.HopByHop)         // *IPv6HopByHop
+			if vp.DecodeProtocolData {
+				dpkt.Layers[i] = struct {
+					Layertype string `json:"layertype"`
+					*layers.IPv6
+					Contents bool `json:"Contents,omitempty"`
+					Payload  bool `json:"Payload,omitempty"`
+				}{
+					Layertype: "IPv6",
+					IPv6:      &ip6,
+				}
+			} else {
+				rpkt.Layers[i] = &ContentLayer{
+					Layertype: "IPv6",
+					BaseLayer: &ip6.BaseLayer,
+				}
+			}
 
 		case layers.LayerTypeTCP:
-		// 	fmt.Println("SrcPort:", tcp.SrcPort,
-		// 		"src.layertype:", tcp.SrcPort.LayerType()) // TCPPort
-		// 	fmt.Println("DstPort:", tcp.DstPort,
-		// 		"dst.layertype:", tcp.DstPort.LayerType()) // TCPPort
-		// 	fmt.Println("Seq", tcp.Seq)               // uint32
-		// 	fmt.Println("Ack", tcp.Ack)               // uint32
-		// 	fmt.Println("DataOffset", tcp.DataOffset) // uint8
-		// 	fmt.Println("FIN", tcp.FIN)               // bool
-		// 	fmt.Println("SYN", tcp.SYN)               // bool
-		// 	fmt.Println("RST", tcp.RST)               // bool
-		// 	fmt.Println("PSH", tcp.PSH)               // bool
-		// 	fmt.Println("ACK", tcp.ACK)               // bool
-		// 	fmt.Println("URG", tcp.URG)               // bool
-		// 	fmt.Println("ECE", tcp.ECE)               // bool
-		// 	fmt.Println("CWR", tcp.CWR)               // bool
-		// 	fmt.Println("NS", tcp.NS)                 // bool
-		// 	fmt.Println("Window", tcp.Window)         // uint16
-		// 	fmt.Println("Checksum", tcp.Checksum)     // uint16
-		// 	fmt.Println("Urgent", tcp.Urgent)         // uint16
-		// 	fmt.Println("Options ", tcp.Options)      // []TCPOption
-		// 	// fmt.Println("Options string", ip4.Options.String())
-		// 	// fmt.Println("Options type", ip4.Options.OptionType)
-		// 	// fmt.Println("Options type", ip4.Options.OptionType.String())
-		// 	// fmt.Println("Options length", ip4.Options.OptionLength)
-		// 	// fmt.Println("Options data", ip4.Options.OptionData)
-		// 	fmt.Println("Padding ", tcp.Padding) // []byte
+			if vp.DecodeProtocolData {
+				dpkt.Layers[i] = struct {
+					Layertype string `json:"layertype"`
+					*layers.TCP
+					Contents bool `json:"Contents,omitempty"`
+					Payload  bool `json:"Payload,omitempty"`
+				}{
+					Layertype: "tcp",
+					TCP:       &tcp,
+				}
+			} else {
+				rpkt.Layers[i] = &ContentLayer{
+					Layertype: "tcp",
+					BaseLayer: &tcp.BaseLayer,
+				}
+			}
 
 		case layers.LayerTypeUDP:
-			// fmt.Println("UDP", udp.SrcPort, udp.DstPort, udp.Length, udp.Checksum)
+			if vp.DecodeProtocolData {
+				dpkt.Layers[i] = struct {
+					Layertype string `json:"layertype"`
+					*layers.UDP
+					Contents bool `json:"Contents,omitempty"`
+					Payload  bool `json:"Payload,omitempty"`
+				}{
+					Layertype: "udp",
+					UDP:       &udp,
+				}
+			} else {
+				rpkt.Layers[i] = &ContentLayer{
+					Layertype: "udp",
+					BaseLayer: &udp.BaseLayer,
+				}
+			}
 
 		case layers.LayerTypeDNS:
-			// fmt.Println("DNS:")
-			// fmt.Println("Header fields")
-			// fmt.Println("ID", dns.ID)         // uint16
-			// fmt.Println("QR", dns.QR)         // bool
-			// fmt.Println("OpCode", dns.OpCode) // DNSOpCode
-
-			// fmt.Println("Authoritative answer (AA):", dns.AA)  // bool
-			// fmt.Println("Truncated (TC):", dns.TC)             // bool
-			// fmt.Println("Recursion desired (RD):", dns.RD)     // bool
-			// fmt.Println("Recursion available (RA):", dns.RA)   // bool
-			// fmt.Println("Reserved for future use (Z):", dns.Z) // uint8
-
-			// fmt.Println("ResponseCode DNSResponseCode")
-			// fmt.Println("QDCount", dns.QDCount) // uint16 // Number of questions to expect
-			// fmt.Println("ANCount", dns.ANCount) // uint16 // Number of answers to expect
-			// fmt.Println("NSCount", dns.NSCount) // uint16 // Number of authorities to expect
-			// fmt.Println("ARCount", dns.ARCount) // uint16 // Number of additional records to expect
-
-			// fmt.Println("Entries")
-			// fmt.Println("Questions", dns.Questions)     // []DNSQuestion
-			// fmt.Println("Answers", dns.Answers)         // []DNSResourceRecord
-			// fmt.Println("Authorities", dns.Authorities) // []DNSResourceRecord
-			// fmt.Println("Additionals", dns.Additionals) // []DNSResourceRecord
+			if vp.DecodeProtocolData {
+				dpkt.Layers[i] = struct {
+					Layertype string `json:"layertype"`
+					*layers.DNS
+					Contents bool `json:"Contents,omitempty"`
+					Payload  bool `json:"Payload,omitempty"`
+				}{
+					Layertype: "dns",
+					DNS:       &dns,
+				}
+			} else {
+				rpkt.Layers[i] = &ContentLayer{
+					Layertype: "dns",
+					BaseLayer: &dns.BaseLayer,
+				}
+			}
 
 		case gopacket.LayerTypePayload:
-			// fmt.Println("payload", payload.GoString())
-			// fmt.Println("payload", payload, payload.Payload())
-			// fmt.Println("payload", payload, ":\n", hex.Dump(payload))
-
-		default:
-
+			if vp.DecodeProtocolData {
+				dpkt.Layers[i] = &struct {
+					*gopacket.Payload `json:"payload"`
+				}{Payload: &payload}
+			} else {
+				rpkt.Layers[i] = &struct {
+					*gopacket.Payload `json:"payload"`
+				}{Payload: &payload}
+			}
 		}
-		// fmt.Println()
 	}
-	//TODO: return packet rather than write to pointer -- try to add to packet from general decoder if unknown layer...
+
+	var err error
 	if vp.DecodeProtocolData {
 		*j, err = json.Marshal(dpkt)
 	} else {
 		*j, err = json.Marshal(rpkt)
 	}
-	// fmt.Println()
-	// fmt.Println()
+	vp.ws.ThrowErr(err, "marshalling error: ")
+
 	if parser.Truncated {
-		fmt.Println("Packet has been truncated")
+		vp.ws.ThrowErr(errors.New("packet has been truncated "))
 	}
 	return nil
 }

@@ -27,14 +27,7 @@ func main() {
 		log.Fatal("dial:", err)
 	}
 	defer wsC.Close()
-	ws := wsoc.Con{
-		Conn: wsC,
-		In:   make(chan []byte),
-		Out:  make(chan []byte),
-	}
-	ws.ThrowErr(err, "upgrade:")
-	ws.ReadData()
-	ws.WriteData()
+	ws := wsoc.NewWS(wsC)
 	j, err := json.Marshal([]vpcap.Vpacket{
 		{
 			// Filter: "icmp",
@@ -56,7 +49,16 @@ func main() {
 			SnapshotLen:        1538,
 			Timeout:            30 * time.Second,
 			Limit:              100,
-			IfaceToRead:        "vboxnet0",
+			IfaceToRead:        "invalidDevice",
+			DecodePacket:       true,
+			DecodeProtocolData: true,
+		},
+		{
+			Filter:             "invalid filter",
+			SnapshotLen:        1538,
+			Timeout:            30 * time.Second,
+			Limit:              100,
+			IfaceToRead:        "en3",
 			DecodePacket:       true,
 			DecodeProtocolData: true,
 		},
@@ -70,13 +72,13 @@ func main() {
 	signal.Notify(interrupt, os.Interrupt)
 	go func() {
 		for {
-			msg := <-ws.In
+			msg := <-ws.In()
 			log.Println("received:", string(msg))
 		}
 	}()
 	go func() {
 		for {
-			ws.Out <- j
+			ws.Out() <- j
 			time.Sleep(10 * time.Second)
 		}
 	}()
@@ -85,7 +87,6 @@ func main() {
 		select {
 		case <-interrupt:
 			log.Println("interrupt signal received from os")
-			ws.Close()
 			return
 		}
 	}
