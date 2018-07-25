@@ -20,6 +20,7 @@ type DecodedLayer struct {
 }
 
 type RawTcpIpPacket struct {
+	PacketID  string                   `json:"packet_id,omitempty"`
 	Metadata  *gopacket.PacketMetadata `json:"metadata,omitempty"`
 	Link      []byte                   `json:"link,omitempty"`
 	Network   []byte                   `json:"network,omitempty"`
@@ -28,6 +29,7 @@ type RawTcpIpPacket struct {
 }
 
 type DecodedTcpIpPacket struct {
+	PacketID  string                   `json:"packet_id,omitempty"`
 	Metadata  *gopacket.PacketMetadata `json:"metadata,omitempty"`
 	Link      gopacket.Layer           `json:"link,omitempty"`
 	Network   gopacket.Layer           `json:"network,omitempty"`
@@ -88,6 +90,7 @@ func (vp *Vpacket) generalDecode(packet gopacket.Packet, j *[]byte) error {
 	var err error
 
 	dpkt := DecodedTcpIpPacket{
+		PacketID:  vp.packetID,
 		Link:      packet.LinkLayer(),
 		Network:   packet.NetworkLayer(),
 		Transport: packet.TransportLayer(),
@@ -98,6 +101,7 @@ func (vp *Vpacket) generalDecode(packet gopacket.Packet, j *[]byte) error {
 	dpkt.setPayload(packet)
 	if !vp.DecodeProtocolData {
 		rpkt := RawTcpIpPacket{
+			PacketID: vp.packetID,
 			Metadata: dpkt.Metadata,
 			Payload:  dpkt.Payload,
 		}

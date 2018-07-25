@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 
+	"github.com/axsh/lm2/common/utils"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 )
@@ -16,12 +17,14 @@ type ContentLayer struct {
 }
 
 type RawSortedPacket struct {
+	PacketID string                   `json:"packet_id,omitempty"`
 	Metadata *gopacket.PacketMetadata `json:"metadata,omitempty"`
 	Layers   []interface{}            `json:"layers,omitempty"`
 	Payload  []byte                   `json:"payload,omitempty"`
 }
 
 type DecodedPacket struct {
+	PacketID string                   `json:"packet_id,omitempty"`
 	Metadata *gopacket.PacketMetadata `json:"metadata,omitempty"`
 	Layers   []gopacket.Layer         `json:"layers,omitempty"`
 	Payload  []byte                   `json:"payload,omitempty"`
@@ -124,15 +127,17 @@ func (vp *Vpacket) efficientDecode(packet gopacket.Packet, j *[]byte) error {
 		// fmt.Println(decodedLayers)
 		return err
 	}
-	dl := len(decodedLayers)
 	if vp.SendMetadata {
 		dpkt.Metadata = packet.Metadata()
 	}
+	dl := len(decodedLayers)
 	if vp.DecodeProtocolData {
 		dpkt.Layers = make([]gopacket.Layer, dl, dl)
+		dpkt.PacketID = vp.packetID
 	} else {
 		// rpkt.Layers = make([]*ContentLayer, dl, dl)
 		rpkt.Layers = make([]interface{}, dl, dl)
+		rpkt.PacketID = vp.packetID
 		rpkt.Metadata = dpkt.Metadata
 	}
 	for i, typ := range decodedLayers {
@@ -285,10 +290,10 @@ func (vp *Vpacket) efficientDecode(packet gopacket.Packet, j *[]byte) error {
 	} else {
 		*j, err = json.Marshal(rpkt)
 	}
-	vp.ws.ThrowErr(err, "marshalling error: ")
+	vp.ws.ThrowErr(err, "marshalling error on", vp.packetID, ": ")
 
 	if parser.Truncated {
-		vp.ws.ThrowErr(errors.New("packet has been truncated "))
+		vp.ws.ThrowErr(errors.New(utils.Join("packet ", vp.packetID, " exceeded SnapshotLen -- it has been truncated ")))
 	}
 	return nil
 }

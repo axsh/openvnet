@@ -8,10 +8,15 @@ package main
 // bridge).
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
+
+	"golang.org/x/net/http2"
 
 	"github.com/axsh/openvnet/vcap/utils"
 	"github.com/axsh/openvnet/vcap/vpcap"
@@ -51,5 +56,25 @@ func pcapApi(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	http.HandleFunc("/pcap", pcapApi)
-	log.Fatal(http.ListenAndServe("localhost:8080", nil))
+
+	caCert, err := ioutil.ReadFile("testdata/test_client.crt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(caCert)
+
+	// setup HTTPS
+	tlsConfig := &tls.Config{
+		ClientCAs:  caCertPool,
+		ClientAuth: tls.RequireAndVerifyClientCert,
+	}
+	tlsConfig.BuildNameToCertificate()
+
+	server := &http.Server{
+		Addr:      ":8443",
+		TLSConfig: tlsConfig,
+	}
+	http2.ConfigureServer(server, nil)
+	server.ListenAndServeTLS("testdata/test_server.crt", "testdata/test_server.key")
 }

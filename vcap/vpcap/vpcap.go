@@ -30,9 +30,12 @@ const (
 )
 
 type Vpacket struct {
-	handle             *pcap.Handle //`json:"handle,omitempty"`
-	w                  *pcapgo.Writer
-	ws                 wsoc.WS
+	handle   *pcap.Handle //`json:"handle,omitempty"`
+	w        *pcapgo.Writer
+	ws       wsoc.WS
+	packetID string
+
+	RequestID          string        `json:"requestid,omitempty"`
 	Filter             string        `json:"filter,omitempty"`
 	SnapshotLen        int32         `json:"snapshotLen,omitempty"`
 	Promiscuous        bool          `json:"promiscuous,omitempty"`
@@ -122,6 +125,9 @@ func (vp *Vpacket) Validate(ws wsoc.WS) bool {
 
 	vp.ws = ws
 
+	if vp.RequestID == "" {
+		vp.RequestID = utils.RandString(4)
+	}
 	if vp.ReadFile != "" {
 		// check if file exists
 		if _, err := os.Stat(vp.ReadFile); err != nil {
@@ -247,6 +253,7 @@ func (vp *Vpacket) DoPcap() {
 		if vp.ws.IsClosed() {
 			break
 		}
+		vp.packetID = utils.Join(vp.RequestID, "-", vp.IfaceToRead, "-", strconv.Itoa(packetCount))
 		if vp.SendRawPacket {
 			// data, _, err := vp.handle.ZeroCopyReadPacketData()
 			// vp.ws.ThrowErr(err, "problem sending raw packet from ", vp.IfaceToRead, ":")
@@ -271,10 +278,10 @@ func (vp *Vpacket) DoPcap() {
 				vp.ws.ThrowErr(vp.generalDecode(packet, j))
 				// vp.ws.ThrowErr(vp.generalDecode(<-gopacket.NewPacketSource(vp.handle,
 				// 	vp.handle.LinkType()).Packets(), j))
-				fmt.Println()
 			}
 			if len(*j) != 0 {
-				fmt.Println(string(*j))
+				// fmt.Println(string(*j))
+				// fmt.Println()
 				vp.ws.Out() <- *j
 			}
 			// })

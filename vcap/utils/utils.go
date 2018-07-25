@@ -3,7 +3,9 @@ package utils
 import (
 	"errors"
 	"log"
+	"math/rand"
 	"strings"
+	"time"
 )
 
 var (
@@ -28,6 +30,18 @@ var (
 	golimit = 10000
 	Limiter = make(chan struct{}, golimit)
 )
+
+// RandString returns a random string from the character set of numerals (0-9),
+// lowercase letters (a-z), and uppercase letters (A-Z).
+func RandString(n int) string {
+	const stringChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	randFromSeed := rand.New(rand.NewSource(time.Now().UnixNano()))
+	s := make([]byte, n, n)
+	for i := range s {
+		s[i] = stringChars[randFromSeed.Intn(62)]
+	}
+	return string(s)
+}
 
 // LimitedGo is a wrapper to launch goroutines with a limit of golimit. This
 // could be done with waitgroups, but not without either introducing race
