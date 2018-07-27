@@ -18,9 +18,9 @@ import (
 
 	"golang.org/x/net/http2"
 
-	"github.com/axsh/openvnet/vcap/utils"
-	"github.com/axsh/openvnet/vcap/vpcap"
-	"github.com/axsh/openvnet/vcap/wsoc"
+	"github.com/axsh/pcap/utils"
+	"github.com/axsh/pcap/vpcap"
+	"github.com/axsh/pcap/wsoc"
 	"github.com/gorilla/websocket"
 )
 
@@ -56,6 +56,17 @@ func pcapApi(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	http.HandleFunc("/pcap", pcapApi)
+
+	// ifaces, _ := pcap.FindAllDevs()
+	// for _, iface := range ifaces {
+	// 	fmt.Println("\nName: ", iface.Name)
+	// 	fmt.Println("Description: ", iface.Description)
+	// 	fmt.Println("Ifaces addresses: ", iface.Description)
+	// 	for _, address := range iface.Addresses {
+	// 		fmt.Println("- IP address: ", address.IP)
+	// 		fmt.Println("- Subnet mask: ", address.Netmask)
+	// 	}
+	// }
 
 	caCert, err := ioutil.ReadFile("testdata/test_client.crt")
 	if err != nil {

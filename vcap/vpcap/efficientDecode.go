@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/axsh/lm2/common/utils"
+	"github.com/axsh/pcap/utils"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 )
@@ -36,14 +36,6 @@ func (vp *Vpacket) efficientDecode(packet gopacket.Packet, j *[]byte) error {
 	// conditional struct setting for returning api calls
 	// layers to consider adding:
 
-	// higher priority
-
-	/* ICMPv4
-	   TypeCode ICMPv4TypeCode
-	   Checksum uint16
-	   Id       uint16
-	   Seq      uint16 */
-
 	/* ICMPv6
 	   TypeCode ICMPv6TypeCode
 	   Checksum uint16
@@ -64,24 +56,6 @@ func (vp *Vpacket) efficientDecode(packet gopacket.Packet, j *[]byte) error {
 	   TargetAddress net.IP
 	   Options       ICMPv6Options */
 
-	/* LinkLayerDiscovery
-	   ChassisID LLDPChassisID
-	   PortID    LLDPPortID
-	   TTL       uint16
-	   Values    []LinkLayerDiscoveryValue */
-
-	/* LinkLayerDiscoveryInfo
-	   PortDescription string
-	   SysName         string
-	   SysDescription  string
-	   SysCapabilities LLDPSysCapabilities
-	   MgmtAddress     LLDPMgmtAddress
-	   OrgTLVs         []LLDPOrgSpecificTLV      // Private TLVs
-	   Unknown         []LinkLayerDiscoveryValue // undecoded TLVs */
-
-	// lower priority
-	// Loopback
-	// GRE
 	// vxlan
 	// IPSec
 	// dhcp
@@ -101,18 +75,21 @@ func (vp *Vpacket) efficientDecode(packet gopacket.Packet, j *[]byte) error {
 		dpkt DecodedPacket
 		rpkt RawSortedPacket
 
-		arp     layers.ARP
-		eth     layers.Ethernet
-		ip4     layers.IPv4
-		ip6     layers.IPv6
-		tcp     layers.TCP
-		udp     layers.UDP
-		dns     layers.DNS
-		payload gopacket.Payload
+		loopback layers.Loopback
+		icmp4    layers.ICMPv4
+		arp      layers.ARP
+		eth      layers.Ethernet
+		gre      layers.GRE
+		ip4      layers.IPv4
+		ip6      layers.IPv6
+		tcp      layers.TCP
+		udp      layers.UDP
+		dns      layers.DNS
+		payload  gopacket.Payload
 	)
 	parser := gopacket.NewDecodingLayerParser(layers.LayerTypeEthernet,
 		// parser := gopacket.NewDecodingLayerParser(vp.handle.LinkType().LayerType(),
-		&eth, &arp, &ip4, &ip6, &tcp, &udp, &dns, &payload)
+		&eth, &loopback, &icmp4, &arp, &gre, &ip4, &ip6, &tcp, &udp, &dns, &payload)
 
 	// TODO: find a better way to decide on the capacity of this array rather than an arbitrary 10 layer max
 	decodedLayers := make([]gopacket.LayerType, 0, 10)
@@ -145,6 +122,43 @@ func (vp *Vpacket) efficientDecode(packet gopacket.Packet, j *[]byte) error {
 		// Either send Contents, or send the other fields
 		// -- not both as they contain the same data
 		switch typ {
+
+		case layers.LayerTypeLoopback:
+			if vp.DecodeProtocolData {
+				dpkt.Layers[i] = struct {
+					Layertype string `json:"layertype"`
+					*layers.Loopback
+					Contents bool `json:"Contents,omitempty"`
+					Payload  bool `json:"Payload,omitempty"`
+				}{
+					Layertype: "loopback",
+					Loopback:  &loopback,
+				}
+			} else {
+				rpkt.Layers[i] = &ContentLayer{
+					Layertype: "loopback",
+					BaseLayer: &loopback.BaseLayer,
+				}
+			}
+
+		case layers.LayerTypeICMPv4:
+			if vp.DecodeProtocolData {
+				dpkt.Layers[i] = struct {
+					Layertype string `json:"layertype"`
+					*layers.ICMPv4
+					Contents bool `json:"Contents,omitempty"`
+					Payload  bool `json:"Payload,omitempty"`
+				}{
+					Layertype: "icmp4",
+					ICMPv4:    &icmp4,
+				}
+			} else {
+				rpkt.Layers[i] = &ContentLayer{
+					Layertype: "icmp4",
+					BaseLayer: &icmp4.BaseLayer,
+				}
+			}
+
 		case layers.LayerTypeARP:
 			if vp.DecodeProtocolData {
 				dpkt.Layers[i] = struct {
@@ -196,6 +210,24 @@ func (vp *Vpacket) efficientDecode(packet gopacket.Packet, j *[]byte) error {
 				rpkt.Layers[i] = &ContentLayer{
 					Layertype: "IPv4",
 					BaseLayer: &ip4.BaseLayer,
+				}
+			}
+
+		case layers.LayerTypeGRE:
+			if vp.DecodeProtocolData {
+				dpkt.Layers[i] = struct {
+					Layertype string `json:"layertype"`
+					*layers.GRE
+					Contents bool `json:"Contents,omitempty"`
+					Payload  bool `json:"Payload,omitempty"`
+				}{
+					Layertype: "GRE",
+					GRE:       &gre,
+				}
+			} else {
+				rpkt.Layers[i] = &ContentLayer{
+					Layertype: "GRE",
+					BaseLayer: &gre.BaseLayer,
 				}
 			}
 

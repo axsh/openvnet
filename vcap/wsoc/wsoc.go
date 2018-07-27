@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/axsh/openvnet/vcap/utils"
+	"github.com/axsh/pcap/utils"
 	"github.com/gorilla/websocket"
 )
 

@@ -14,25 +14,30 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/axsh/openvnet/vcap/wsoc"
+	"github.com/axsh/pcap/wsoc"
 	"github.com/gorilla/websocket"
 )
 
-var addr = flag.String("addr", "localhost:8443", "http service address")
+var (
+	addr = flag.String("addr", "localhost:8443", "http service address")
+	dev  = flag.String("dev", "en3", "device to read")
+)
 
 func init() {
 	flag.Parse()
 }
 
 func main() {
+	fmt.Println(*dev)
+
 	// load client cert
-	cert, err := tls.LoadX509KeyPair("testdata/test_client.crt", "testdata/test_client.key")
+	cert, err := tls.LoadX509KeyPair("../testdata/test_client.crt", "../testdata/test_client.key")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// load CA cert
-	caCert, err := ioutil.ReadFile("testdata/testroot.crt")
+	caCert, err := ioutil.ReadFile("../testdata/testroot.crt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -62,74 +67,75 @@ func main() {
 	}
 	defer wsC.Close()
 	ws := wsoc.NewWS(wsC)
-	// j, err := json.Marshal([]vpcap.Vpacket{
 	j, err := json.Marshal([]map[string]interface{}{
 		{
 			"RequestID":   "not icmp",
 			"Filter":      "not icmp",
 			"SnapshotLen": 1538,
 			// "Promiscuous":   true,
-			"Timeout":     30 * time.Second,
-			"Limit":       100,
-			"IfaceToRead": "en3",
-			// "ReadFile":      "",
-			// "WriteFile":     "",
+			"Timeout": 30 * time.Second,
+			"Limit":   100,
+			// "IfaceToRead": "en3",
+			"IfaceToRead": *dev,
+			// "ReadFile":    "test.pcap",
+			// "WriteFile": "test.pcap",
 			// "SendRawPacket": true,
 			// "SendMetadata":  true,
 			"DecodePacket":       true,
 			"DecodeProtocolData": true,
 		},
 		{
-			"RequestID":          "icmp",
-			"Filter":             "icmp",
-			"SnapshotLen":        1538,
-			"Timeout":            30 * time.Second,
-			"Limit":              100,
-			"IfaceToRead":        "en3",
+			"RequestID":   "icmp",
+			"Filter":      "icmp",
+			"SnapshotLen": 1538,
+			"Timeout":     30 * time.Second,
+			"Limit":       100,
+			// "IfaceToRead":        "en3",
+			"IfaceToRead":        *dev,
 			"DecodePacket":       true,
 			"DecodeProtocolData": true,
 		},
-		{
-			"Filter":             "icmp",
-			"SnapshotLen":        1538,
-			"Timeout":            30 * time.Second,
-			"Limit":              100,
-			"IfaceToRead":        "invalidDevice",
-			"DecodePacket":       true,
-			"DecodeProtocolData": true,
-		},
-		{
-			"Filter":             "invalid filter",
-			"SnapshotLen":        1538,
-			"Timeout":            30 * time.Second,
-			"Limit":              100,
-			"IfaceToRead":        "en3",
-			"DecodePacket":       true,
-			"DecodeProtocolData": true,
-		},
+		// {
+		// 	"Filter":             "icmp",
+		// 	"SnapshotLen":        1538,
+		// 	"Timeout":            30 * time.Second,
+		// 	"Limit":              100,
+		// 	"IfaceToRead":        "invalidDevice",
+		// 	"DecodePacket":       true,
+		// 	"DecodeProtocolData": true,
+		// },
+		// {
+		// 	"Filter":             "invalid filter",
+		// 	"SnapshotLen":        1538,
+		// 	"Timeout":            30 * time.Second,
+		// 	"Limit":              100,
+		// 	"IfaceToRead":        "en3",
+		// 	"DecodePacket":       true,
+		// 	"DecodeProtocolData": true,
+		// },
 	})
 	if err != nil {
 		log.Println("marshal:", err)
 		return
 	}
 
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt)
 	go func() {
 		for {
 			msg := <-ws.In()
 			var decodedMsg map[string]interface{}
+			fmt.Println()
 			if json.Valid(msg) {
 				if err := json.Unmarshal(msg, &decodedMsg); err != nil {
 					log.Fatal(err)
 				}
-				fmt.Println()
 				fmt.Println("received:", decodedMsg)
 			} else {
 				fmt.Println("received:", string(msg))
 			}
 		}
 	}()
+
+	// This doesn't need to repeat, but it's a crude simulation of a user making regular api requests
 	go func() {
 		for {
 			ws.Out() <- j
@@ -137,6 +143,9 @@ func main() {
 		}
 	}()
 
+	// run until <ctrl>-c or other os interrupt
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt)
 	for {
 		select {
 		case <-interrupt:

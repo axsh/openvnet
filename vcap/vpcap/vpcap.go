@@ -9,8 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/axsh/openvnet/vcap/utils"
-	"github.com/axsh/openvnet/vcap/wsoc"
+	customLayers "github.com/axsh/pcap/layers"
+	"github.com/axsh/pcap/utils"
+	"github.com/axsh/pcap/wsoc"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
@@ -76,27 +77,22 @@ func (vp *Vpacket) readIface() error {
 	return errors.New(utils.Join("could not find ", vp.IfaceToRead))
 }
 
-// TODO: think of something more generic and flexible than a tcp restriction
 func (vp *Vpacket) createAndSendTCPpacket(rawBytes []byte) error {
-	// these layers should be fields in the struct
-	ipLayer := &layers.IPv4{
-		SrcIP: net.IP{127, 0, 0, 1},
-		DstIP: net.IP{8, 8, 8, 8},
-	}
-	ethernetLayer := &layers.Ethernet{
-		SrcMAC: net.HardwareAddr{0xFF, 0xAA, 0xFA, 0xAA, 0xFF, 0xAA},
-		DstMAC: net.HardwareAddr{0xBD, 0xBD, 0xBD, 0xBD, 0xBD, 0xBD},
-	}
-	tcpLayer := &layers.TCP{
-		SrcPort: layers.TCPPort(4321),
-		DstPort: layers.TCPPort(80),
-	}
 	buffer := gopacket.NewSerializeBuffer()
 	var options gopacket.SerializeOptions
 	gopacket.SerializeLayers(buffer, options,
-		ethernetLayer,
-		ipLayer,
-		tcpLayer,
+		&layers.Ethernet{
+			SrcMAC: net.HardwareAddr{0xFF, 0xAA, 0xFA, 0xAA, 0xFF, 0xAA},
+			DstMAC: net.HardwareAddr{0xBD, 0xBD, 0xBD, 0xBD, 0xBD, 0xBD},
+		},
+		&layers.IPv4{
+			SrcIP: net.IP{127, 0, 0, 1},
+			DstIP: net.IP{8, 8, 8, 8},
+		},
+		&layers.TCP{
+			SrcPort: layers.TCPPort(4321),
+			DstPort: layers.TCPPort(80),
+		},
 		gopacket.Payload(rawBytes),
 	)
 
@@ -105,17 +101,57 @@ func (vp *Vpacket) createAndSendTCPpacket(rawBytes []byte) error {
 	}
 
 	return nil
+}
 
+// createAndSendModbusPacket creates and sends a modbus packet using modbus
+// packet data (including the payload data) with the option to include an
+// ethernet layer. It will be sent on the device in vp.handle.
+func (vp *Vpacket) createAndSendModbusPacket(rawBytes []byte,
+	ethLayer ...*layers.Ethernet) error {
+	if len(ethLayer) > 1 {
+		return errors.New("error creating modbus packet: " +
+			"a maximum of one ethLayer is supported at this time")
+	}
+	modbusLayer := &customLayers.Modbus{}
+	if err := modbusLayer.DecodeFromBytes(rawBytes, gopacket.NilDecodeFeedback); err != nil {
+		return err
+	}
+
+	buffer := gopacket.NewSerializeBuffer()
+	var options gopacket.SerializeOptions
+	if len(ethLayer) != 0 {
+		gopacket.SerializeLayers(buffer, options,
+			ethLayer[0],
+			modbusLayer,
+			gopacket.Payload(modbusLayer.Payload),
+		)
+	} else {
+		gopacket.SerializeLayers(buffer, options,
+			modbusLayer,
+			gopacket.Payload(modbusLayer.Payload),
+		)
+	}
+
+	if err := vp.handle.WritePacketData(buffer.Bytes()); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (vp *Vpacket) sendRawPacket(rawBytes []byte) error {
 	// for packets formed elsewhere --
 	// or just raw data...better hope it has an address somewhere!
-	// handle.WritePacketData(rawBytes)
+	// vp.handle.WritePacketData(rawBytes)
 	// to make this safer, it could be checked with something like:
-	// packet := gopacket.NewPacket(
-	// 	rawBytes,
-	// 	handle.LinkType(),
-	// 	gopacket.Default,
-	// )
-	// handle.WritePacketData(packet.Data())
+	packet := gopacket.NewPacket(
+		rawBytes,
+		vp.handle.LinkType(),
+		gopacket.Default,
+	)
+	vp.handle.WritePacketData(packet.Data())
+
+	return nil
 }
 
 // TODO: check whether an identical pcap is already running -- if so, don't do anything
