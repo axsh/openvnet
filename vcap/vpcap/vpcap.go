@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	customLayers "github.com/axsh/pcap/layers"
-	"github.com/axsh/pcap/utils"
-	"github.com/axsh/pcap/wsoc"
+	customLayers "github.com/axsh/openvnet/vcap/layers"
+	"github.com/axsh/openvnet/vcap/utils"
+	"github.com/axsh/openvnet/vcap/wsoc"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"

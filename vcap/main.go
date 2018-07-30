@@ -18,29 +18,32 @@ import (
 
 	"golang.org/x/net/http2"
 
-	"github.com/axsh/pcap/utils"
-	"github.com/axsh/pcap/vpcap"
-	"github.com/axsh/pcap/wsoc"
+	"github.com/axsh/openvnet/vcap/utils"
+	"github.com/axsh/openvnet/vcap/vpcap"
+	"github.com/axsh/openvnet/vcap/wsoc"
 	"github.com/gorilla/websocket"
 )
 
-func pcapApi(w http.ResponseWriter, r *http.Request) {
+func pcapAPI(w http.ResponseWriter, r *http.Request) {
 	upgrader := websocket.Upgrader{}
 	wsC, err := upgrader.Upgrade(w, r, nil)
 	ws := wsoc.NewWS(wsC)
 	ws.ThrowErr(err, "upgrade:")
 	for msg := range ws.In() {
 		fmt.Println(string(msg))
+		// ws.Out() <- msg
 		utils.LimitedGo(func() {
 			var vps []vpcap.Vpacket
 			json.Unmarshal(msg, &vps)
+			fmt.Println(vps)
 			// var vp vpcap.Vpacket
 			// json.Unmarshal(msg, &vp)
 			for _, vp := range vps {
 				log.Println("received message:", vp)
 				//TODO: can't close over vp in anonymous func as argument to LimitedGo
-				// (if not passed explicitly, all values seem to be updated as the for loop progresses)
-				// -- find a better workaround (vps[i] also doesn't work...) or allow utils.LimitedGo to pass in args
+				// (if not passed explicitly, all values seem to be updated as the for
+				// loop progresses) -- find a better workaround (passing in vps[i] also
+				// doesn't work...) or allow utils.LimitedGo to pass in args
 				utils.Limiter <- struct{}{}
 				go func(vp vpcap.Vpacket) {
 					defer func() { <-utils.Limiter }()
@@ -54,8 +57,22 @@ func pcapApi(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func serveHome(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		http.Error(w, "Not found", http.StatusNotFound)
+		return
+	}
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(w, r, "test.html")
+	// http.ServeFile(w, r, "home.html")
+}
+
 func main() {
-	http.HandleFunc("/pcap", pcapApi)
+	http.HandleFunc("/", serveHome)
+	http.HandleFunc("/pcap", pcapAPI)
 
 	// ifaces, _ := pcap.FindAllDevs()
 	// for _, iface := range ifaces {
@@ -68,7 +85,8 @@ func main() {
 	// 	}
 	// }
 
-	caCert, err := ioutil.ReadFile("testdata/test_client.crt")
+	// caCert, err := ioutil.ReadFile("testdata/test_client.crt")
+	caCert, err := ioutil.ReadFile("testdata/testroot.crt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -85,6 +103,20 @@ func main() {
 		Addr:      ":8443",
 		TLSConfig: tlsConfig,
 	}
+
+	tlsHomeConfig := &tls.Config{
+		ClientCAs:  caCertPool,
+		ClientAuth: tls.NoClientCert,
+	}
+	tlsHomeConfig.BuildNameToCertificate()
+	serverHome := &http.Server{
+		Addr:      ":443",
+		TLSConfig: tlsHomeConfig,
+	}
+	http2.ConfigureServer(serverHome, nil)
+	go serverHome.ListenAndServeTLS("testdata/test_server.crt", "testdata/test_server.key")
+	go http.ListenAndServe(":8080", nil)
+
 	http2.ConfigureServer(server, nil)
 	server.ListenAndServeTLS("testdata/test_server.crt", "testdata/test_server.key")
 }

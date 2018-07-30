@@ -15,7 +15,7 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/axsh/pcap/utils"
+	"github.com/axsh/openvnet/vcap/utils"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 )

@@ -14,7 +14,7 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/axsh/pcap/wsoc"
+	"github.com/axsh/openvnet/vcap/wsoc"
 	"github.com/gorilla/websocket"
 )
 
@@ -25,6 +25,19 @@ var (
 
 func init() {
 	flag.Parse()
+}
+
+func serveHome(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.URL)
+	if r.URL.Path != "/" {
+		http.Error(w, "Not found", http.StatusNotFound)
+		return
+	}
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(w, r, "home.html")
 }
 
 func main() {
@@ -69,12 +82,12 @@ func main() {
 	ws := wsoc.NewWS(wsC)
 	j, err := json.Marshal([]map[string]interface{}{
 		{
-			"RequestID":   "not icmp",
+			// "RequestID":   "not icmp",
 			"Filter":      "not icmp",
 			"SnapshotLen": 1538,
 			// "Promiscuous":   true,
 			"Timeout": 30 * time.Second,
-			"Limit":   100,
+			"Limit":   10,
 			// "IfaceToRead": "en3",
 			"IfaceToRead": *dev,
 			// "ReadFile":    "test.pcap",
@@ -85,11 +98,11 @@ func main() {
 			"DecodeProtocolData": true,
 		},
 		{
-			"RequestID":   "icmp",
+			// "RequestID":   "icmp",
 			"Filter":      "icmp",
 			"SnapshotLen": 1538,
 			"Timeout":     30 * time.Second,
-			"Limit":       100,
+			"Limit":       10,
 			// "IfaceToRead":        "en3",
 			"IfaceToRead":        *dev,
 			"DecodePacket":       true,
@@ -99,7 +112,7 @@ func main() {
 		// 	"Filter":             "icmp",
 		// 	"SnapshotLen":        1538,
 		// 	"Timeout":            30 * time.Second,
-		// 	"Limit":              100,
+		// 	"Limit":              10,
 		// 	"IfaceToRead":        "invalidDevice",
 		// 	"DecodePacket":       true,
 		// 	"DecodeProtocolData": true,
@@ -108,7 +121,7 @@ func main() {
 		// 	"Filter":             "invalid filter",
 		// 	"SnapshotLen":        1538,
 		// 	"Timeout":            30 * time.Second,
-		// 	"Limit":              100,
+		// 	"Limit":              10,
 		// 	"IfaceToRead":        "en3",
 		// 	"DecodePacket":       true,
 		// 	"DecodeProtocolData": true,
@@ -119,6 +132,8 @@ func main() {
 		return
 	}
 
+	fmt.Println(string(j))
+
 	go func() {
 		for {
 			msg := <-ws.In()
@@ -127,6 +142,7 @@ func main() {
 			if json.Valid(msg) {
 				if err := json.Unmarshal(msg, &decodedMsg); err != nil {
 					log.Fatal(err)
+					// log.Println(err)
 				}
 				fmt.Println("received:", decodedMsg)
 			} else {
