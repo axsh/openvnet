@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <script type="text/javascript">
+    window.addEventListener("load", function(evt) {
+
+      var output = document.getElementById("output");
+      var input = document.getElementById("input");
+      var ws;
+
+      var print = function(message) {
+        var d = document.createElement("div");
+        /* d.innerHTML = message; */
+        d.innerHTML = message;
+        output.appendChild(d);
+      };
+
+      document.getElementById("open").onclick = function(evt) {
+        if (ws) {
+          print("Websocket still open; nothing to be done.");
+          return false;
+        }
+        var loc = window.location, new_uri;
+        if (loc.protocol === "https:") {
+          new_uri = "wss:";
+        } else {
+          new_uri = "ws:";
+        }
+        new_uri += "//" + loc.host;
+        new_uri += loc.pathname + "pcap";
+        ws = new WebSocket(new_uri);
+        ws.onopen = function(evt) {
+          print("Websocket opened");
+        }
+        ws.onclose = function(evt) {
+          print("Websocket closed");
+          ws = null;
+        }
+        ws.onmessage = function(evt) {
+          /* print("Received from server: " + evt.data); */
+          print("Received from server: " + JSON.parse(evt.data).packet_id);
+        }
+        ws.onerror = function(evt) {
+          print("ERROR: " + evt.data);
+        }
+        return false;
+      };
+
+      document.getElementById("send").onclick = function(evt) {
+        if (!ws) {
+          return false;
+        }
+        var obj =[{
+          "requestID":requestID.value,
+          "filter":filter.value,
+          "snapshotLen": parseInt(snapshotLen.value, 10),
+          "promiscuous":promiscuous.value,
+          "timeout":parseInt(timeout.value),
+          "limit":parseInt(limit.value),
+          "ifaceToRead":ifaceToRead.value,
+          "readFile":readFile.value,
+          "writeFile":writeFile.value,
+          "sendRawPacket":sendRawPacket.value,
+          "sendMetadata":sendMetadata.value,
+          "decodePacket":decodePacket.value,
+          "decodeProtocolData":decodeProtocolData.value
+        }];
+        var toSend = JSON.stringify(obj);
+        print("Sending request: " + toSend);
+        ws.send(toSend);
+        return false;
+      };
+
+      document.getElementById("close").onclick = function(evt) {
+        if (!ws) {
+          print("No websocket open; nothing to be done.");
+          return false;
+        }
+        ws.close();
+        print("Websocket closed.");
+        return false;
+      };
+    });
+
+  </script>
+
+</head>
+<body>
+  <p>Click "Open" to create a connection to the server, "Close" to close the connection,
+    and "Send" to send a request to the server.
+    You can change the request and send multiple times.
+  </p>
+<table>
+  <tr>
+    <td valign="top" width="25%">
+    <form>
+      <table>
+        <tr><td><button id="open">Open</button></td>
+        <td><button id="close">Close</button><br></td></tr>
+        <tr><td><label for="requestID" >requestID:</label></td>
+        <td><input id="requestID" type="text" value=""></td></tr>
+        <tr><td><label for="filter">berkley packet filter:</label></td>
+        <td><input id="filter" type="text" value=""></td></tr>
+        <tr><td><label for="snapshotLen">max packet length:</label></td>
+        <td><input id="snapshotLen" type="number" value=1538></td></tr>
+        <tr><td><label for="promiscuous">capture promiscuously:</label></td>
+        <td><input id="promiscuous" type="text" value="false"></td></tr>
+        <tr><td><label for="timeout">timeout (in ns):</label></td>
+        <td><input id="timeout" type="number" value="30000000000"></td></tr>
+        <tr><td><label for="limit">number of packets:</label></td>
+        <td><input id="limit" type="number" value="10"></td></tr>
+        <tr><td><label for="ifaceToRead">interface to read:</label></td>
+        <td><input id="ifaceToRead" type="text" value="en3"></td></tr>
+        <tr><td><label for="readFile">read from file:</label></td>
+        <td><input id="readFile" type="text" value=""></td></tr>
+        <tr><td><label for="writeFile">save output to file:</label></td>
+        <td><input id="writeFile" type="text" value=""></td></tr>
+        <tr><td><label for="sendRawPacket">also send raw packet:</label></td>
+        <td><input id="sendRawPacket" type="text" value="false"></td></tr>
+        <tr><td><label for="sendMetadata">also send metadata:</label></td>
+        <td><input id="sendMetadata" type="text" value="false"></td></tr>
+        <tr><td><label for="decodePacket">decode packet data:</label></td>
+        <td><input id="decodePacket" type="text" value="true"></td></tr>
+        <tr><td><label for="decodeProtocolData">decode protocol data:</label></td>
+        <td><input id="decodeProtocolData" type="text" value="true"></td></tr>
+        <tr><td><button id="send">Send</button></td></tr>
+      </table>
+    </form>
+    </td>
+    <td valign="top" width="25%">
+      <div id="output"></div>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
