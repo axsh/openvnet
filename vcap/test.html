@@ -10,8 +10,8 @@
 
       var print = function(message) {
         var d = document.createElement("div");
-        /* d.innerHTML = message; */
         d.innerHTML = message;
+        /* output.innerHTML=""; */
         output.appendChild(d);
       };
 
@@ -37,8 +37,37 @@
           ws = null;
         }
         ws.onmessage = function(evt) {
+          function parseJSON(object) {
+            var out = '';
+            for (property in object) if (object.hasOwnProperty(property)) {
+              if (object[property] === undefined || object[property] === null) {
+                out += property + ':' + object[property] + '<br>';
+              } else {
+                if (object[property].constructor === Object || object[property].constructor === Array) {
+                  out += '<br>' + property + ':<br>';
+                  out += parseJSON(object[property]);
+                } else {
+                  if (property === "payload"){
+                    out += property + ':' + window.atob(object[property]) + '<br>';
+                  } else {
+                    out += property + ':' + object[property] + '<br>';
+                  }
+                }
+              }
+            }
+            return out;
+          }
+          var toPrint;
+          try {
+            toPrint=parseJSON(JSON.parse(evt.data));
+          } catch (e) {
+            //if (e === evt.data is not valid json){
+            toPrint=evt.data;
+            //} else { handle whatever other error is in e }
+          }
+          print("Received response: " + '<br><br>' + toPrint);
+
           /* print("Received from server: " + evt.data); */
-          print("Received from server: " + JSON.parse(evt.data).packet_id);
         }
         ws.onerror = function(evt) {
           print("ERROR: " + evt.data);
@@ -48,24 +77,29 @@
 
       document.getElementById("send").onclick = function(evt) {
         if (!ws) {
+          print("No open websocket; please click 'Open'")
           return false;
         }
-        var obj =[{
+        var obj = {
           "requestID":requestID.value,
           "filter":filter.value,
           "snapshotLen": parseInt(snapshotLen.value, 10),
-          "promiscuous":promiscuous.value,
+          "promiscuous":JSON.parse(promiscuous.value),
           "timeout":parseInt(timeout.value),
           "limit":parseInt(limit.value),
           "ifaceToRead":ifaceToRead.value,
           "readFile":readFile.value,
           "writeFile":writeFile.value,
-          "sendRawPacket":sendRawPacket.value,
-          "sendMetadata":sendMetadata.value,
-          "decodePacket":decodePacket.value,
-          "decodeProtocolData":decodeProtocolData.value
-        }];
-        var toSend = JSON.stringify(obj);
+          "sendRawPacket":JSON.parse(sendRawPacket.value),
+          "sendMetadata":JSON.parse(sendMetadata.value),
+          "decodePacket":JSON.parse(decodePacket.value),
+          "decodeProtocolData":JSON.parse(decodeProtocolData.value)
+        };
+        var obj2={};
+        for (element in obj) if (obj[element] != "") {
+          obj2[element] = obj[element];
+        }
+        var toSend = JSON.stringify([obj2]);
         print("Sending request: " + toSend);
         ws.send(toSend);
         return false;
@@ -118,7 +152,7 @@
         <tr><td><label for="sendRawPacket">also send raw packet:</label></td>
         <td><input id="sendRawPacket" type="text" value="false"></td></tr>
         <tr><td><label for="sendMetadata">also send metadata:</label></td>
-        <td><input id="sendMetadata" type="text" value="false"></td></tr>
+        <td><input id="sendMetadata" type="text" value="true"></td></tr>
         <tr><td><label for="decodePacket">decode packet data:</label></td>
         <td><input id="decodePacket" type="text" value="true"></td></tr>
         <tr><td><label for="decodeProtocolData">decode protocol data:</label></td>

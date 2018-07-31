@@ -31,10 +31,10 @@ const (
 )
 
 type Vpacket struct {
-	handle   *pcap.Handle //`json:"handle,omitempty"`
-	w        *pcapgo.Writer
-	ws       wsoc.WS
-	packetID string
+	handle    *pcap.Handle //`json:"handle,omitempty"`
+	w         *pcapgo.Writer
+	ws        wsoc.WS
+	packetNum string
 
 	RequestID          string        `json:"requestid,omitempty"`
 	Filter             string        `json:"filter,omitempty"`
@@ -289,7 +289,7 @@ func (vp *Vpacket) DoPcap() {
 		if vp.ws.IsClosed() {
 			break
 		}
-		vp.packetID = utils.Join(vp.RequestID, "-", vp.IfaceToRead, "-", strconv.Itoa(packetCount))
+		vp.packetNum = strconv.Itoa(packetCount)
 		if vp.SendRawPacket {
 			// data, _, err := vp.handle.ZeroCopyReadPacketData()
 			// vp.ws.ThrowErr(err, "problem sending raw packet from ", vp.IfaceToRead, ":")

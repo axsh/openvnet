@@ -17,17 +17,21 @@ type ContentLayer struct {
 }
 
 type RawSortedPacket struct {
-	PacketID string                   `json:"packet_id,omitempty"`
-	Metadata *gopacket.PacketMetadata `json:"metadata,omitempty"`
-	Layers   []interface{}            `json:"layers,omitempty"`
-	Payload  []byte                   `json:"payload,omitempty"`
+	RequestID string                   `json:"request_id,omitempty"`
+	Interface string                   `json:"interface,omitempty"`
+	PacketNum string                   `json:"packet_number,omitempty"`
+	Metadata  *gopacket.PacketMetadata `json:"metadata,omitempty"`
+	Layers    []interface{}            `json:"layers,omitempty"`
+	Payload   []byte                   `json:"payload,omitempty"`
 }
 
 type DecodedPacket struct {
-	PacketID string                   `json:"packet_id,omitempty"`
-	Metadata *gopacket.PacketMetadata `json:"metadata,omitempty"`
-	Layers   []gopacket.Layer         `json:"layers,omitempty"`
-	Payload  []byte                   `json:"payload,omitempty"`
+	RequestID string                   `json:"request_id,omitempty"`
+	Interface string                   `json:"interface,omitempty"`
+	PacketNum string                   `json:"packet_number,omitempty"`
+	Metadata  *gopacket.PacketMetadata `json:"metadata,omitempty"`
+	Layers    []gopacket.Layer         `json:"layers,omitempty"`
+	Payload   []byte                   `json:"payload,omitempty"`
 }
 
 func (vp *Vpacket) efficientDecode(packet gopacket.Packet, j *[]byte) error {
@@ -110,11 +114,15 @@ func (vp *Vpacket) efficientDecode(packet gopacket.Packet, j *[]byte) error {
 	dl := len(decodedLayers)
 	if vp.DecodeProtocolData {
 		dpkt.Layers = make([]gopacket.Layer, dl, dl)
-		dpkt.PacketID = vp.packetID
+		dpkt.RequestID = vp.RequestID
+		dpkt.Interface = vp.IfaceToRead
+		dpkt.PacketNum = vp.packetNum
 	} else {
 		// rpkt.Layers = make([]*ContentLayer, dl, dl)
 		rpkt.Layers = make([]interface{}, dl, dl)
-		rpkt.PacketID = vp.packetID
+		rpkt.RequestID = vp.RequestID
+		rpkt.Interface = vp.IfaceToRead
+		rpkt.PacketNum = vp.packetNum
 		rpkt.Metadata = dpkt.Metadata
 	}
 	for i, typ := range decodedLayers {
@@ -322,10 +330,10 @@ func (vp *Vpacket) efficientDecode(packet gopacket.Packet, j *[]byte) error {
 	} else {
 		*j, err = json.Marshal(rpkt)
 	}
-	vp.ws.ThrowErr(err, "marshalling error on", vp.packetID, ": ")
+	vp.ws.ThrowErr(err, "marshalling error on", vp.RequestID, "-", vp.packetNum, ": ")
 
 	if parser.Truncated {
-		vp.ws.ThrowErr(errors.New(utils.Join("packet ", vp.packetID, " exceeded SnapshotLen -- it has been truncated ")))
+		vp.ws.ThrowErr(errors.New(utils.Join("packet ", vp.RequestID, "-", vp.packetNum, " exceeded SnapshotLen -- it has been truncated ")))
 	}
 	return nil
 }

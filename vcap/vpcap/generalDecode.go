@@ -20,7 +20,9 @@ type DecodedLayer struct {
 }
 
 type RawTcpIpPacket struct {
-	PacketID  string                   `json:"packet_id,omitempty"`
+	RequestID string                   `json:"request_id,omitempty"`
+	Interface string                   `json:"interface,omitempty"`
+	PacketNum string                   `json:"packet_number,omitempty"`
 	Metadata  *gopacket.PacketMetadata `json:"metadata,omitempty"`
 	Link      []byte                   `json:"link,omitempty"`
 	Network   []byte                   `json:"network,omitempty"`
@@ -29,7 +31,9 @@ type RawTcpIpPacket struct {
 }
 
 type DecodedTcpIpPacket struct {
-	PacketID  string                   `json:"packet_id,omitempty"`
+	RequestID string                   `json:"request_id,omitempty"`
+	Interface string                   `json:"interface,omitempty"`
+	PacketNum string                   `json:"packet_number,omitempty"`
 	Metadata  *gopacket.PacketMetadata `json:"metadata,omitempty"`
 	Link      gopacket.Layer           `json:"link,omitempty"`
 	Network   gopacket.Layer           `json:"network,omitempty"`
@@ -90,7 +94,9 @@ func (vp *Vpacket) generalDecode(packet gopacket.Packet, j *[]byte) error {
 	var err error
 
 	dpkt := DecodedTcpIpPacket{
-		PacketID:  vp.packetID,
+		RequestID: vp.RequestID,
+		Interface: vp.IfaceToRead,
+		PacketNum: vp.packetNum,
 		Link:      packet.LinkLayer(),
 		Network:   packet.NetworkLayer(),
 		Transport: packet.TransportLayer(),
@@ -101,9 +107,11 @@ func (vp *Vpacket) generalDecode(packet gopacket.Packet, j *[]byte) error {
 	dpkt.setPayload(packet)
 	if !vp.DecodeProtocolData {
 		rpkt := RawTcpIpPacket{
-			PacketID: vp.packetID,
-			Metadata: dpkt.Metadata,
-			Payload:  dpkt.Payload,
+			RequestID: vp.RequestID,
+			Interface: vp.IfaceToRead,
+			PacketNum: vp.packetNum,
+			Metadata:  dpkt.Metadata,
+			Payload:   dpkt.Payload,
 		}
 		if packet.LinkLayer() != nil {
 			rpkt.Link = packet.LinkLayer().LayerContents()
