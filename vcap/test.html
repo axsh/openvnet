@@ -15,29 +15,33 @@
         output.appendChild(d);
       };
 
-      document.getElementById("open").onclick = function(evt) {
+      openWS(evt);
+
+      function openWS(evt) {
         if (ws) {
           print("Websocket still open; nothing to be done.");
           return false;
         }
         var loc = window.location, new_uri;
-        if (loc.protocol === "https:") {
-          new_uri = "wss:";
-        } else {
-          new_uri = "ws:";
-        }
+        /* if (loc.protocol === "https:") { */
+        new_uri = "wss:";
+        /* } else { */
+        /* new_uri = "ws:"; */
+        /* } */
         new_uri += "//" + loc.host;
         new_uri += loc.pathname + "pcap";
         ws = new WebSocket(new_uri);
         ws.onopen = function(evt) {
           print("Websocket opened");
         }
+
         ws.onclose = function(evt) {
           print("Websocket closed");
           ws = null;
         }
+
         ws.onmessage = function(evt) {
-          function parseJSON(object) {
+          function parseResponse(object) {
             var out = '';
             for (property in object) if (object.hasOwnProperty(property)) {
               if (object[property] === undefined || object[property] === null) {
@@ -45,10 +49,24 @@
               } else {
                 if (object[property].constructor === Object || object[property].constructor === Array) {
                   out += '<br>' + property + ':<br>';
-                  out += parseJSON(object[property]);
+                  out += parseResponse(object[property]);
                 } else {
-                  if (property === "payload"){
-                    out += property + ':' + window.atob(object[property]) + '<br>';
+                  if (property === "payload" || property === "contents" ||
+                      property === "SrcMAC" || property === "DstMAC" ||
+                      property === "OptionData" || property === "Options" ||
+                      property === "Padding" || property === "SourceHwAddress" ||
+                      property === "DstHwAddress" || property === "SourceProtAddress" ||
+                      property === "DstProtAddress"
+                  ) {
+                    var rawBytes = atob(object[property]);
+                    var hex = '';
+                    for ( i = 0; i < rawBytes.length; i++ ) {
+                      var oneHex = rawBytes.charCodeAt(i).toString(16)
+                      hex += (oneHex.length==2?oneHex:'0'+oneHex);
+                    }
+                    out += property + ':' + hex + '<br>';
+                    /* if (property === "Truncated" && object[property] === "true"){ */
+                    /* out += "TRUNCATED" + '<br>'; */
                   } else {
                     out += property + ':' + object[property] + '<br>';
                   }
@@ -59,9 +77,9 @@
           }
           var toPrint;
           try {
-            toPrint=parseJSON(JSON.parse(evt.data));
+            toPrint=parseResponse(JSON.parse(evt.data));
           } catch (e) {
-            //if (e === evt.data is not valid json){
+            //if (e === errIndicatingInvalidJSON){
             toPrint=evt.data;
             //} else { handle whatever other error is in e }
           }
@@ -69,18 +87,25 @@
 
           /* print("Received from server: " + evt.data); */
         }
+
         ws.onerror = function(evt) {
           print("ERROR: " + evt.data);
         }
+
         return false;
+      }
+
+
+      document.getElementById("open").onclick = function(evt) {
+        return openWS(evt);
       };
 
       document.getElementById("send").onclick = function(evt) {
         if (!ws) {
-          print("No open websocket; please click 'Open'")
-          return false;
+          print("No open websocket. Opening one now; please try again.")
+          return openWS(evt);
         }
-        var obj = {
+        var fullObj = {
           "requestID":requestID.value,
           "filter":filter.value,
           "snapshotLen": parseInt(snapshotLen.value, 10),
@@ -95,11 +120,11 @@
           "decodePacket":JSON.parse(decodePacket.value),
           "decodeProtocolData":JSON.parse(decodeProtocolData.value)
         };
-        var obj2={};
-        for (element in obj) if (obj[element] != "") {
-          obj2[element] = obj[element];
+        var objToSend={};
+        for (element in fullObj) if (fullObj[element] != "") {
+          objToSend[element] = fullObj[element];
         }
-        var toSend = JSON.stringify([obj2]);
+        var toSend = JSON.stringify([objToSend]);
         print("Sending request: " + toSend);
         ws.send(toSend);
         return false;
@@ -108,21 +133,19 @@
       document.getElementById("close").onclick = function(evt) {
         if (!ws) {
           print("No websocket open; nothing to be done.");
-          return false;
-        }
-        ws.close();
-        print("Websocket closed.");
-        return false;
-      };
-    });
-
+                  return false;
+                }
+                ws.close();
+                return false;
+              };
+            });
   </script>
 
 </head>
 <body>
   <p>Click "Open" to create a connection to the server, "Close" to close the connection,
     and "Send" to send a request to the server.
-    You can change the request and send multiple times.
+    You can change the request and send multiple times; closing will cancel any running pcap.
   </p>
 <table>
   <tr>

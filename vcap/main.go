@@ -115,7 +115,6 @@ func main() {
 	}
 	http2.ConfigureServer(serverHome, nil)
 	go serverHome.ListenAndServeTLS("testdata/test_server.crt", "testdata/test_server.key")
-	go http.ListenAndServe(":8080", nil)
 
 	http2.ConfigureServer(server, nil)
 	server.ListenAndServeTLS("testdata/test_server.crt", "testdata/test_server.key")
