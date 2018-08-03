@@ -45,7 +45,7 @@
             var out = '';
             for (property in object) if (object.hasOwnProperty(property)) {
               if (object[property] === undefined || object[property] === null) {
-                out += property + ':' + object[property] + '<br>';
+                out += property + ': ' + object[property] + '<br>';
               } else {
                 if (object[property].constructor === Object || object[property].constructor === Array) {
                   out += '<br>' + property + ':<br>';
@@ -56,7 +56,7 @@
                       property === "OptionData" || property === "Options" ||
                       property === "Padding" || property === "SourceHwAddress" ||
                       property === "DstHwAddress" || property === "SourceProtAddress" ||
-                      property === "DstProtAddress"
+                      property === "Contents" || property === "DstProtAddress"
                   ) {
                     var rawBytes = atob(object[property]);
                     var hex = '';
@@ -64,11 +64,11 @@
                       var oneHex = rawBytes.charCodeAt(i).toString(16)
                       hex += (oneHex.length==2?oneHex:'0'+oneHex);
                     }
-                    out += property + ':' + hex + '<br>';
+                    out += property + ': ' + hex + '<br>';
                     /* if (property === "Truncated" && object[property] === "true"){ */
                     /* out += "TRUNCATED" + '<br>'; */
                   } else {
-                    out += property + ':' + object[property] + '<br>';
+                    out += property + ': ' + object[property] + '<br>';
                   }
                 }
               }
@@ -83,7 +83,7 @@
             toPrint=evt.data;
             //} else { handle whatever other error is in e }
           }
-          print("Received response: " + '<br><br>' + toPrint);
+          print("<br>Received response:<br>" + toPrint);
 
           /* print("Received from server: " + evt.data); */
         }
@@ -133,12 +133,12 @@
       document.getElementById("close").onclick = function(evt) {
         if (!ws) {
           print("No websocket open; nothing to be done.");
-                  return false;
-                }
-                ws.close();
-                return false;
-              };
-            });
+          return false;
+        }
+        ws.close();
+        return false;
+      };
+    });
   </script>
 
 </head>

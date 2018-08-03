@@ -1,6 +1,7 @@
 package vpcap
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
@@ -250,11 +251,10 @@ func (vp *Vpacket) Validate(ws wsoc.WS) bool {
 		return false
 	}
 
-	// TODO: think about how to write this so that as new features are added this doesn't have to be maintained...some better way to check and set defaults.
 	// if all of these are false, nothing would be processed
 	if !vp.SendRawPacket && !vp.DecodePacket && !vp.SendMetadata {
-		vp.DecodePacket = true
-		vp.SendMetadata = true
+		ws.ThrowErr(errors.New("at least one of SendRawPacket, DecodePacket, or SendMetadata must be true"))
+		return false
 	}
 
 	return true
@@ -321,6 +321,10 @@ func (vp *Vpacket) DoPcap() {
 				vp.ws.Out() <- *j
 			}
 			// })
+		} else if vp.SendMetadata {
+			j, err := json.Marshal(packet.Metadata())
+			vp.ws.ThrowErr(err)
+			utils.LimitedGo(func() { vp.ws.Out() <- j })
 		}
 
 		// Only capture to vp.Limit and then stop
