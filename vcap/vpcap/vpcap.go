@@ -165,29 +165,6 @@ func (vp *Vpacket) Validate(ws wsoc.WS) bool {
 	if vp.RequestID == "" {
 		vp.RequestID = utils.RandString(4)
 	}
-	if vp.ReadFile != "" {
-		// check if file exists
-		if _, err := os.Stat(vp.ReadFile); err != nil {
-			if os.IsNotExist(err) {
-				ws.ThrowErr(err, vp.ReadFile, " does not exist:")
-				return false
-			}
-			ws.ThrowErr(err, "problem reading ", vp.ReadFile, ":")
-			return false
-		}
-		vp.handle, err = pcap.OpenOffline(vp.ReadFile)
-		if err != nil {
-			ws.ThrowErr(err, "problem opening ", vp.ReadFile, ":")
-			return false
-		}
-	} else { // read from iface
-		vp.handle, err = pcap.OpenLive(vp.IfaceToRead, vp.SnapshotLen, vp.Promiscuous, vp.Timeout)
-		fmt.Println(vp.handle)
-		if err != nil {
-			ws.ThrowErr(err, "problem reading ", vp.IfaceToRead, ":")
-			return false
-		}
-	}
 
 	if vp.Filter != "" {
 		// TODO: set up common filter templates to be called easily from the api.
@@ -222,26 +199,58 @@ func (vp *Vpacket) Validate(ws wsoc.WS) bool {
 		}
 	}
 
-	// check min, max
-	if vp.SnapshotLen < 12 || vp.SnapshotLen > SuperJumboPacketMaxLen {
-		ws.ThrowErr(errors.New(utils.Join("SnapshotLen must be between 12 and ",
-			strconv.Itoa(int(SuperJumboPacketMaxLen)), " bytes.")))
-		return false
+	if vp.SnapshotLen == 0 {
+		vp.SnapshotLen = StandardPacketMaxLen
+	} else {
+		// check min, max
+		if vp.SnapshotLen < 12 || vp.SnapshotLen > SuperJumboPacketMaxLen {
+			ws.ThrowErr(errors.New(utils.Join("SnapshotLen must be between 12 and ",
+				strconv.Itoa(int(SuperJumboPacketMaxLen)), " bytes.")))
+			return false
+		}
 	}
 
-	// check min, max
-	if vp.Timeout < wsoc.MaxLatency || vp.Timeout > wsoc.PongWait {
-		ws.ThrowErr(errors.New(utils.Join("Timeout must be between ",
-			strconv.Itoa(int(wsoc.MaxLatency)), " and ",
-			strconv.Itoa(int(wsoc.PongWait)), " seconds.")))
-		return false
+	if vp.Timeout == 0 {
+		vp.Timeout = time.Duration(30 * time.Second)
+	} else {
+		// check min, max
+		if vp.Timeout < wsoc.MaxLatency || vp.Timeout > wsoc.PongWait {
+			ws.ThrowErr(errors.New(utils.Join("Timeout must be between ",
+				strconv.Itoa(int(wsoc.MaxLatency)), " and ",
+				strconv.Itoa(int(wsoc.PongWait)), " seconds.")))
+			return false
+		}
+	}
+
+	if vp.ReadFile != "" {
+		// check if file exists
+		if _, err := os.Stat(vp.ReadFile); err != nil {
+			if os.IsNotExist(err) {
+				ws.ThrowErr(err, vp.ReadFile, " does not exist:")
+				return false
+			}
+			ws.ThrowErr(err, "problem reading ", vp.ReadFile, ":")
+			return false
+		}
+		vp.handle, err = pcap.OpenOffline(vp.ReadFile)
+		if err != nil {
+			ws.ThrowErr(err, "problem opening ", vp.ReadFile, ":")
+			return false
+		}
+	} else { // read from iface
+		vp.handle, err = pcap.OpenLive(vp.IfaceToRead, vp.SnapshotLen, vp.Promiscuous, vp.Timeout)
+		fmt.Println(vp.handle)
+		if err != nil {
+			ws.ThrowErr(err, "problem reading ", vp.IfaceToRead, ":")
+			return false
+		}
 	}
 
 	//TODO: figure out better limits and implement time limits as well
 	// check min, max
-	if vp.Limit < 1 || vp.Limit > 10000 {
+	if vp.Limit < 0 || vp.Limit > 9999 {
 		ws.ThrowErr(errors.New(utils.Join(
-			"Limit (the packet limit) must be between 1 and 10000 packets.")))
+			"Limit (the packet limit) must be between 0 and 10000 packets.")))
 		return false
 	}
 
@@ -327,10 +336,12 @@ func (vp *Vpacket) DoPcap() {
 			utils.LimitedGo(func() { vp.ws.Out() <- j })
 		}
 
-		// Only capture to vp.Limit and then stop
-		packetCount++
-		if packetCount > vp.Limit {
-			break
+		if vp.Limit != 0 {
+			// Only capture to vp.Limit and then stop
+			packetCount++
+			if packetCount > vp.Limit {
+				break
+			}
 		}
 		// fmt.Println(packetCount)
 	}
