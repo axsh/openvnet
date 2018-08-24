@@ -66,15 +66,20 @@ module Vnspec
       end
 
       def ready?(name = :all, timeout = 600)
-        parallel_all? { |vm|
-          vm.ready?(timeout)
-        }.tap { |success|
-          if success
-            logger.info("all vms are ready")
-          else
-            logger.info("one or more vms are down")
-          end
-        }
+        begin
+          parallel_all? { |vm|
+            vm.ready?(timeout)
+          }.tap { |success|
+            if success
+              logger.info("all vms are ready")
+            else
+              logger.info("one or more vms are down")
+            end
+          }
+        rescue Net::SSH::ConnectionTimeout => e
+          sleep 1000000
+          throw e
+        end
       end
 
       def install_package(name)
