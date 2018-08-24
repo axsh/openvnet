@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 module Vnspec
   class Vnet
     class << self
@@ -243,6 +244,7 @@ module Vnspec
         end
 
         dump_webapi
+        sleep 100000000
 
         return false
       end
