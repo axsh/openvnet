@@ -25,7 +25,14 @@ import (
 )
 
 func pcapAPI(w http.ResponseWriter, r *http.Request) {
-	upgrader := websocket.Upgrader{}
+	upgrader := websocket.Upgrader{CheckOrigin: func(r *http.Request) bool {
+
+		userPcapOrigin := "" // TODO: set this as a field in the user struct
+		if origin := r.Header.Get("Origin"); origin != userPcapOrigin {
+			return true
+		}
+		return true // TODO: set this to false for production
+	}}
 	wsC, err := upgrader.Upgrade(w, r, nil)
 	ws := wsoc.NewWS(wsC)
 	ws.ThrowErr(err, "upgrade:")

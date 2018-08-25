@@ -166,31 +166,6 @@ func (vp *Vpacket) Validate(ws wsoc.WS) bool {
 		vp.RequestID = utils.RandString(4)
 	}
 
-	if vp.Filter != "" {
-		// TODO: set up common filter templates to be called easily from the api.
-		// e.g. to find start and stop session packets
-
-		// subnet can be dotted quad, triple, double, or single -- the netmask will
-		// be set accordingly (i.e. a quad gets a mask of 255.255.255.255, a triple
-		// gets 255.255.255.0, a double is 255.255.0.0, and single 255.0.0.0)
-		// vp.Filter = "net 192.168"
-
-		// more specific mask with e.g.:
-		// vp.Filter = "net 192.168 mask 63.87.0.0" // ( 63==^uint8(192) and 87==^uint8(168) )
-
-		// src and dst can be set independently like so:
-		// vp.Filter = "src net 192.168 and dst net 192"
-
-		// vp.Filter = "icmp"
-		// vp.Filter = "ip6"
-		// vp.Filter = ""
-
-		if err := vp.handle.SetBPFFilter(vp.Filter); err != nil {
-			ws.ThrowErr(err, "problem setting filter ", vp.Filter, ": ")
-			return false
-		}
-	}
-
 	// check if file exists
 	if vp.WriteFile != "" {
 		if _, err := os.Stat(vp.WriteFile); !os.IsNotExist(err) {
@@ -246,6 +221,31 @@ func (vp *Vpacket) Validate(ws wsoc.WS) bool {
 		}
 	}
 
+	if vp.Filter != "" {
+		// TODO: set up common filter templates to be called easily from the api.
+		// e.g. to find start and stop session packets
+
+		// subnet can be dotted quad, triple, double, or single -- the netmask will
+		// be set accordingly (i.e. a quad gets a mask of 255.255.255.255, a triple
+		// gets 255.255.255.0, a double is 255.255.0.0, and single 255.0.0.0)
+		// vp.Filter = "net 192.168"
+
+		// more specific mask with e.g.:
+		// vp.Filter = "net 192.168 mask 63.87.0.0" // ( 63==^uint8(192) and 87==^uint8(168) )
+
+		// src and dst can be set independently like so:
+		// vp.Filter = "src net 192.168 and dst net 192"
+
+		// vp.Filter = "icmp"
+		// vp.Filter = "ip6"
+		// vp.Filter = ""
+
+		if err := vp.handle.SetBPFFilter(vp.Filter); err != nil {
+			ws.ThrowErr(err, "problem setting filter ", vp.Filter, ": ")
+			return false
+		}
+	}
+
 	//TODO: figure out better limits and implement time limits as well
 	// check min, max
 	if vp.Limit < 0 || vp.Limit > 9999 {
@@ -260,9 +260,13 @@ func (vp *Vpacket) Validate(ws wsoc.WS) bool {
 		return false
 	}
 
+	if !vp.DecodePacket && vp.DecodeProtocolData {
+		vp.DecodePacket = true
+	}
+
 	// if all of these are false, nothing would be processed
 	if !vp.SendRawPacket && !vp.DecodePacket && !vp.SendMetadata {
-		ws.ThrowErr(errors.New("at least one of SendRawPacket, DecodePacket, or SendMetadata must be true"))
+		ws.ThrowErr(errors.New("at least one of SendRawPacket, DecodePacket, DecodeProtocolData, or SendMetadata must be true"))
 		return false
 	}
 
