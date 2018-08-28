@@ -109,7 +109,7 @@ module Vnspec
           Vnet.dump_flows
           Vnet.dump_database
 
-          sleep 1000000
+          #sleep 1000000
         end
 
         result
