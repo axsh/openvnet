@@ -77,7 +77,6 @@ module Vnspec
             end
           }
         rescue Net::SSH::ConnectionTimeout => e
-          sleep 1000000
           throw e
         end
       end

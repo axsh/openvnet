@@ -244,7 +244,6 @@ module Vnspec
         end
 
         dump_webapi
-        sleep 100000000
 
         return false
       end
