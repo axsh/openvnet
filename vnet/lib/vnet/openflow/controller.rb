@@ -6,7 +6,6 @@ require 'trema/controller'
 module Vnet::Openflow
 
   class Controller < Trema::Controller
-    include TremaTasks
     include Celluloid::Logger
     include Vnet::Constants::Openflow
 
@@ -18,6 +17,38 @@ module Vnet::Openflow
 
       super
     end
+
+    def public_send_message(dpid, message)
+      send_handler(:send_message, dpid, message)
+    end
+
+    def public_send_flow_mod(dpid, message)
+      send_handler(:send_flow_mod, dpid, message)
+    end
+
+    def public_send_packet_out(dpid, message, port_no)
+      send_handler(:send_packet_out, dpid, {
+                     :packet_in => message,
+                     :actions => [Trema::Actions::SendOutPort.new(:port_number => port_no)]
+                   })
+    end
+
+    def public_add_flow(dpid, flow)
+      send_handler(:send_flow_mod_add, dpid, flow)
+    end
+
+    def public_add_flows(dpid, flows)
+      return if flows.blank?
+      send_handler(:internal_add_flows, dpid, flows)
+    end
+
+    def public_reset_datapath(dpid)
+      send_handler(:reset_datapath, dpid)
+    end
+
+    #
+    # Only call from within trema context:
+    #
 
     def start(args)
       info "starting OpenFlow controller."
@@ -88,24 +119,6 @@ module Vnet::Openflow
       debug "data: #{message.buffer.unpack('H*')}"
     end
 
-    def public_send_message(dpid, message)
-      raise "public_send_message must be called from the trema thread" unless Thread.current == @trema_thread
-      send_message(dpid, message)
-    end
-
-    def public_send_flow_mod(dpid, message)
-      raise "public_send_flow_mod must be called from the trema thread" unless Thread.current == @trema_thread
-      send_flow_mod(dpid, message)
-    end
-
-    def public_send_packet_out(dpid, message, port_no)
-      raise "public_send_packet_out must be called from the trema thread" unless Thread.current == @trema_thread
-      send_packet_out(dpid, {
-                        :packet_in => message,
-                        :actions => [Trema::Actions::SendOutPort.new(:port_number => port_no)]
-                      })
-    end
-
     def reset_datapath(dpid)
       terminate_datapath(dpid)
       initialize_datapath(dpid)
@@ -153,6 +166,19 @@ module Vnet::Openflow
     def dp_info(dpid)
       @datapaths[dpid] && @datapaths[dpid][:dp_info]
     end
+
+    #
+    # Internal methods:
+    #
+
+    private
+
+    def internal_add_flows(dpid, flows)
+      flows.each { |flow|
+        send_flow_mod_add(dpid, flow.to_trema_hash)
+      }
+    end
+
   end
 
 end

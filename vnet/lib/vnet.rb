@@ -551,7 +551,6 @@ module Vnet
     autoload :OvsOfctl, 'vnet/openflow/ovs_ofctl'
     autoload :PacketHelpers, 'vnet/openflow/packet_handler'
     autoload :Switch, 'vnet/openflow/switch'
-    autoload :TremaTasks, 'vnet/openflow/trema_tasks'
   end
 
   module Services

@@ -85,7 +85,7 @@ module Vnet::Openflow
         manager.event_handler_drop_all
       }
 
-      @controller.pass_task { @controller.reset_datapath(@dpid) }
+      @controller.public_reset_datapath(@dpid)
 
       return nil
     end
