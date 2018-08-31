@@ -323,11 +323,10 @@ module Vnspec
       end
 
       def close_all_listening_ports
-        cmds = open_udp_ports.keys.map { |port|
-          "rm -f #{UDP_OUTPUT_DIR}/#{port}*"
-        }
-
-        cmds << "killall nc"
+        cmds = [
+          "rm -f #{UDP_OUTPUT_DIR}/*",
+          "killall nc"
+        ]
 
         @open_tcp_ports.clear
         @open_udp_ports.clear
