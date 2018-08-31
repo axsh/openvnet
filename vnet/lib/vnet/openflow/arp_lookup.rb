@@ -300,13 +300,13 @@ module Vnet::Openflow
                          request_ipv4: params[:request_ipv4],
                          attempts: params[:attempts])
 
-      packet_arp_out({ :out_port => OFPP_TABLE,
-                       :in_port => :controller,
-                       :eth_src => params[:interface_mac],
-                       :op_code => Racket::L3::ARP::ARPOP_REQUEST,
-                       :sha => params[:interface_mac],
-                       :spa => params[:interface_ipv4],
-                       :tpa => params[:request_ipv4]
+      packet_arp_out({ out_port: OFPP_TABLE,
+                       in_port: Pio::OpenFlow13::Port32.reserved_port_number(:controller),
+                       eth_src: params[:interface_mac],
+                       op_code: Racket::L3::ARP::ARPOP_REQUEST,
+                       sha: params[:interface_mac],
+                       spa: params[:interface_ipv4],
+                       tpa: params[:request_ipv4]
                      })
     end
 

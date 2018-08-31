@@ -158,14 +158,14 @@ module Vnet::Openflow
                            goto_table: TABLE_LOCAL_PORT,
                            priority: 2,
                            match: {
-                             in_port: :local
+                             in_port: Pio::OpenFlow13::Port32.reserved_port_number(:local)
                            },
                            write_local: true)
       flows << flow_create(table: TABLE_CLASSIFIER,
                            goto_table: TABLE_CONTROLLER_PORT,
                            priority: 2,
                            match: {
-                             in_port: :controller
+                             in_port: Pio::OpenFlow13::Port32.reserved_port_number(:controller)
                            },
                            write_local: true,
                            write_no_controller: true)
@@ -192,8 +192,8 @@ module Vnet::Openflow
     # Send messages that will start initializing the switch.
     #
     def switch_ready
-      @dp_info.send_message(Trema::Messages::FeaturesRequest.new)
-      @dp_info.send_message(Trema::Messages::PortDescMultipartRequest.new)
+      @dp_info.send_message(Pio::OpenFlow13::Features::Request.new)
+      # @dp_info.send_message(Pio::OpenFlow13::PortDescMultipart::Request.new)
     end
 
     def features_reply(message)

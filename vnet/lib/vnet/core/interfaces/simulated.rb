@@ -118,7 +118,7 @@ module Vnet::Core::Interfaces
         return if mac_info.nil? || ipv4_info.nil?
 
         packet_arp_out({ :out_port => message.in_port,
-                         :in_port => :controller,
+                         :in_port => Pio::OpenFlow13::Port32.reserved_port_number(:controller),
                          :eth_src => mac_info[:mac_address],
                          :eth_dst => message.eth_src,
                          :op_code => Racket::L3::ARP::ARPOP_REPLY,
