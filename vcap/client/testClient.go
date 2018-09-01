@@ -82,7 +82,7 @@ func main() {
 	ws := wsoc.NewWS(wsC)
 	j, err := json.Marshal([]map[string]interface{}{
 		{
-			// "RequestID":   "not icmp",
+			// "ID":   "not icmp",
 			"Filter":      "not icmp",
 			"SnapshotLen": 1538,
 			// "Promiscuous":   true,
@@ -98,7 +98,7 @@ func main() {
 			"DecodeProtocolData": true,
 		},
 		{
-			// "RequestID":   "icmp",
+			// "ID":   "icmp",
 			"Filter":      "icmp",
 			"SnapshotLen": 1538,
 			"Timeout":     30 * time.Second,

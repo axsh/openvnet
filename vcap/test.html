@@ -110,7 +110,7 @@
           return openWS(evt);
         }
         var fullObj = {
-          "requestID":requestID.value,
+          "ID":ID.value,
           "filter":filter.value,
           "snapshotLen": parseInt(snapshotLen.value, 10),
           "promiscuous":JSON.parse(promiscuous.value),
@@ -159,8 +159,8 @@
         <tr><td><button id="open">Open</button></td>
         <td><button id="close">Close</button><br></td></tr>
 
-        <tr><td><label for="requestID" >requestID:</label></td>
-        <td><input id="requestID" type="text" value=""></td></tr>
+        <tr><td><label for="ID" >ID:</label></td>
+        <td><input id="ID" type="text" value=""></td></tr>
 
         <tr><td><label for="filter">berkley packet filter:</label></td>
         <td><input id="filter" type="text" value=""></td></tr>

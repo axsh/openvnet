@@ -37,7 +37,7 @@ type Vpacket struct {
 	ws        wsoc.WS
 	packetNum string
 
-	RequestID          string        `json:"requestid,omitempty"`
+	ID                 string        `json:"id,omitempty"`
 	Filter             string        `json:"filter,omitempty"`
 	SnapshotLen        int32         `json:"snapshotLen,omitempty"`
 	Promiscuous        bool          `json:"promiscuous,omitempty"`
@@ -162,8 +162,8 @@ func (vp *Vpacket) Validate(ws wsoc.WS) bool {
 
 	vp.ws = ws
 
-	if vp.RequestID == "" {
-		vp.RequestID = utils.RandString(4)
+	if vp.ID == "" {
+		vp.ID = utils.RandString(4)
 	}
 
 	// check if file exists

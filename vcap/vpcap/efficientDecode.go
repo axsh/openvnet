@@ -17,18 +17,18 @@ type ContentLayer struct {
 }
 
 type RawSortedPacket struct {
-	RequestID string                   `json:"request_id,omitempty"`
+	ID        string                   `json:"id,omitempty"`
 	Interface string                   `json:"interface,omitempty"`
-	PacketNum string                   `json:"packet_number,omitempty"`
+	PacketNum string                   `json:"number,omitempty"`
 	Metadata  *gopacket.PacketMetadata `json:"metadata,omitempty"`
 	Layers    []interface{}            `json:"layers,omitempty"`
 	Payload   []byte                   `json:"payload,omitempty"`
 }
 
 type DecodedPacket struct {
-	RequestID string                   `json:"request_id,omitempty"`
+	ID        string                   `json:"id,omitempty"`
 	Interface string                   `json:"interface,omitempty"`
-	PacketNum string                   `json:"packet_number,omitempty"`
+	PacketNum string                   `json:"number,omitempty"`
 	Metadata  *gopacket.PacketMetadata `json:"metadata,omitempty"`
 	Layers    []gopacket.Layer         `json:"layers,omitempty"`
 	Payload   []byte                   `json:"payload,omitempty"`
@@ -114,13 +114,13 @@ func (vp *Vpacket) efficientDecode(packet gopacket.Packet, j *[]byte) error {
 	dl := len(decodedLayers)
 	if vp.DecodeProtocolData {
 		dpkt.Layers = make([]gopacket.Layer, dl, dl)
-		dpkt.RequestID = vp.RequestID
+		dpkt.ID = vp.ID
 		dpkt.Interface = vp.IfaceToRead
 		dpkt.PacketNum = vp.packetNum
 	} else {
 		// rpkt.Layers = make([]*ContentLayer, dl, dl)
 		rpkt.Layers = make([]interface{}, dl, dl)
-		rpkt.RequestID = vp.RequestID
+		rpkt.ID = vp.ID
 		rpkt.Interface = vp.IfaceToRead
 		rpkt.PacketNum = vp.packetNum
 		rpkt.Metadata = dpkt.Metadata
@@ -330,10 +330,10 @@ func (vp *Vpacket) efficientDecode(packet gopacket.Packet, j *[]byte) error {
 	} else {
 		*j, err = json.Marshal(rpkt)
 	}
-	vp.ws.ThrowErr(err, "marshalling error on", vp.RequestID, "-", vp.packetNum, ": ")
+	vp.ws.ThrowErr(err, "marshalling error on", vp.ID, "-", vp.packetNum, ": ")
 
 	if parser.Truncated {
-		vp.ws.ThrowErr(errors.New(utils.Join("packet ", vp.RequestID, "-", vp.packetNum, " exceeded SnapshotLen -- it has been truncated ")))
+		vp.ws.ThrowErr(errors.New(utils.Join("packet ", vp.ID, "-", vp.packetNum, " exceeded SnapshotLen -- it has been truncated ")))
 	}
 	return nil
 }
