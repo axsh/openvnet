@@ -343,7 +343,7 @@ func (vp *Vpacket) DoPcap() {
 		if vp.Limit != 0 {
 			// Only capture to vp.Limit and then stop
 			packetCount++
-			if packetCount > vp.Limit {
+			if packetCount >= vp.Limit {
 				break
 			}
 		}
