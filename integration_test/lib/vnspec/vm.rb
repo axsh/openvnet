@@ -327,7 +327,15 @@ module Vnspec
       end
 
       def close_all_listening_ports
-        ssh_on_guest("killall nc", use_sudo: true)
+        cmds = [
+          "rm -f #{UDP_OUTPUT_DIR}/*",
+          "killall nc"
+        ]
+
+        @open_tcp_ports.clear
+        @open_udp_ports.clear
+
+        ssh_on_guest(cmds.join(";"), use_sudo: true)
       end
 
       def hostname_for(address, options = {})
