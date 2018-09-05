@@ -2,10 +2,18 @@ source "http://rubygems.org"
 
 gem 'ffi-rzmq'
 gem "bit-struct", ">= 0.13.7"
-# Celluloid and celluloid-io versions were fixed to make OpenVNet run on Ubuntu 14.04
+
+# Celluloid and celluloid-io versions were fixed to make OpenVNet run
+# on Ubuntu 14.04. (update)
+
 gem "celluloid", "0.16.0"
 gem "celluloid-io", "0.16.2"
-gem "dcell"
+
+# We had to fork DCell in order to update the http gem.
+# DCell was requiring http 0.5.1 which has a security issue so I forked it and
+# updated its http requirement to 3.0.0.
+gem "dcell", :github => 'axsh/dcell', :branch => 'v0.16.1-updated-gems'
+
 gem "fuguta"
 gem "ipaddress"
 gem "json"
