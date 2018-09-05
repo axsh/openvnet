@@ -43,7 +43,7 @@ describe 'event_nw_tp' do
       Vnspec::Models::Topology.add_underlay('topo-vnet', 'topo-physical')
       Vnspec::Models::Topology.add_network('topo-vnet', 'nw-vnet1')
       Vnspec::Models::Topology.add_network('topo-vnet', 'nw-vnet2')
-      sleep 5
+      sleep 10
     }
 
     include_examples 'simple examples'
