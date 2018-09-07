@@ -28,6 +28,16 @@ module Vnet::Services
     subscribe_item_event 'topology_underlay_added_mac_range_group', :underlay_added_mac_range_group
     subscribe_item_event 'topology_underlay_removed_mac_range_group', :underlay_removed_mac_range_group
 
+    def initialize(*args)
+      begin
+        info log_format("initalizing on node '#{DCell.me.id}'")
+      rescue Celluloid::DeadActorError => e
+        warn log_format("initalizing with dead actor")
+      end
+
+      super
+    end
+
     def do_initialize
       info log_format('loading all topologies')
 
@@ -37,6 +47,8 @@ module Vnet::Services
       mw_class.batch.dataset.all.commit.each { |item_map|
         publish(TOPOLOGY_CREATED_ITEM, item_map)
       }
+
+      info log_format('finished loading topologies')
     end
 
     #
