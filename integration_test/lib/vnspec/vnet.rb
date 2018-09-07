@@ -203,6 +203,13 @@ module Vnspec
           :topology_route_links,
 
           :tunnels,
+
+          :active_interfaces,
+          :active_ports,
+          :active_networks,
+          :active_segments,
+          :active_route_links,
+
         ].each { |table_name|
           ssh(config[:nodes][:vnmgr].first, "mysql -te select\\ *\\ from\\ #{table_name}\\; vnet", debug: false).tap { |output|
             logger.info output[:stdout]
