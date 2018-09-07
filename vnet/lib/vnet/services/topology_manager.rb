@@ -29,8 +29,13 @@ module Vnet::Services
     subscribe_item_event 'topology_underlay_removed_mac_range_group', :underlay_removed_mac_range_group
 
     def initialize(*args)
+      begin
+        info log_format("initalizing on node '#{DCell.me.id}'")
+      rescue Celluloid::DeadActorError => e
+        warn log_format("initalizing with dead actor")
+      end
+
       super
-      info log_format("initalizing on node '#{DCell.me.id}'")
     end
 
     def do_initialize
