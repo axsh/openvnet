@@ -4,8 +4,7 @@ gem 'ffi-rzmq'
 gem "bit-struct", ">= 0.13.7"
 
 # Celluloid and celluloid-io versions were fixed to make OpenVNet run
-# on Ubuntu 14.04. (update)
-
+# on Ubuntu 14.04, however we haven't updated them below.
 gem "celluloid", "0.16.0"
 gem "celluloid-io", "0.16.2"
 
