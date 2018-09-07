@@ -11,7 +11,7 @@ gem "celluloid-io", "0.16.2"
 # We had to fork DCell in order to update the http gem.
 # DCell was requiring http 0.5.1 which has a security issue so I forked it and
 # updated its http requirement to 3.0.0.
-gem "dcell", :github => 'axsh/dcell', :branch => 'v0.16.1-updated-gems'
+gem "dcell", :github => 'axsh/dcell', :branch => 'head-test'
 
 gem "fuguta"
 gem "ipaddress"
