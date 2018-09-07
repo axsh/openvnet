@@ -104,13 +104,13 @@ module Vnspec
 
         result = SPec.exec(name)
 
-        if !result
+        # if !result
           Vnet.dump_logs
           Vnet.dump_flows
           Vnet.dump_database
 
           #sleep 1000000
-        end
+        # end
 
         result
       end
