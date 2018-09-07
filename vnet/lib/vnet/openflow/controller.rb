@@ -42,6 +42,10 @@ module Vnet::Openflow
       send_handler(:internal_add_flows, dpid, flows)
     end
 
+    def public_send_flow_mod_delete(dpid, options)
+      send_handler(:send_flow_mod_delete, dpid, options)
+    end
+
     def public_reset_datapath(dpid)
       send_handler(:reset_datapath, dpid)
     end

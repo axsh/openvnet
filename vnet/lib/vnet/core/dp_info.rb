@@ -123,13 +123,14 @@ module Vnet::Core
 
     def del_all_flows
       options = {
-        :command => Vnet::Openflow::Controller::OFPFC_DELETE,
-        :table_id => Vnet::Openflow::Controller::OFPTT_ALL,
-        :out_port => Vnet::Openflow::Controller::OFPP_ANY,
-        :out_group => Vnet::Openflow::Controller::OFPG_ANY,
+        buffer_id: :no_buffer,
+        match: {
+          table_id: :all,
+        },
+        out_port: :any,
       }
 
-      @controller.public_send_flow_mod(@dpid, options)
+      @controller.public_send_flow_mod_delete(@dpid, options)
     end
 
     #

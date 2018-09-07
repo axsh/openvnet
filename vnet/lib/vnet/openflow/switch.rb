@@ -200,7 +200,7 @@ module Vnet::Openflow
       debug log_format("transaction_id: %#x" % message.transaction_id)
       debug log_format("n_buffers: %u" % message.n_buffers)
       debug log_format("n_tables: %u" % message.n_tables)
-      debug log_format("capabilities: %u" % message.capabilities)
+      debug log_format("capabilities: #{message.capabilities.join(', ')}")
     end
 
     def port_status(message)
