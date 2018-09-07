@@ -9,6 +9,8 @@ module Vnet::Services
     attr_reader :vnet_info
 
     def initialize
+      info log_format("initalizing on node '#{DCell.me.id}'")
+
       @vnet_info = VnetInfo.new
     end
 

@@ -28,6 +28,8 @@ params.merge!(:public => conf.node.pub_addr_string) if conf.node.addr.public != 
 
 DCell.start(params)
 
+Celluloid.start
+
 Vnet::NodeModules::Rpc.supervise_as :rpc
 Vnet::NodeModules::EventHandler.supervise_as :event_handler
 Vnet::Services::Vnmgr.supervise_as :vnmgr
