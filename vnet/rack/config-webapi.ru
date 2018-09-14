@@ -5,6 +5,7 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'vnet'
 require 'rack/cors'
 require 'dcell'
+require 'dcell/registries/redis_adapter'
 
 Vnet::Initializers::Logger.run("webapi.log")
 
@@ -25,13 +26,10 @@ when :direct
 end
 
 params = {
-  :id => conf.node.id,
-  :addr => conf.node.addr_string,
-  :registry => {
-    :adapter => conf.registry.adapter,
-    :host => conf.registry.host,
-    :port => conf.registry.port
-  }
+  id: conf.node.id,
+  addr: conf.node.addr_string,
+  crypto: false,
+  registry: DCell::Registry::RedisAdapter.new(host: conf.registry.host, port: conf.registry.port)
 }
 
 params[:public] = conf.node.pub_addr_string if conf.node.addr.public != ""

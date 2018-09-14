@@ -48,7 +48,11 @@ module Vnet::NodeApi
     class RpcCall < Call
       def initialize(class_name)
         super
-        @actor = DCell::Global[:rpc] or raise "rpc not found in DCell::Global"
+
+        rpc_node_id = DCell::Global[:rpc_node_id] or raise "rpc_node_id not found in DCell::Global"
+        rpc_node = DCell::Node[rpc_node_id] or raise "node '#{rpc_node_id}' with rpc not found"
+
+        @actor = rpc_node[:rpc] or raise "rpc actor on node '#{rpc_node_id}' not found"
       end
 
       def _call(method_name, *args, &block)

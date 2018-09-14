@@ -6,7 +6,25 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'rubygems'
 require 'bundler/setup'
 require 'dcell'
+require 'dcell/registries/redis_adapter'
 require 'vnet'
+
+require 'msgpack'
+
+class Time
+  def self.from_msgpack_ext(data)
+    data.unpack('I*').tap { |s, n| at(s, Rational(n, 1000)) }
+  end
+
+  def to_msgpack_ext
+    [tv_sec, tv_nsec].pack('I*')
+  end
+end
+
+MessagePack::DefaultFactory.register_type(0x7f, Time)
+
+
+
 
 Vnet::Initializers::Logger.run("vnmgr.log")
 
@@ -15,16 +33,13 @@ conf = Vnet::Configurations::Vnmgr.conf
 Vnet::Initializers::DB.run(conf.db_uri)
 
 params = {
-  :id => conf.node.id,
-  :addr => conf.node.addr_string,
-  :registry => {
-    :adapter => conf.registry.adapter,
-    :host => conf.registry.host,
-    :port => conf.registry.port
-  }
+  id: conf.node.id,
+  addr: conf.node.addr_string,
+  crypto: false,
+  registry: DCell::Registry::RedisAdapter.new(host: conf.registry.host, port: conf.registry.port)
 }
 
-params.merge!(:public => conf.node.pub_addr_string) if conf.node.addr.public != ""
+params.merge!(public: conf.node.pub_addr_string) if conf.node.addr.public != ""
 
 DCell.start(params)
 
@@ -34,8 +49,8 @@ Vnet::NodeModules::Rpc.supervise_as :rpc
 Vnet::NodeModules::EventHandler.supervise_as :event_handler
 Vnet::Services::Vnmgr.supervise_as :vnmgr
 
-DCell::Global[:rpc] = Celluloid::Actor[:rpc]
-DCell::Global[:event_handler] = Celluloid::Actor[:event_handler]
+DCell::Global[:rpc_node_id] = params[:id].to_sym
+DCell::Global[:event_handler_node_id] = params[:id].to_sym
 
 dp_mg_uuid = conf.datapath_mac_group
 if dp_mg_uuid.nil?
@@ -48,5 +63,7 @@ elsif Vnet::Models::MacRangeGroup[dp_mg_uuid].nil?
 end
 
 Celluloid::Actor[:vnmgr].do_initialize
+
+Celluloid::Logger.debug("#{MessagePack::DefaultFactory.registered_types.inspect}")
 
 sleep
