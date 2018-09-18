@@ -1,16 +1,33 @@
 # -*- coding: utf-8 -*-
 
 require 'msgpack'
+require 'sequel/sql'
 
-# class BooleanExpression
-#   def self.from_msgpack_ext(data)
-#     data.unpack('I*').tap { |s, n| at(s, Rational(n, 1000)) }
-#   end
+module Sequel
+  module SQL
 
-#   def to_msgpack_ext
-#     [, tv_nsec].pack('I*')
-#   end
-# end
+    class BooleanExpression < ComplexExpression
+      def self.from_msgpack_ext(data)
+        MessagePack.unpack(data).tap { |h|
+          return case h['op'].to_sym
+                 when :IS then BooleanExpression::from_value_pairs([h['args'].first], :IS)
+                 else
+                   BooleanExpression::from_value_pairs(h['args'], h['op'].to_sym)
+                 end
+        }
+      end
 
-#MessagePack::DefaultFactory.register_type(0x10, Sequel::SQL::BooleanExpression)
-MessagePack::DefaultFactory.register_type(0x10, Sequel::SQL::BooleanExpression, packer: :serialize, unpacker: :deserialize)
+      def to_msgpack_ext
+        {
+          op: @op,
+          args: @args
+        }.to_msgpack.tap { |m|
+          Celluloid::Logger.warn "XXXXXXXXXXXXXXXXXXXXXX #{self.inspect} to #{m.inspect}"
+        }
+      end
+    end
+
+  end
+end
+
+MessagePack::DefaultFactory.register_type(0x10, Sequel::SQL::BooleanExpression)
