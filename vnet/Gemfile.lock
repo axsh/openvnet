@@ -233,7 +233,6 @@ DEPENDENCIES
   fuguta
   ipaddress
   json
-  msgpack (~> 0.7.0)
   mysql2
   net-dhcp (>= 1.1.1)
   net-dns
