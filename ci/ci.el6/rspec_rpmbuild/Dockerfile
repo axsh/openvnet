@@ -7,10 +7,11 @@ ADD ci/ci.el7/rspec_rpmbuild/fastestmirror.conf /etc/yum/pluginconf.d/
 
 RUN ["yum", "install", "-y", "epel-release", "centos-release-scl"]
 RUN ["yum", "install", "-y", "createrepo", "rpmdevtools", "rpm-build", "yum-utils", "rsync", "sudo", "file"]
-RUN ["yum", "install", "-y", "zeromq3-devel", "yum-utils", "make", "gcc", "gcc-c++", "git", "mysqldb-devel", "sqlite-devel", "mysqldb", "mysql-server"]
+RUN ["yum", "install", "-y", "yum-utils", "make", "gcc", "gcc-c++", "git", "mysqldb-devel", "sqlite-devel", "mysqldb", "mysql-server"]
 RUN yum install -y ${SCL_RUBY}-build && mysql_install_db && chown mysql:mysql -R /var/lib/mysql
+RUN wget https://github.com/zeromq/libzmq/releases/download/v4.2.3/zeromq-4.2.3.tar.gz && tar xzf zeromq-4.2.3.tar.gz && cd zeromq-4.2.3 && ./configure && make install
 
-ADD ci/ci.el7/rspec_rpmbuild/yum.repo/dev.repo /etc/yum.repos.d/
+ADD ci/ci.el6/rspec_rpmbuild/yum.repo/dev.repo /etc/yum.repos.d/
 # Only enables "openvnet-third-party" repo.
 RUN yum-config-manager --disable openvnet
 
