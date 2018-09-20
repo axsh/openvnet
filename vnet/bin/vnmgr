@@ -5,24 +5,24 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
 require 'rubygems'
 require 'bundler/setup'
-require 'dcell'
 require 'vnet'
 
 Vnet::Initializers::Logger.run("vnmgr.log")
 Vnet::Initializers::DB.run(Vnet::Configurations::Vnmgr.conf.db_uri)
 
 DCell.start(Vnet::Configurations::Vnmgr.dcell_params)
-
 Celluloid.start
 
 Vnet::NodeModules::Rpc.supervise_as :rpc
 Vnet::NodeModules::EventHandler.supervise_as :event_handler
 Vnet::Services::Vnmgr.supervise_as :vnmgr
 
-DCell::Global[:rpc_node_id] = params[:id].to_sym
-DCell::Global[:event_handler_node_id] = params[:id].to_sym
+Vnet::Configurations::Vnmgr.conf.node.id.to_sym.tap { |node_id|
+  DCell::Global[:rpc_node_id] = node_id
+  DCell::Global[:event_handler_node_id] = node_id
+}
 
-Vnet::Configurations::Vnmgr.datapath_mac_group.tap { |dp_mg_uuid|
+Vnet::Configurations::Vnmgr.conf.datapath_mac_group.tap { |dp_mg_uuid|
   if dp_mg_uuid.nil?
     Vnet.logger.warn "datapath_mac_group is not set in /etc/openvnet/common.conf. " +
       "OpenVNet will not be able to auto-assign MAC addresses."

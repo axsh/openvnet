@@ -4,7 +4,6 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
 require 'vnet'
 require 'rack/cors'
-require 'dcell'
 
 Vnet::Initializers::Logger.run("webapi.log")
 Vnet::NodeApi.set_proxy(Vnet::Configurations::Webapi.conf.node_api_proxy)
@@ -21,7 +20,7 @@ when :direct
   Vnet::Initializers::DB.run(Vnet::Configurations::Webapi.conf.db_uri)
 end
 
-DCell.start(Vnet::Configurations::Vnmgr.dcell_params)
+DCell.start(Vnet::Configurations::Webapi.dcell_params)
 
 map '/api' do
   use Rack::Cors do

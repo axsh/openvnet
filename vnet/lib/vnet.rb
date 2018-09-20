@@ -16,6 +16,14 @@ require 'json'
 require 'logger'
 require 'ostruct'
 
+require 'ffi-rzmq-core'
+
+if !LibZMQ.version4?
+  throw "could not find libzmq version 4, aborting"
+end
+
+require 'dcell'
+
 module Vnet
 
   ROOT = ENV['VNET_ROOT'] || File.expand_path('../../', __FILE__)

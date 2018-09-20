@@ -6,9 +6,6 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'rubygems'
 require 'bundler/setup'
 require 'vnet'
-require 'celluloid'
-require 'celluloid/autostart'
-require 'dcell'
 
 #Vnet::Initializers::Logger.run("vna.log")
 
@@ -32,7 +29,8 @@ when :direct
   Vnet::Initializers::DB.run(conf.db_uri)
 end
 
-DCell.start(Vnet::Configurations::Vnmgr.dcell_params)
+DCell.start(Vnet::Configurations::Vna.dcell_params)
+Celluloid.start
 
 trap 'TTIN' do
   Celluloid.stack_dump
