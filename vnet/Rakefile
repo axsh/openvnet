@@ -5,6 +5,7 @@ $LOAD_PATH.unshift 'lib'
 require 'rubygems'
 require 'bundler/setup'
 require 'sequel'
+require 'dcell'
 require 'vnet'
 
 begin
@@ -49,6 +50,7 @@ end
 
 namespace :db do
   config = Vnet::Configurations::Vnmgr.load rescue nil
+
   # deprecated
   task :init => [] do
     migrate(config)
@@ -85,6 +87,7 @@ end
 namespace :test do
   config_dir = "spec/config/"
   config = Vnet::Configurations::Vnmgr.load(File.join(config_dir, "common.conf"), File.join(config_dir, "vnmgr.conf")) rescue nil
+
   namespace :db do
     # deprecated
     task :init => [] do

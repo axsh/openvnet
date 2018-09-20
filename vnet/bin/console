@@ -12,14 +12,9 @@ require 'pry'
 conf = Vnet::Configurations::Vna.conf
 
 Vnet::NodeApi.set_proxy(conf.node_api_proxy)
-
 Vnet::Initializers::DB.run(conf.db_uri)
 
-DCell.start :registry => {
-  :adapter => conf.registry.adapter,
-  :host => conf.registry.host,
-  :port => conf.registry.port
-}
+DCell.start(registry: Vnet::Configurations::Vnmgr.dcell_params[:registry])
 
 $0 = 'pry'
 Pry::CLI.parse_options
