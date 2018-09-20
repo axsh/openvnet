@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
+
+require 'dcell/registries/redis_adapter'
+
 module Vnet::Configurations
   class Common < Fuguta::Configuration
     cattr_accessor :paths
+
     self.paths = ::Vnet::CONFIG_PATH
 
     class << self
@@ -36,6 +40,19 @@ module Vnet::Configurations
         end
         @file_names
       end
+
+      def dcell_params
+        { id: @conf.node.id,
+          addr: @conf.node.addr_string,
+          crypto: false,
+          registry: DCell::Registry::RedisAdapter.new(host: @conf.registry.host, port: @conf.registry.port)
+        }.tap { |params|
+          if conf.node.addr.public != ""
+            params[:public] = conf.node.pub_addr_string
+          end
+        }
+      end
+
     end
 
     class DB < Fuguta::Configuration

@@ -6,37 +6,12 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'rubygems'
 require 'bundler/setup'
 require 'dcell'
-require 'dcell/registries/redis_adapter'
 require 'vnet'
 
-require 'msgpack'
-
-class Time
-  def self.from_msgpack_ext(data)
-    data.unpack('I*').tap { |s, n| at(s, Rational(n, 1000)) }
-  end
-
-  def to_msgpack_ext
-    [tv_sec, tv_nsec].pack('I*')
-  end
-end
-
 Vnet::Initializers::Logger.run("vnmgr.log")
+Vnet::Initializers::DB.run(Vnet::Configurations::Vnmgr.conf.db_uri)
 
-conf = Vnet::Configurations::Vnmgr.conf
-
-Vnet::Initializers::DB.run(conf.db_uri)
-
-params = {
-  id: conf.node.id,
-  addr: conf.node.addr_string,
-  crypto: false,
-  registry: DCell::Registry::RedisAdapter.new(host: conf.registry.host, port: conf.registry.port)
-}
-
-params.merge!(public: conf.node.pub_addr_string) if conf.node.addr.public != ""
-
-DCell.start(params)
+DCell.start(Vnet::Configurations::Vnmgr.dcell_params)
 
 Celluloid.start
 
@@ -47,15 +22,16 @@ Vnet::Services::Vnmgr.supervise_as :vnmgr
 DCell::Global[:rpc_node_id] = params[:id].to_sym
 DCell::Global[:event_handler_node_id] = params[:id].to_sym
 
-dp_mg_uuid = conf.datapath_mac_group
-if dp_mg_uuid.nil?
+Vnet::Configurations::Vnmgr.datapath_mac_group.tap { |dp_mg_uuid|
+  if dp_mg_uuid.nil?
     Vnet.logger.warn "datapath_mac_group is not set in /etc/openvnet/common.conf. " +
-                     "OpenVNet will not be able to auto-assign MAC addresses."
-elsif Vnet::Models::MacRangeGroup[dp_mg_uuid].nil?
+      "OpenVNet will not be able to auto-assign MAC addresses."
+  elsif Vnet::Models::MacRangeGroup[dp_mg_uuid].nil?
     Vnet.logger.warn "The datapath_mac_group UUID set in /etc/openvnet/common.conf " +
-                     "was not found in the database. " +
-                     "OpenVNet will not be able to auto-assign MAC addresses."
-end
+      "was not found in the database. " +
+      "OpenVNet will not be able to auto-assign MAC addresses."
+  end
+}
 
 Celluloid::Actor[:vnmgr].do_initialize
 
