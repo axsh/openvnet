@@ -21,11 +21,6 @@ class Time
   end
 end
 
-MessagePack::DefaultFactory.register_type(0x7f, Time)
-
-
-
-
 Vnet::Initializers::Logger.run("vnmgr.log")
 
 conf = Vnet::Configurations::Vnmgr.conf

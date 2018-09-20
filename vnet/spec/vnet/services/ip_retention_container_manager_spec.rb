@@ -8,7 +8,14 @@ describe Vnet::Services::IpRetentionContainerManager do
   let(:vnet_info) { Vnet::Services::VnetInfo.new }
   let(:manager) { described_class.new(vnet_info) }
 
-  before(:each) { use_mock_event_handler }
+  let(:node) { double(:node) }
+  let(:node_id) { double(:node_id) }
+
+  before(:each) {
+    use_mock_event_handler
+
+    mock_dcell_me_id(node, node_id)
+  }
 
   item_names = (1..3).map { |index| "item_#{index}" }
 
@@ -25,19 +32,9 @@ describe Vnet::Services::IpRetentionContainerManager do
   }
 
   let(:item_type) { :ip_retention_container }
-
-  let(:item_models) {
-    item_names.map { |name| send(name) }
-  }
-
-  let(:item_fabricators) {
-    item_names.map { |name| item_type }
-  }
-
-  let(:item_assoc_counts) {
-    { leased_ip_retentions: [0, 1, 2],
-    }
-  }
+  let(:item_models) { item_names.map { |name| send(name) } }
+  let(:item_fabricators) { item_names.map { |name| item_type } }
+  let(:item_assoc_counts) { { leased_ip_retentions: [0, 1, 2], } }
 
   include_examples 'create items on service manager'
   include_examples 'delete items on service manager', item_names

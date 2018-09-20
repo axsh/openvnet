@@ -8,6 +8,7 @@ Bundler.setup(:default)
 Bundler.require(:test)
 
 require 'dcell'
+require 'dcell/registries/redis_adapter'
 require 'trema' # Needed for the to_trema_hash methods in mock_datapath
 require 'vnet'
 
@@ -25,7 +26,12 @@ require 'coveralls'
 
 Coveralls.wear!
 
-DCell.setup
+params = {
+  crypto: false,
+  registry: DCell::Registry::RedisAdapter.new
+}
+
+DCell.setup(params)
 
 # When a datapath is initialized, it'll have flow.
 # The one that accepts ARP in the INTERFACE_INGRESS_FILTER table
