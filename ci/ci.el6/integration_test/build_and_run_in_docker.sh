@@ -16,6 +16,7 @@ set +a
 
 DATA_DIR="${DATA_DIR:-/data}"
 CACHE_DIR="/data/openvnet-ci/el6/branches"
+BOXES_SCL_RUBY="rh-ruby23"
 
 repo_and_tag="openvnet/integration-test/el6:${BRANCH}.${RELEASE_SUFFIX}"
 
@@ -37,7 +38,9 @@ sudo docker build -t "${repo_and_tag}" \
      --build-arg BRANCH="${BRANCH}" \
      --build-arg RELEASE_SUFFIX="${RELEASE_SUFFIX}" \
      --build-arg BUILD_OS="${BUILD_OS}" \
-     --build-arg REBUILD="${REBUILD}" -f "./ci/ci.el6/integration_test/Dockerfile" .
+     --build-arg REBUILD="${REBUILD}" \
+     --build-arg BOXES_SCL_RUBY="${BOXES_SCL_RUBY}" \
+     -f "./ci/ci.el6/integration_test/Dockerfile" .
 
 CID=$(sudo docker run --privileged -v "${DATA_DIR}":/data ${BUILD_ENV_PATH:+--env-file $BUILD_ENV_PATH} -d "${repo_and_tag}")
 sudo docker attach $CID

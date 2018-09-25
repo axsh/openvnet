@@ -2,7 +2,7 @@
 
 (
     $starting_group "Install sclo ruby"
-    run_cmd "rpm -q --quiet ${BOXES_SCL_RUBY} ${BOXES_SCL_RUBY}-rubygem-bundler ${BOXES_SCL_RUBY}-rubygem-rake"
+    run_cmd "rpm -q --quiet ${BOXES_SCL_RUBY:?Missing env.} ${BOXES_SCL_RUBY}-rubygem-bundler ${BOXES_SCL_RUBY}-rubygem-rake"
     $skip_group_if_unessecarry
     install_package "centos-release-scl"
     install_package "yum-utils"
