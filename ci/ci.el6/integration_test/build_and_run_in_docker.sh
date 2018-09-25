@@ -16,7 +16,6 @@ set +a
 
 DATA_DIR="${DATA_DIR:-/data}"
 CACHE_DIR="/data/openvnet-ci/el6/branches"
-BOXES_SCL_RUBY="rh-ruby23"
 
 repo_and_tag="openvnet/integration-test/el6:${BRANCH}.${RELEASE_SUFFIX}"
 

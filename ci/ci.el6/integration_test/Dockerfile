@@ -26,7 +26,7 @@ ARG LONG_SHA
 ARG BOXES_SCL_RUBY
 
 # Set the ARGs to ENV because otherwise they're not visible to the run_tests.sh script
-ENV BRANCH=${BRANCH:-develop} RELEASE_SUFFIX=${RELEASE_SUFFIX:-current} REBUILD=${REBUILD:-false}
+ENV BRANCH=${BRANCH:-develop} RELEASE_SUFFIX=${RELEASE_SUFFIX:-current} REBUILD=${REBUILD:-false} BOXES_SCL_RUBY=${BOXES_SCL_RUBY:-rh-ruby23}
 
 LABEL "jp.axsh.vendor"="Axsh Co. LTD"  \
       "jp.axsh.project"="OpenVNet" \
