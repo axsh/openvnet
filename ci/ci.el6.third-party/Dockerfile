@@ -5,7 +5,7 @@ ADD ci/ci.el6/rspec_rpmbuild/fastestmirror.conf /etc/yum/pluginconf.d/
 
 RUN ["yum", "install", "-y", "epel-release", "upstart"]
 RUN ["yum",  "groupinstall", "-y", "Development Tools"]
-RUN ["yum", "install", "-y", "yum-utils", "rpmdevtools", "createrepo", "redhat-lsb", "openssl-devel", "libffi-devel", "libyaml-devel", "ncurses-devel", "readline-devel", "chrpath", "wget"]
+RUN ["yum", "install", "-y", "yum-utils", "rpmdevtools", "createrepo", "redhat-lsb", "openssl-devel", "libffi-devel", "libyaml-devel", "ncurses-devel", "python34", "readline-devel", "chrpath", "wget"]
 
 ARG BRANCH
 ARG VERSOIN
