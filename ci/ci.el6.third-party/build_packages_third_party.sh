@@ -47,7 +47,7 @@ else
   done
 fi
 
-build_package "openvnet-zeromq"
+build_package "openvnet-zeromq4"
 
 repo_dir="${REPO_BASE_DIR}/packages/rhel/6/third_party/$(date +%Y%m%d%H%M%S)"
 [ -d ${repo_dir} ] || mkdir -p ${repo_dir}
