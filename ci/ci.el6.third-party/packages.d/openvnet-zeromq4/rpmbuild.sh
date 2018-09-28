@@ -7,9 +7,9 @@ set -e
 
 rpmdev-setuptree
 
-cp "$(dirname ${BASH_SOURCE[0]})/openvnet-zeromq4.spec" "$(rpm -E '%{_rootdir}')/SPECS/"
+cp "$(dirname ${BASH_SOURCE[0]})/openvnet-zeromq4.spec" "$(rpm -E '%{_topdir}')/SPECS/"
 
-cd $(rpm -E '%{_rootdir}')
+cd $(rpm -E '%{_topdir}')
 
 spectool -g -R SPECS/zeromq4.spec
 yum-builddep -y SPECS/zeromq4.spec
