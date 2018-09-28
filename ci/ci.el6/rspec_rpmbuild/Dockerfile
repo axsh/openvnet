@@ -3,7 +3,7 @@ WORKDIR /var/tmp/openvnet
 
 ARG SCL_RUBY
 
-ADD ci/ci.el7/rspec_rpmbuild/fastestmirror.conf /etc/yum/pluginconf.d/
+ADD ci/ci.el6/rspec_rpmbuild/fastestmirror.conf /etc/yum/pluginconf.d/
 
 RUN ["yum", "install", "-y", "epel-release", "centos-release-scl"]
 RUN ["yum", "install", "-y", "createrepo", "rpmdevtools", "rpm-build", "yum-utils", "rsync", "sudo", "file"]
