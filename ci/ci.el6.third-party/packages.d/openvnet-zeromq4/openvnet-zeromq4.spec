@@ -58,8 +58,9 @@ make %{?_smp_mflags}
 %install
 make install DESTDIR=%{buildroot} INSTALL="install -p"
 
-# remove *.la
+# remove *.la and create libzmq.so
 rm %{buildroot}%{_libdir}/libzmq.la
+ln -s libzmq.so.5 %{buildroot}%{_libdir}/libzmq.so
 
 
 %check
