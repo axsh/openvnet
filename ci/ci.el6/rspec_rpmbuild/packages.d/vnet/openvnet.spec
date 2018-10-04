@@ -97,7 +97,7 @@ Summary: Common code for all OpenVNet services.
 # things in ruby gems under vendor that it wrongly detects as a dependency.
 AutoReqProv: no
 
-Requires: zeromq4
+Requires: openvnet-zeromq4
 Requires: mysql-libs
 Requires: %{scl_ruby} %{scl_ruby}-rubygem-bundler
 
@@ -105,7 +105,7 @@ Requires: %{scl_ruby} %{scl_ruby}-rubygem-bundler
 # That file is just a symlink to /usr/lib64/libzmq.so.3.0.0 which is provided by the zeromq4
 # runtime package but we will need it for our 0mq client to work. Why this symlink is included
 # in the development package instead of the runtime package is beyond me.
-Requires: zeromq4-devel
+Requires: openvnet-zeromq4-devel
 
 %description common
 This package contains all the common code for OpenVNet's services. All of the OpenVNet services depend on this package.

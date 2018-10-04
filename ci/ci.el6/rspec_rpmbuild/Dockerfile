@@ -14,7 +14,7 @@ RUN yum install -y ${SCL_RUBY}-build && mysql_install_db && chown mysql:mysql -R
 ADD ci/ci.el6/rspec_rpmbuild/yum.repo/dev.repo /etc/yum.repos.d/
 RUN yum-config-manager --disable openvnet
 
-RUN ["yum", "install", "-y", "zeromq4-devel"]
+RUN ["yum", "install", "-y", "openvnet-zeromq4-devel"]
 
 ARG BRANCH
 ARG RELEASE_SUFFIX
