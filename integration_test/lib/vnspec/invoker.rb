@@ -105,8 +105,8 @@ module Vnspec
 
           result = SPec.exec(name)
 
-        rescue Celluloid::DeadActorError => e
-          logger.error("Celluloid::DeadActorError: #{e.inspect}")
+        rescue e
+          logger.error("Caught exception: #{e.inspect}")
 
           result = false
         end

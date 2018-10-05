@@ -103,7 +103,7 @@ module Vnet::Core
     # Create / Delete events:
     #
 
-    def item_post_install(item, item_map)
+    def item_pre_install(item, item_map)
       item_map.batch.datapath_networks.commit.each { |dpgen_map|
         begin
           internal_added_datapath_network(item, dpgen_map)
