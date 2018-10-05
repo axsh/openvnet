@@ -105,7 +105,7 @@ module Vnspec
 
           result = SPec.exec(name)
 
-        rescue e
+        rescue => e
           logger.error("Caught exception: #{e.inspect}")
 
           result = false
