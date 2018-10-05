@@ -89,28 +89,35 @@ module Vnspec
       Vnet.reset_db
 
       Vnet.aggregate_logs(job_id, name) do
-        Vnet.start(:vnmgr)
-        Vnet.start(:webapi)
+        begin
+          Vnet.start(:vnmgr)
+          Vnet.start(:webapi)
 
-        if vna_start_time == :before
-          Vnet.start(:vna)
-          Dataset.setup(name)
-        else
-          Dataset.setup(name)
-          Vnet.start(:vna)
+          if vna_start_time == :before
+            Vnet.start(:vna)
+            Dataset.setup(name)
+          else
+            Dataset.setup(name)
+            Vnet.start(:vna)
+          end
+
+          sleep(1)
+
+          result = SPec.exec(name)
+
+        rescue Celluloid::DeadActorError => e
+          logger.error("Celluloid::DeadActorError: #{e.inspect}")
+
+          result = false
         end
 
-        sleep(1)
-
-        result = SPec.exec(name)
-
-        # if !result
+        if !result
           Vnet.dump_logs
           Vnet.dump_flows
           Vnet.dump_database
 
           #sleep 1000000
-        # end
+        end
 
         result
       end
