@@ -9,8 +9,6 @@ SCL_RUBY="rh-ruby23"
 BUILD_ENV_PATH=${1:?"ERROR: env file is not given."}
 
 function docker_rm() {
-    sleep 1000000
-
     if [[ -z "$CID" ]]; then
         return 0
     fi
