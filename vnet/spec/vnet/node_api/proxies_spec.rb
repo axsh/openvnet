@@ -5,7 +5,7 @@ describe Vnet::NodeApi do
   describe Vnet::NodeApi::RpcProxy do
     let(:node) { double(:node) }
     let(:actor) { double(:actor) }
-    let(:actor_node_id) { :test_vnmgr }
+    let(:actor_node_id) { 'test_vnmgr' }
 
     before(:each) {
       mock_dcell_rpc(node, actor, actor_node_id)
