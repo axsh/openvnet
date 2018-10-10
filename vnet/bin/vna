@@ -29,12 +29,13 @@ when :direct
   Vnet::Initializers::DB.run(conf.db_uri)
 end
 
-DCell.start(Vnet::Configurations::Vna.dcell_params)
 Celluloid.start
 
 trap 'TTIN' do
   Celluloid.stack_dump
 end
+
+DCell.start(Vnet::Configurations::Vna.dcell_params)
 
 Vnet::NodeModules::ServiceOpenflow.supervise_as :service_openflow
 

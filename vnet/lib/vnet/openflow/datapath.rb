@@ -159,7 +159,7 @@ module Vnet::Openflow
     end
 
     def link_with_managers(managers)
-      vnmgr_node = DCell::Node[:vnmgr]
+      vnmgr_node = DCell::Node['vnmgr']
 
       if vnmgr_node.nil?
         warn log_format('could not find vnmgr dcell node, cannot create link for actor cleanup')
