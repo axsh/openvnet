@@ -12,42 +12,25 @@ module Vnspec
       end
 
       def manage_node(ip, operation, node_name)
-            service_cmd = case config[:release_version]
-                          when "el7"     then "systemctl"
-                          when "el6",nil then "initctl"
-                          end
-            ssh(ip, "#{service_cmd} #{operation} vnet-#{node_name}", use_sudo: true)
+        service_cmd = case config[:release_version]
+                      when "el7"     then "systemctl"
+                      when "el6",nil then "initctl"
+                      end
+        ssh(ip, "#{service_cmd} #{operation} vnet-#{node_name.to_s.tr('_', '-')}", use_sudo: true)
       end
 
-      def start(node_name = nil)
-        if node_name
-          Parallel.each(config[:nodes][node_name.to_sym]) do |ip|
-            manage_node(ip, "start", node_name)
-            send(:wait_for, node_name)
-          end
-        else
-          %w(vnmgr vna webapi).each do |n|
-            start(n)
-          end
+      def start(node_name)
+        Parallel.each(config[:nodes][node_name.to_sym]) do |ip|
+          manage_node(ip, "start", node_name)
+          send(:wait_for, node_name)
         end
       end
 
-      def stop(node_name = nil)
-        if node_name
-          Parallel.each(config[:nodes][node_name.to_sym]) do |ip|
-            manage_node(ip, "stop", node_name)
-          end
-          rotate_log(node_name)
-        else
-          %w(webapi vna vnmgr).each do |n|
-            stop(n)
-          end
+      def stop(node_name)
+        Parallel.each(config[:nodes][node_name.to_sym]) do |ip|
+          manage_node(ip, "stop", node_name)
         end
-      end
-
-      def restart(node_name = nil)
-        stop(node_name)
-        start(node_name)
+        rotate_log(node_name)
       end
 
       def update(branch = nil)
@@ -263,7 +246,7 @@ module Vnspec
 
             ips.each_with_index { |ip, i|
               src = logfile_for(node_name)
-              dst = "#{dst_dir}/#{node_name}"
+              dst = "#{dst_dir}/#{node_name.to_s.tr('_', '-')}"
               dst += (i + 1).to_s if node_name == :vna
               dst += ".log"
 
@@ -304,7 +287,7 @@ module Vnspec
       end
 
       def logfile_for(node_name)
-        File.join(config[:vnet_log_directory], "#{node_name}.log")
+        File.join(config[:vnet_log_directory], "#{node_name.to_s.tr('_', '-')}.log")
       end
 
     end

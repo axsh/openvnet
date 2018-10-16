@@ -83,7 +83,10 @@ module Vnspec
       end
 
       VM.stop_network
-      Vnet.stop
+      Vnet.stop(:vna)
+      Vnet.stop(:vnmgr)
+      Vnet.stop(:webapi)
+      ENV['REDIS_MONITOR_LOGS'].to_s == '1' && Vnet.stop(:redis_monitor)
       Vnet.delete_tunnels
 
       Vnet.reset_db
