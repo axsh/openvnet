@@ -119,6 +119,12 @@ module Vnspec
         multi_ssh(config[:nodes][:vnmgr], "cd #{config[:vnet_path]}/vnet; [ -f /etc/openvnet/vnctl-ruby ] && . /etc/openvnet/vnctl-ruby; bundle exec rake db:reset")
       end
 
+      # TODO: Move logging stuff to module.
+      def fetch_log_output(service)
+        # vnmgr still outputs to the original logfile
+        (config[:release_version] != "el7" || service == "vnmgr" ? "cat /var/log/openvnet/%s.log" : "journalctl -u vnet-%s") % service
+      end
+
       def dump_flows(vna_index = nil)
         return unless config[:dump_flows]
 
@@ -131,16 +137,11 @@ module Vnspec
         end
       end
 
-      def fetch_log_output(service)
-        # vnmgr still outputs to the original logfile
-        (config[:release_version] != "el7" || service == "vnmgr" ? "cat /var/log/openvnet/%s.log" : "journalctl -u vnet-%s") % service
-      end
-
       def dump_logs(vna_index = nil)
         return unless config[:dump_flows]
 
-        dump_vnmgr
-        dump_webapi
+        dump_single_node(:vnmgr)
+        dump_single_node(:webapi)
 
         config[:nodes][:vna].each_with_index { |ip, i|
           next if vna_index && vna_index.to_i != i + 1
@@ -164,18 +165,13 @@ module Vnspec
         Vnspec::VM.each { |vm|
           vm.use_vm && vm.dump_vm_status
         }
+
+        ENV['REDIS_MONITOR_LOGS'].to_s == '1' && dump_single_node(:redis_monitor)
       end
 
-      def dump_vnmgr
-        dump_header("dump_logs: vnmgr")
-        output = ssh(config[:nodes][:vnmgr].first, fetch_log_output("vnmgr"), debug: false)
-        logger.info output[:stdout]
-        dump_footer
-      end
-
-      def dump_webapi
-        dump_header("dump_logs: webapi")
-        output = ssh(config[:nodes][:vnmgr].first, fetch_log_output("webapi"), debug: false)
+      def dump_single_node(node_name)
+        dump_header("dump_logs: #{node_name}")
+        output = ssh(config[:nodes][node_name.to_sym].first, fetch_log_output(node_name), debug: false)
         logger.info output[:stdout]
         dump_footer
       end
@@ -243,7 +239,7 @@ module Vnspec
           sleep 1
         end
 
-        dump_webapi
+        dump_single_node(:webapi)
 
         return false
       end
@@ -263,6 +259,8 @@ module Vnspec
           FileUtils.mkdir_p(dst_dir)
 
           config[:nodes].each { |node_name, ips|
+            node_name == :redis_monitor && ENV['REDIS_MONITOR_LOGS'].to_s != '1' && next
+
             ips.each_with_index { |ip, i|
               src = logfile_for(node_name)
               dst = "#{dst_dir}/#{node_name}"
@@ -307,18 +305,6 @@ module Vnspec
 
       def logfile_for(node_name)
         File.join(config[:vnet_log_directory], "#{node_name}.log")
-      end
-
-      # Move logging stuff to a module.
-      def dump_header(msg)
-        logger.info "#" * 50
-        logger.info "# #{msg}"
-        logger.info "#" * 50
-      end
-
-      def dump_footer(msg = "")
-        logger.info
-        logger.info
       end
 
     end

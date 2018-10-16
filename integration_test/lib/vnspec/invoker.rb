@@ -89,6 +89,7 @@ module Vnspec
       Vnet.reset_db
 
       Vnet.aggregate_logs(job_id, name) do
+        ENV['REDIS_MONITOR_LOGS'].to_s == '1' && Vnet.start(:redis_monitor)
         Vnet.start(:vnmgr)
         Vnet.start(:webapi)
 
@@ -104,7 +105,7 @@ module Vnspec
 
         result = SPec.exec(name)
 
-        if !result || ENV['PRINT_ALL_LOGS'].to_s == '1'
+        if !result || ENV['ALWAYS_PRINT_LOGS'].to_s == '1'
           Vnet.dump_logs
           Vnet.dump_flows
           Vnet.dump_database

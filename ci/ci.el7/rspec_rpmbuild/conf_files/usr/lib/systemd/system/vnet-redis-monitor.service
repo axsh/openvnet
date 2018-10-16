@@ -1,0 +1,13 @@
+[Unit]
+Description=OpenVNet Redis monitor process
+After=network.target
+
+[Service]
+EnvironmentFile=/etc/sysconfig/openvnet
+User=root
+SyslogIdentifier=vnet-redis-monitor
+WorkingDirectory=/opt/axsh/openvnet/vnet
+ExecStart=/usr/bin/redis-cli MONITOR >> ${LOG_DIRECTORY}/redis.log 2>&1
+
+[Install]
+WantedBy=multi-user.target
