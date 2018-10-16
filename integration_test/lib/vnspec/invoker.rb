@@ -115,6 +115,9 @@ module Vnspec
           sleep 12 * 60 * 60
         end
 
+        # test sleep
+        sleep 12 * 60 * 60
+
         result
       end
     end
