@@ -23,10 +23,14 @@ ARG REBUILD
 ARG BUILD_URL
 ARG ISO8601_TIMESTAMP
 ARG LONG_SHA
+
 ARG BOXES_SCL_RUBY
+ARG SLEEP_SPEC_FAILURE
 
 # Set the ARGs to ENV because otherwise they're not visible to the run_tests.sh script
-ENV BRANCH=${BRANCH:-develop} RELEASE_SUFFIX=${RELEASE_SUFFIX:-current} REBUILD=${REBUILD:-false} BOXES_SCL_RUBY=${BOXES_SCL_RUBY:-rh-ruby23}
+ENV BRANCH=${BRANCH:-develop} RELEASE_SUFFIX=${RELEASE_SUFFIX:-current} REBUILD=${REBUILD:-false}
+ENV BOXES_SCL_RUBY=${BOXES_SCL_RUBY:-rh-ruby23}
+ENV SLEEP_SPEC_FAILURE=${SLEEP_SPEC_FAILURE:-0}
 
 LABEL "jp.axsh.vendor"="Axsh Co. LTD"  \
       "jp.axsh.project"="OpenVNet" \
