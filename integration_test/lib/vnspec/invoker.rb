@@ -109,7 +109,7 @@ module Vnspec
           Vnet.dump_flows
           Vnet.dump_database
 
-          if !ENV['SLEEP_SPEC_FAILURE'].nil? || ENV['SLEEP_SPEC_FAILURE'].to_s != '0'
+          if ENV['SLEEP_SPEC_FAILURE'].to_s == '1'
             sleep 12 * 60 * 60
           end
         end

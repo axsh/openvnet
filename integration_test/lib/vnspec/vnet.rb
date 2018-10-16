@@ -254,13 +254,14 @@ module Vnspec
 
       def aggregate_logs(job_id, name)
         return unless config[:aggregate_logs]
+
         @job_id = job_id
 
         yield.tap do
-          env_dir = "#{Vnspec::ROOT}/log/#{config[:env]}"
-          job_dir = "#{env_dir}/#{@job_id}"
-          dst_dir = "#{job_dir}/#{name}"
+          env_dir, job_dir, dst_dir = log_dirs(job_id, name)
+
           FileUtils.mkdir_p(dst_dir)
+
           config[:nodes].each do |node_name, ips|
             ips.each_with_index do |ip, i|
               src = logfile_for(node_name)
@@ -270,6 +271,7 @@ module Vnspec
               scp(:download, ip, dst, src)
             end
           end
+
           FileUtils.rm_f("#{env_dir}/current")
           File.symlink(job_dir, "#{env_dir}/current")
         end
@@ -291,6 +293,13 @@ module Vnspec
 
           ssh(ip, "truncate --size 0 #{logfile}", use_sudo: true)
         end
+      end
+
+      def log_dirs(job_id, name)
+        env_dir = "#{Vnspec::ROOT}/log/#{config[:env]}"
+        job_dir = "#{env_dir}/#{@job_id}"
+        dst_dir = "#{job_dir}/#{name}"
+        return env_dir, job_dir, dst_dir
       end
 
       def logfile_for(node_name)
