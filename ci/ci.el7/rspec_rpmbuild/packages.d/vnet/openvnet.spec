@@ -88,6 +88,7 @@ tar cO --directory="vnet" \
 cp -r vnet/vendor "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
 %endif
 
+
 %package common
 #
 # openvnet-common package
@@ -129,6 +130,7 @@ This package contains all the common code for OpenVNet's services. All of the Op
 %config(noreplace) /etc/openvnet/common.conf
 %config(noreplace) /etc/sysconfig/openvnet
 
+
 %package webapi
 #
 # openvnet-webapi package
@@ -166,6 +168,7 @@ chown "$user"."$user" "$logfile"
 
 %preun webapi
 %{?systemd_preun:%systemd_preun vnet-webapi.service}
+
 
 %package vnmgr
 #
@@ -237,6 +240,7 @@ This package contains OpenVNet's VNA process. This is an OpenFlow controller tha
 %preun vna
 %{?systemd_preun:%systemd_preun vnet-vna.service}
 
+
 %package vnctl
 #
 # openvnet-vnctl package
@@ -259,3 +263,40 @@ This package contains the vnctl client for OpenVNet's WebAPI. It's a simple comm
 /usr/bin/vnctl
 %config(noreplace) /etc/openvnet/vnctl.conf
 %config /etc/openvnet/vnctl-ruby
+
+
+%package redis-monitor
+#
+# openvnet-redis-monitor package
+#
+
+Summary: Virtual Network Manager for OpenVNet.
+BuildArch: noarch
+
+Requires: openvnet-common
+
+%description redis-monitor
+This package contains OpenVNet's REDIS-MONITOR debugging. This process acts as a redis debugging tool for OpenVNet.
+
+%files redis-monitor
+%config(noreplace) /etc/openvnet/redis-monitor.conf
+%config %{_unitdir}/vnet-redis-monitor.service
+
+%post redis-monitor
+user="vnet-redis-monitor"
+logfile="/var/log/openvnet/redis-monitor.log"
+
+if ! id "$user" > /dev/null 2>&1 ; then
+    adduser --system --no-create-home --home-dir /opt/axsh/openvnet --shell /bin/false "$user"
+fi
+
+touch "$logfile"
+chown "$user"."$user" "$logfile"
+
+%{?systemd_post:%systemd_post vnet-redis-monitor.service}
+
+%postun redis-monitor
+%{?systemd_postun:%systemd_postun vnet-redis-monitor.service}
+
+%preun redis-monitor
+%{?systemd_preun:%systemd_preun vnet-redis-monitor.service}

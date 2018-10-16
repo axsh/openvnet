@@ -188,6 +188,7 @@ fi
 touch "$logfile"
 chown "$user"."$user" "$logfile"
 
+
 #
 # openvnet-vna package
 #
@@ -213,6 +214,7 @@ This package contains OpenVNet's VNA process. This is an OpenFlow controller tha
 %config(noreplace) /etc/default/vnet-vna
 %config /etc/init/vnet-vna.conf
 
+
 #
 # openvnet-vnctl package
 #
@@ -237,3 +239,32 @@ This package contains the vnctl client for OpenVNet's WebAPI. It's a simple comm
 /usr/bin/vnctl
 %config(noreplace) /etc/openvnet/vnctl.conf
 %config /etc/openvnet/vnctl-ruby
+
+
+#
+# openvnet-redis-monitor package
+#
+
+%package redis-monitor
+Summary: Virtual Network Manager for OpenVNet.
+BuildArch: noarch
+
+Requires: openvnet-common
+
+%description redis-monitor
+This package contains OpenVNet's REDIS-MONITOR debugging. This process acts as a redis debugging tool for OpenVNet.
+
+%files redis-monitor
+%config(noreplace) /etc/default/vnet-redis-monitor
+%config /etc/init/vnet-redis-monitor.conf
+
+%post redis-monitor
+user="vnet-redis-monitor"
+logfile="/var/log/openvnet/redis-monitor.log"
+
+if ! id "$user" > /dev/null 2>&1 ; then
+    adduser -d /opt/axsh/openvnet --system --no-create-home --shell /bin/false "$user"
+fi
+
+touch "$logfile"
+chown "$user"."$user" "$logfile"
