@@ -104,14 +104,14 @@ module Vnspec
 
         result = SPec.exec(name)
 
-        if !result
+        if !result || ENV['PRINT_ALL_LOGS'].to_s == '1'
           Vnet.dump_logs
           Vnet.dump_flows
           Vnet.dump_database
+        end
 
-          if ENV['SLEEP_SPEC_FAILURE'].to_s == '1'
-            sleep 12 * 60 * 60
-          end
+        if !result && ENV['SLEEP_SPEC_FAILURE'].to_s == '1'
+          sleep 12 * 60 * 60
         end
 
         result

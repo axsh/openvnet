@@ -262,15 +262,18 @@ module Vnspec
 
           FileUtils.mkdir_p(dst_dir)
 
-          config[:nodes].each do |node_name, ips|
-            ips.each_with_index do |ip, i|
+          config[:nodes].each { |node_name, ips|
+            ips.each_with_index { |ip, i|
               src = logfile_for(node_name)
               dst = "#{dst_dir}/#{node_name}"
               dst += (i + 1).to_s if node_name == :vna
               dst += ".log"
+
+              logger.info "aggregating log: node_name:#{node_name} ip:#{ip} src:#{src.to_s} dst:#{dst.to_s}"
+
               scp(:download, ip, dst, src)
-            end
-          end
+            }
+          }
 
           FileUtils.rm_f("#{env_dir}/current")
           File.symlink(job_dir, "#{env_dir}/current")

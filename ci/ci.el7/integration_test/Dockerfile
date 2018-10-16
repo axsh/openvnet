@@ -22,10 +22,12 @@ ARG BUILD_URL
 ARG ISO8601_TIMESTAMP
 ARG LONG_SHA
 
+ARG PRINT_ALL_LOGS
 ARG SLEEP_SPEC_FAILURE
 
 # Set the ARGs to ENV because otherwise they're not visible to the run_tests.sh script
 ENV BRANCH=${BRANCH:-develop} RELEASE_SUFFIX=${RELEASE_SUFFIX:-current} REBUILD=${REBUILD:-false}
+ENV PRINT_ALL_LOGS=${PRINT_ALL_LOGS:-0}
 ENV SLEEP_SPEC_FAILURE=${SLEEP_SPEC_FAILURE:-0}
 
 LABEL "jp.axsh.vendor"="Axsh Co. LTD"  \

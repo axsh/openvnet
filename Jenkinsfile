@@ -6,6 +6,7 @@ import groovy.transform.Field
 @Field buildParams = [
   "REBUILD": "false",
   "LEAVE_CONTAINER": "0",
+  "PRINT_ALL_LOGS": "0",
   "SLEEP_SPEC_FAILURE": "0",
   "STRIP_VENDOR": "1",
 ]
@@ -15,6 +16,8 @@ def ask_build_parameter = { ->
     parameters:[
       [$class: 'ChoiceParameterDefinition',
         choices: "0\n1", description: 'Leave container after build for debugging', name: 'LEAVE_CONTAINER'],
+      [$class: 'ChoiceParameterDefinition',
+        choices: "0\n1", description: 'Print all logs even on success', name: 'PRINT_ALL_LOGS'],
       [$class: 'ChoiceParameterDefinition',
         choices: "0\n1", description: 'Sleep on spec failure for debugging', name: 'SLEEP_SPEC_FAILURE'],
       [$class: 'ChoiceParameterDefinition',
@@ -28,8 +31,10 @@ def write_build_env(label) {
   def build_env="""# These parameters are read from bash and docker --env-file.
 # So do not use single or double quote for the value part.
 LEAVE_CONTAINER=${buildParams.LEAVE_CONTAINER}
+PRINT_ALL_LOGS=${buildParams.PRINT_ALL_LOGS}
 SLEEP_SPEC_FAILURE=${buildParams.SLEEP_SPEC_FAILURE}
 STRIP_VENDOR=${buildParams.STRIP_VENDOR}
+
 REBUILD=${buildParams.REBUILD}
 REPO_BASE_DIR=${env.REPO_BASE_DIR ?: ''}
 BUILD_CACHE_DIR=${env.BUILD_CACHE_DIR ?: ''}
