@@ -9,7 +9,7 @@ SyslogIdentifier=vnet-redis-monitor
 WorkingDirectory=/opt/axsh/openvnet/vnet
 StandardOutput=file:${LOG_DIRECTORY}/redis-monitor.log
 StandardError=file:${LOG_DIRECTORY}/redis-monitor.log
-ExecStartPre=journalctl --vacuum-time=1seconds vnet-redis-monitor
+ExecStartPre=/usr/bin/journalctl --vacuum-time=1seconds vnet-redis-monitor
 ExecStart=/usr/bin/scl enable ${SCL_RUBY} -- bundle exec ./bin/redis-monitor
 
 [Install]

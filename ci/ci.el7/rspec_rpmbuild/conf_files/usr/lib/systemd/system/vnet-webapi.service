@@ -10,7 +10,7 @@ SyslogIdentifier=vnet-webapi
 WorkingDirectory=/opt/axsh/openvnet/vnet
 StandardOutput=file:${LOG_DIRECTORY}/webapi.log
 StandardError=file:${LOG_DIRECTORY}/webapi.log
-ExecStartPre=journalctl --vacuum-time=1seconds vnet-webapi
+ExecStartPre=/usr/bin/journalctl --vacuum-time=1seconds vnet-webapi
 ExecStart=/usr/bin/scl enable ${SCL_RUBY} -- bundle exec unicorn -o ${BIND_ADDR} -p ${PORT} ./rack/config-webapi.ru
 
 [Install]
