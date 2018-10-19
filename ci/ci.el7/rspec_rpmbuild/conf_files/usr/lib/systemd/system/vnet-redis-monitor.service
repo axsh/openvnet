@@ -7,7 +7,7 @@ EnvironmentFile=/etc/sysconfig/openvnet
 User=root
 SyslogIdentifier=vnet-redis-monitor
 WorkingDirectory=/opt/axsh/openvnet/vnet
-ExecStart=/usr/bin/redis-cli MONITOR >> ${LOG_DIRECTORY}/redis-monitor.log
+ExecStart=/usr/bin/scl enable ${SCL_RUBY} -- bundle exec ./bin/redis-monitor >> ${LOG_DIRECTORY}/redis-monitor.log
 
 [Install]
 WantedBy=multi-user.target

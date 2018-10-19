@@ -256,6 +256,7 @@ Requires: openvnet-common
 This package contains OpenVNet's REDIS-MONITOR debugging. This process acts as a redis debugging tool for OpenVNet.
 
 %files redis-monitor
+/opt/axsh/openvnet/vnet/bin/redis-monitor
 %config(noreplace) /etc/default/vnet-redis-monitor
 %config /etc/init/vnet-redis-monitor.conf
 
