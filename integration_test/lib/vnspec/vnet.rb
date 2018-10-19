@@ -271,16 +271,16 @@ module Vnspec
       private
 
       def rotate_log(node_name)
-        return unless config[:aggregate_logs]
-        return unless @job_id
-
         Parallel.each(config[:nodes][node_name.to_sym]) do |ip|
           logfile = logfile_for(node_name)
-          timestamp = "#{Time.now.strftime("%Y%m%d%H%M%S%L")}"
-          rotated_logfile = "#{logfile}.#{timestamp}"
 
-          ssh(ip, "cp #{logfile} #{rotated_logfile}", use_sudo: true)
-          ssh(ip, "gzip #{rotated_logfile}", use_sudo: true)
+          if config[:aggregate_logs] && @job_id
+            timestamp = "#{Time.now.strftime("%Y%m%d%H%M%S%L")}"
+            rotated_logfile = "#{logfile}.#{timestamp}"
+
+            ssh(ip, "cp #{logfile} #{rotated_logfile}", use_sudo: true)
+            ssh(ip, "gzip #{rotated_logfile}", use_sudo: true)
+          end
 
           ssh(ip, "truncate --size 0 #{logfile}", use_sudo: true)
         end
