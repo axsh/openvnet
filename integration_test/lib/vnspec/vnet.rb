@@ -283,6 +283,10 @@ module Vnspec
           end
 
           ssh(ip, "truncate --size 0 #{logfile}", use_sudo: true)
+
+          if config[:release_version] == "el7"
+            ssh(ip, "journalctl --vacuum-time=1seconds vnet-#{node_name.to_s.tr('_', '-')}")
+          end
         end
       end
 
