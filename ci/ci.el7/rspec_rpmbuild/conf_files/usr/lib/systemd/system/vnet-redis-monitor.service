@@ -4,10 +4,13 @@ After=network.target
 
 [Service]
 EnvironmentFile=/etc/sysconfig/openvnet
-User=root
+User=vnet-redis-monitor
 SyslogIdentifier=vnet-redis-monitor
 WorkingDirectory=/opt/axsh/openvnet/vnet
-ExecStart=/usr/bin/scl enable ${SCL_RUBY} -- bundle exec ./bin/redis-monitor >> ${LOG_DIRECTORY}/redis-monitor.log
+StandardOutput=/var/log/openvnet/redis-monitor.log
+StandardError=/var/log/openvnet/redis-monitor.log
+ExecStartPre=journalctl --vacuum-time=1seconds vnet-redis-monitor
+ExecStart=/usr/bin/scl enable ${SCL_RUBY} -- bundle exec ./bin/redis-monitor
 
 [Install]
 WantedBy=multi-user.target
