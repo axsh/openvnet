@@ -386,6 +386,11 @@ module Vnet::Core
       # Only do create_tunnel and return...
       item = item || create_tunnel(options, tunnel_mode)
 
+      if item.nil?
+        warn log_format_h("could not create #{obj_type} tunnel FAILED UNEXPECTEDLY", options)
+        return
+      end
+
       # Verify tunnel mode here... Rather update tunnel mode as needed.
       if tunnel_mode != item.mode
         info log_format("changing tunnel mode to #{tunnel_mode} NOT IMPLEMENTED")
