@@ -7,7 +7,10 @@ EnvironmentFile=/etc/sysconfig/openvnet
 User=vnet-vnmgr
 SyslogIdentifier=vnet-vnmgr
 WorkingDirectory=/opt/axsh/openvnet/vnet
-ExecStart=/usr/bin/scl enable ${SCL_RUBY} -- bundle exec ./bin/vnmgr >> ${LOG_DIRECTORY}/vnmgr.log
+StandardOutput=${LOG_DIRECTORY}/vnmgr.log
+StandardError=${LOG_DIRECTORY}/vnmgr.log
+ExecStartPre=journalctl --vacuum-time=1seconds vnet-vnmgr
+ExecStart=/usr/bin/scl enable ${SCL_RUBY} -- bundle exec ./bin/vnmgr
 
 [Install]
 WantedBy=multi-user.target
