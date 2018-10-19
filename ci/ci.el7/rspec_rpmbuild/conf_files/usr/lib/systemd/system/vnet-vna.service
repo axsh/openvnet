@@ -6,10 +6,7 @@ After=network.target
 EnvironmentFile=/etc/sysconfig/openvnet
 SyslogIdentifier=vnet-vna
 WorkingDirectory=/opt/axsh/openvnet/vnet
-StandardOutput=file:${LOG_DIRECTORY}/vna.log
-StandardError=file:${LOG_DIRECTORY}/vna.log
-ExecStartPre=/usr/bin/journalctl --vacuum-time=1seconds vnet-vna
-ExecStart=/usr/bin/scl enable ${SCL_RUBY} -- bundle exec ./bin/vna
+ExecStart=/usr/bin/scl enable ${SCL_RUBY} -- bundle exec ./bin/vna >> ${LOG_DIRECTORY}/vnmgr.log
 
 [Install]
 WantedBy=multi-user.target
