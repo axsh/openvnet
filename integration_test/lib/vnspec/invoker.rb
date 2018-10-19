@@ -118,6 +118,8 @@ module Vnspec
           sleep 12 * 60 * 60
         end
 
+        sleep 12 * 60 * 60
+
         result
       end
     end
