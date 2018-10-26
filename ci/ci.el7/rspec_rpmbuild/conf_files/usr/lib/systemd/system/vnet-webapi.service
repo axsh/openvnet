@@ -8,7 +8,7 @@ Environment=BIND_ADDR=0.0.0.0 PORT=9090 RACK_ENV=production
 User=vnet-webapi
 SyslogIdentifier=vnet-webapi
 WorkingDirectory=/opt/axsh/openvnet/vnet
-ExecStart=/usr/bin/scl enable ${SCL_RUBY} -- bundle exec unicorn -o ${BIND_ADDR} -p ${PORT} ./rack/config-webapi.ru >> ${LOG_DIRECTORY}/vnmgr.log
+ExecStart=/bin/bash -ce "/usr/bin/scl enable ${SCL_RUBY} -- bundle exec unicorn -o ${BIND_ADDR} -p ${PORT} ./rack/config-webapi.ru >> ${LOG_DIRECTORY}/vnmgr.log 2>&1"
 
 [Install]
 WantedBy=multi-user.target
