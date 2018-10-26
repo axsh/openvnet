@@ -7,7 +7,7 @@ EnvironmentFile=/etc/sysconfig/openvnet
 User=vnet-vnmgr
 SyslogIdentifier=vnet-vnmgr
 WorkingDirectory=/opt/axsh/openvnet/vnet
-ExecStart=/bin/bash -ce "/usr/bin/scl enable ${SCL_RUBY} -- bundle exec ./bin/vnmgr >> ${LOG_DIRECTORY}/vnmgr.log 2>&1"
+ExecStart=/bin/bash -c "/usr/bin/scl enable ${SCL_RUBY} -- bundle exec ./bin/vnmgr >> ${LOG_DIRECTORY}/vnmgr.log 2>&1"
 
 [Install]
 WantedBy=multi-user.target
