@@ -105,9 +105,9 @@ module Vnspec
       # TODO: Move logging stuff to module.
       def fetch_log_output(service)
         if config[:release_version] == "el7"
-          active_enter  = "$(systemctl show vnet-#{service.to_s.tr('_', '-')} --value --property=ActiveEnterTimestamp)"
-          inactive_exit = "$(systemctl show vnet-#{service.to_s.tr('_', '-')} --value --property=InactiveExitTimestamp)"
-          
+          active_enter  = "$(systemctl show vnet-#{service.to_s.tr('_', '-')} --property=ActiveEnterTimestamp  | sed -e 's/ActiveEnterTimestamp=[A-Fa-z]* \\([0-9: -]*\\) [A-Z]*/\\1/')"
+          inactive_exit = "$(systemctl show vnet-#{service.to_s.tr('_', '-')} --property=InactiveExitTimestamp | sed -e 's/InactiveExitTimestamp=[A-Fa-z]* \\([0-9: -]*\\) [A-Z]*/\\1/')"
+
           "journalctl -u vnet-#{service.to_s.tr('_', '-')} --since \"$([ -z \\\"#{active_enter}\\\" ] && echo #{inactive_exit} || echo #{active_enter})\""
         else
           "cat /var/log/openvnet/#{service.to_s.tr('_', '-')}.log"
