@@ -96,8 +96,6 @@ module Vnspec
         Vnet.start(:vnmgr)
         Vnet.start(:webapi)
 
-        sleep 100000000
-
         if vna_start_time == :before
           Vnet.start(:vna)
           Dataset.setup(name)
