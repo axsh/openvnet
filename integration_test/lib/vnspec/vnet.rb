@@ -104,8 +104,11 @@ module Vnspec
 
       # TODO: Move logging stuff to module.
       def fetch_log_output(service)
-        # vnmgr still outputs to the original logfile
-        (config[:release_version] != "el7" || service == "vnmgr" ? "cat /var/log/openvnet/%s.log" : "journalctl -u vnet-%s") % service.to_s.tr('_', '-')
+        if config[:release_version] == "el7"
+          "journalctl -u vnet-#{service.to_s.tr('_', '-')} --since \"$(systemctl show vnet-#{service.to_s.tr('_', '-')} --property=ActiveEnterTimestamp | sed -e 's/ActiveEnterTimestamp=[A-Fa-z]* \\([0-9: -]*\\) [A-Z]*/\\1/')\""
+        else
+          "cat /var/log/openvnet/#{service.to_s.tr('_', '-')}.log"
+        end
       end
 
       def dump_flows(vna_index = nil)
@@ -283,10 +286,6 @@ module Vnspec
           end
 
           ssh(ip, "truncate --size 0 #{logfile}", use_sudo: true)
-
-          if config[:release_version] == "el7"
-            ssh(ip, "sudo -u vnet-#{node_name.to_s.tr('_', '-')} journalctl --vacuum-time=1seconds vnet-#{node_name.to_s.tr('_', '-')}")
-          end
         end
       end
 
