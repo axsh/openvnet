@@ -40,6 +40,13 @@ func (c *Client) post(uri string, output interface{}, params interface{}) (*http
 	return checkError(ovnError, resp, err)
 }
 
+func (c *Client) put(uri string, output interface{}, params interface{}) (*http.Response, error) {
+	ovnError := new(OpenVNetError)
+	resp, err := c.sling.New().Put(uri).BodyForm(params).Receive(output, ovnError)
+
+	return checkError(ovnError, resp, err)
+}
+
 func (c *Client) del(uri string) (*http.Response, error) {
 	ovnError := new(OpenVNetError)
 	resp, err := c.sling.New().Delete(uri).Receive(nil, ovnError)
