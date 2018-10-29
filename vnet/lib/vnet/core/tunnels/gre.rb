@@ -44,6 +44,7 @@ module Vnet::Core::Tunnels
                           local_ip: @src_ipv4_address.to_s)
 
       flows = []
+
       [true, false].each { |reflection|
         flows << flow_create(table: TABLE_OUTPUT_DP_OVER_TUNNEL,
                              goto_table: TABLE_OUT_PORT_TUNNEL,

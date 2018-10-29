@@ -206,8 +206,8 @@ module Vnet::Core
       item = internal_detect_by_id(params) || return
       network_id = get_param_id(params, :network_id)
 
-      item.remove_active_network(network_id)
       item.deactivate_network_id(network_id)
+      item.remove_active_network(network_id)
 
       if !item.host? && item.unused?
         publish(REMOVED_DATAPATH, id: item.id)
@@ -334,8 +334,8 @@ module Vnet::Core
       item = internal_detect_by_id(params) || return
       segment_id = get_param_id(params, :segment_id)
 
-      item.remove_active_segment(segment_id)
       item.deactivate_segment_id(segment_id)
+      item.remove_active_segment(segment_id)
 
       if !item.host? && item.unused?
         publish(REMOVED_DATAPATH, id: item.id)
@@ -462,8 +462,8 @@ module Vnet::Core
       item = internal_detect_by_id(params) || return
       route_link_id = get_param_id(params, :route_link_id)
 
-      item.remove_active_route_link(route_link_id)
       item.deactivate_route_link_id(route_link_id)
+      item.remove_active_route_link(route_link_id)
 
       if !item.host? && item.unused?
         publish(REMOVED_DATAPATH, id: item.id)
@@ -528,12 +528,18 @@ module Vnet::Core
     def internal_added_datapath_network(item, dpg_map)
       network_id = get_param_id(dpg_map, :network_id)
 
+      network_map = MW::Network.batch[id: network_id].commit
+      dpg_map[:mode] = (network_map && network_map[:mode]) || ''
+
       item.add_active_network(dpg_map)
       item.activate_network_id(network_id) if @active_networks[network_id]
     end
 
     def internal_added_datapath_segment(item, dpg_map)
       segment_id = get_param_id(dpg_map, :segment_id)
+
+      segment_map = MW::Segment.batch[id: segment_id].commit
+      dpg_map[:mode] = (segment_map && segment_map[:mode]) || ''
 
       item.add_active_segment(dpg_map)
       item.activate_segment_id(segment_id) if @active_segments[segment_id]

@@ -122,6 +122,32 @@ module Vnet
     end
   end
 
+  class ItemVnetUuidMode < ItemVnetUuid
+    attr_reader :mode
+
+    def initialize(params)
+      @installed = false
+      @loaded = false
+
+      @vnet_info = get_param_vnet_info(params)
+
+      get_param_map(params).tap { |map|
+        @id = get_param_id(map)
+        @uuid = get_param_string(map, :uuid)
+        @mode = get_param_string(map, :mode)
+      }
+    end
+
+    def pretty_id
+      "#{@uuid}/#{@id}"
+    end
+
+    def pretty_properties
+      "mode:#{@mode}"
+    end
+
+  end
+
   # TODO: This class isn't really correctly implemented, replace the
   # initialize method with a not-implemented exception and create a
   # different ItemDpId32 for e.g. ports. 

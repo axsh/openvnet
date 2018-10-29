@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 module Vnspec
   class Vnet
     class << self
@@ -123,12 +124,10 @@ module Vnspec
 
         config[:nodes][:vna].each_with_index do |ip, i|
           next if vna_index && vna_index.to_i != i + 1
-          logger.info "#" * 50
-          logger.info "# dump_flows: vna#{i + 1}"
-          logger.info "#" * 50
+          dump_header("dump_flows: vna#{i + 1}")
           output = ssh(ip, "cd #{config[:vnet_path]}/vnet; [ -f /etc/openvnet/vnctl-ruby ] && . /etc/openvnet/vnctl-ruby; bundle exec bin/vnflows-monitor", debug: false)
           logger.info output[:stdout]
-          logger.info
+          dump_footer
         end
       end
 
@@ -139,15 +138,9 @@ module Vnspec
 
       def dump_logs(vna_index = nil)
         return unless config[:dump_flows]
-        dump_header("dump_logs: vnmgr")
-        output = ssh(config[:nodes][:vnmgr].first, fetch_log_output("vnmgr"), debug: false)
-        logger.info output[:stdout]
-        dump_footer
 
-        dump_header("dump_logs: webapi")
-        output = ssh(config[:nodes][:vnmgr].first, fetch_log_output("webapi"), debug: false)
-        logger.info output[:stdout]
-        dump_footer
+        dump_vnmgr
+        dump_webapi
 
         config[:nodes][:vna].each_with_index { |ip, i|
           next if vna_index && vna_index.to_i != i + 1
@@ -173,6 +166,20 @@ module Vnspec
         }
       end
 
+      def dump_vnmgr
+        dump_header("dump_logs: vnmgr")
+        output = ssh(config[:nodes][:vnmgr].first, fetch_log_output("vnmgr"), debug: false)
+        logger.info output[:stdout]
+        dump_footer
+      end
+
+      def dump_webapi
+        dump_header("dump_logs: webapi")
+        output = ssh(config[:nodes][:vnmgr].first, fetch_log_output("webapi"), debug: false)
+        logger.info output[:stdout]
+        dump_footer
+      end
+
       def dump_database
         return unless config[:dump_flows]
 
@@ -196,6 +203,13 @@ module Vnspec
           :topology_route_links,
 
           :tunnels,
+
+          :active_interfaces,
+          :active_ports,
+          :active_networks,
+          :active_segments,
+          :active_route_links,
+
         ].each { |table_name|
           ssh(config[:nodes][:vnmgr].first, "mysql -te select\\ *\\ from\\ #{table_name}\\; vnet", debug: false).tap { |output|
             logger.info output[:stdout]
@@ -229,11 +243,15 @@ module Vnspec
       def wait_for_webapi
         retry_count = 20
         health_check_url = "http://#{config[:webapi][:host]}:#{config[:webapi][:port]}/api/datapaths"
+
         retry_count.times do
           system("curl -fsSkL #{health_check_url}")
           return true if $? == 0
           sleep 1
         end
+
+        dump_webapi
+
         return false
       end
 

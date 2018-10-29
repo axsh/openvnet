@@ -5,7 +5,9 @@ shared_examples 'datapath item added' do |name|
 
   describe "#{name}" do
     let(:dp_obj) {
-      Fabricate("datapath_#{name}").to_hash
+      obj = Fabricate("datapath_#{name}").to_hash
+      obj[:mode] = 'virtual'
+      obj
     }
 
     it 'add and remove' do

@@ -19,6 +19,7 @@ module Vnet::Models
 
     one_to_many :datapath_networks
     one_to_many :datapath_route_links
+    one_to_many :topology_datapaths
 
     one_to_many :ip_lease_container_ip_leases
     many_to_many :ip_lease_containers, join_table: :ip_lease_container_ip_leases, :conditions => "ip_lease_container_ip_leases.deleted_at is null"
@@ -35,7 +36,9 @@ module Vnet::Models
     ip_address: :destroy,
     ip_lease_container_ip_leases: :destroy,
     # 0002_services
-    ip_retentions: :destroy
+    ip_retentions: :destroy,
+    # 0018_topology_lease
+    topology_datapaths: :destroy
 
     dataset_module do
       def all_interface_ids
@@ -47,23 +50,31 @@ module Vnet::Models
       end
 
       def join_interface_ports
-        self.join_table(:inner, :interface_ports, interface_ports__id: :ip_leases__interface_id)
+        self.join_table(:inner, :interface_ports, interface_ports__interface_id: :ip_leases__interface_id)
       end
 
       def join_ip_addresses
         self.join(:ip_addresses, ip_addresses__id: :ip_leases__ip_address_id)
       end
 
+      def join_topology_datapaths
+        self.join_table(:inner, :topology_datapaths, topology_datapaths__id: :ip_leases__interface_id)
+      end
+
       def where_interface_mode(interface_mode)
-        self.join_interfaces.where(mode: 'simulated')
+        self.join_interfaces.where(mode: interface_mode)
       end
 
       def where_datapath_id_and_interface_mode(datapath_id, interface_mode)
-        self.join_interface_ports.where(datapath_id: datapath_id, interface_mode: interface_mode).select_all(:ip_leases)
+        self.join_interface_ports.where(datapath_id: datapath_id, interface_mode: interface_mode)
       end
 
       def where_network_id(network_id)
         self.join_ip_addresses.where(ip_addresses__network_id: network_id)
+      end
+
+      def where_topology_id(topology_id)
+        self.join_topology_datapaths.where(ip_addresses__topology_id: topology_id)
       end
     end
 

@@ -1,1 +1,1 @@
-start_service "mysqld"
+start_service "mariadb"

@@ -65,6 +65,14 @@ module Vnspec
             return reload(response[:uuid])
           end
         end
+
+        def post(options)
+          API.request(:post, api_name, options)
+        end
+
+        def put(options)
+          API.request(:put, api_name, options)
+        end
       end
 
       def ==(other)
@@ -363,5 +371,47 @@ module Vnspec
         @released_at = Time.parse(options[:released_at]) if options[:released_at]
       end
     end
+
+    class Topology < Base
+      class << self
+        def add(tp_uuid, tp_mode)
+          API.request(:post, "topologies", uuid: tp_uuid, mode: tp_mode)
+        end
+
+        def delete(tp_uuid)
+          API.request(:delete, "topologies/#{tp_uuid}")
+        end
+
+        def add_underlay(tp_uuid, underlay_uuid)
+          API.request(:post, "topologies/#{tp_uuid}/underlays/#{underlay_uuid}")
+        end
+
+        def add_mrg(tp_uuid, mrg_uuid)
+          API.request(:post, "topologies/#{tp_uuid}/mac_range_groups/#{mrg_uuid}")
+        end
+
+        def add_network(tp_uuid, nw_uuid)
+          API.request(:post, "topologies/#{tp_uuid}/networks/#{nw_uuid}")
+        end
+
+        def add_segment(tp_uuid, seg_uuid)
+          API.request(:post, "topologies/#{tp_uuid}/segments/#{seg_uuid}")
+        end
+
+        def remove_mrg(tp_uuid, mrg_uuid)
+          API.request(:delete, "topologies/#{tp_uuid}/mac_range_groups/#{mrg_uuid}")
+        end
+
+        def remove_network(tp_uuid, nw_uuid)
+          API.request(:delete, "topologies/#{tp_uuid}/networks/#{nw_uuid}")
+        end
+
+        def remove_segment(tp_uuid, seg_uuid)
+          API.request(:delete, "topologies/#{tp_uuid}/segments/#{seg_uuid}")
+        end
+
+      end
+    end
+
   end
 end

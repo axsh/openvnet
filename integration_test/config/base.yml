@@ -8,10 +8,10 @@ specs: [simple_nw,
         router_v2v_tp,
         wanedge,
         wanedge_tp,
-        promiscuous_seg_ovs,
-        promiscuous_seg_of,
         event,
         event_tp,
+        event_nw_tp,
+        event_seg_tp,
         service,
         filter]
 
@@ -23,6 +23,7 @@ log_level: info
 vm_http_proxy: http://10.50.0.2:3128
 dump_flows: true
 aggregate_logs: true
+vna_start_time: :both
 
 api_adapter: :vnctl
 

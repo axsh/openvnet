@@ -28,6 +28,8 @@ params.merge!(:public => conf.node.pub_addr_string) if conf.node.addr.public != 
 
 DCell.start(params)
 
+Celluloid.start
+
 Vnet::NodeModules::Rpc.supervise_as :rpc
 Vnet::NodeModules::EventHandler.supervise_as :event_handler
 Vnet::Services::Vnmgr.supervise_as :vnmgr
@@ -43,10 +45,6 @@ elsif Vnet::Models::MacRangeGroup[dp_mg_uuid].nil?
     Vnet.logger.warn "The datapath_mac_group UUID set in /etc/openvnet/common.conf " +
                      "was not found in the database. " +
                      "OpenVNet will not be able to auto-assign MAC addresses."
-end
-
-conf.node.plugins.each do |plugin|
-  require File.join(::Vnet::ROOT, "lib/plugins/#{plugin}.rb")
 end
 
 Celluloid::Actor[:vnmgr].do_initialize

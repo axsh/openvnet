@@ -48,7 +48,7 @@ module Vnet::Core
     def update(params)
       case params[:event]
       when :set_tunnel_port_number
-        set_tunnel_port_number(params)
+        return set_tunnel_port_number(params)
       when :updated_interface
         updated_interface(params)
       end
@@ -386,6 +386,11 @@ module Vnet::Core
       # Only do create_tunnel and return...
       item = item || create_tunnel(options, tunnel_mode)
 
+      if item.nil?
+        warn log_format_h("could not create #{obj_type} tunnel FAILED UNEXPECTEDLY", options)
+        return
+      end
+
       # Verify tunnel mode here... Rather update tunnel mode as needed.
       if tunnel_mode != item.mode
         info log_format("changing tunnel mode to #{tunnel_mode} NOT IMPLEMENTED")
@@ -460,6 +465,8 @@ module Vnet::Core
 
       add_property_ids_to_update_queue(:update_networks, updated_networks.keys)
       add_property_ids_to_update_queue(:update_segments, updated_segments.keys)
+
+      return item.src_interface_id
 
     rescue Vnet::ParamError => e
       handle_param_error(e)
