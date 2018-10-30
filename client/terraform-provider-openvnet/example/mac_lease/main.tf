@@ -1,9 +1,10 @@
 provider "openvnet" {
-  api_endpoint = "http://localhost:9091/api/1.0"
+  api_endpoint = "http://192.168.21.100:9090/api/1.0"
 }
 
 resource "openvnet_mac_lease" "lease" {
    uuid = "ml-demo"
    mac_address = "00:00:00:00:00:01"
+   interface_uuid = "if-demo"
    segment_uuid = "seg-demo"
 }
