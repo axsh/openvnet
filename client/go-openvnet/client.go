@@ -21,6 +21,7 @@ type Client struct {
 	sling *sling.Sling
 
 	Datapath             *DatapathService
+	Filter               *FilterService
 	Interface            *InterfaceService
 	IpLeaseContainer     *IpLeaseContainerService
 	IpLease              *IpLeaseService
@@ -74,6 +75,7 @@ func NewClient(url *url.URL, httpClient *http.Client) *Client {
 	s := sling.New().Base(baseURL).Client(httpClient)
 	c := &Client{sling: s}
 	c.Datapath = &DatapathService{client: c}
+	c.Filter = &FilterService{client: c}
 	c.Interface = &InterfaceService{client: c}
 	c.IpLeaseContainer = &IpLeaseContainerService{client: c}
 	c.IpLease = &IpLeaseService{client: c}
