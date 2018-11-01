@@ -14,3 +14,9 @@ type ItemBase struct {
 	DeletedAt string `json:"deleted_at,omitempty"`
 	IsDeleted int    `json:"is_deleted,omitempty"`
 }
+
+type Relation struct {
+	BaseID           string
+	Type             string
+	RelationTypeUUID string
+}

@@ -56,12 +56,6 @@ func (s *DatapathService) GetByUUID(id string) (*Datapath, *http.Response, error
 ///    Datapath Relations
 ///
 
-type Relation struct {
-	DatapathID       string
-	Type             string
-	RelationTypeUUID string
-}
-
 type DatapathRelation struct {
 	Relation *Relation
 	Body     struct {
@@ -85,12 +79,12 @@ type DatapathRelationCreateParams struct {
 func (s *DatapathService) CreateDatapathRelation(rel *Relation, params *DatapathRelationCreateParams) (*DatapathRelation, *http.Response, error) {
 	dpr := new(DatapathRelation)
 	dpr.Relation = rel
-	resp, err := s.client.post(DatapathNamespace+"/"+rel.DatapathID+"/"+rel.Type+"/"+rel.RelationTypeUUID, &dpr.Body, params)
+	resp, err := s.client.post(DatapathNamespace+"/"+rel.BaseID+"/"+rel.Type+"/"+rel.RelationTypeUUID, &dpr.Body, params)
 	return dpr, resp, err
 }
 
 func (s *DatapathService) DeleteDatapathRelation(params *Relation) (*http.Response, error) {
-	return s.client.del(DatapathNamespace + "/" + params.DatapathID + "/" + params.Type + "/" + params.RelationTypeUUID)
+	return s.client.del(DatapathNamespace + "/" + params.BaseID + "/" + params.Type + "/" + params.RelationTypeUUID)
 }
 
 func (s *DatapathService) GetNetworkRelations(uuid string) (*NetworkList, *http.Response, error) {
