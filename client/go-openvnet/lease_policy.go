@@ -1,6 +1,8 @@
 package openvnet
 
-import "net/http"
+import (
+	"net/http"
+)
 
 const LeasePolicyNamespace = "lease_policies"
 
@@ -71,24 +73,24 @@ func (s *LeasePolicyService) DeleteLeasePolicyRelation(params *Relation) (*http.
 
 func (s *LeasePolicyService) GetIpRetentionContainerRelations(uuid string) (*IpRetentionContainerList, *http.Response, error) {
 	list := new(IpRetentionContainerList)
-	resp, err := s.client.get(DatapathNamespace+"/"+uuid+"/ip_retention_containers", list)
+	resp, err := s.client.get(LeasePolicyNamespace+"/"+uuid+"/ip_retention_containers", list)
 	return list, resp, err
 }
 
 func (s *LeasePolicyService) GetIpLeaseContainerRelations(uuid string) (*IpLeaseContainerList, *http.Response, error) {
 	list := new(IpLeaseContainerList)
-	resp, err := s.client.get(DatapathNamespace+"/"+uuid+"/ip_lease_containers", list)
+	resp, err := s.client.get(LeasePolicyNamespace+"/"+uuid+"/ip_lease_containers", list)
 	return list, resp, err
 }
 
 func (s *LeasePolicyService) GetNetworkRelations(uuid string) (*NetworkList, *http.Response, error) {
 	list := new(NetworkList)
-	resp, err := s.client.get(DatapathNamespace+"/"+uuid+"/networks", list)
+	resp, err := s.client.get(LeasePolicyNamespace+"/"+uuid+"/networks", list)
 	return list, resp, err
 }
 
 func (s *LeasePolicyService) GetInterfaceRelations(uuid string) (*InterfaceList, *http.Response, error) {
 	list := new(InterfaceList)
-	resp, err := s.client.get(DatapathNamespace+"/"+uuid+"/interfaces", list)
+	resp, err := s.client.get(LeasePolicyNamespace+"/"+uuid+"/interfaces", list)
 	return list, resp, err
 }
