@@ -20,18 +20,19 @@ const (
 type Client struct {
 	sling *sling.Sling
 
-	Datapath      *DatapathService
-	Network       *NetworkService
-	Interface     *InterfaceService
-	Route         *RouteService
-	RouteLink     *RouteLinkService
-	Segment       *SegmentService
-	SecurityGroup *SecurityGroupService
-	MacRangeGroup *MacRangeGroupService
-	MacLease      *MacLeaseService
-	IpLease       *IpLeaseService
-	IpRangeGroup  *IpRangeGroupService
-	Topology      *TopologyService
+	Datapath         *DatapathService
+	Network          *NetworkService
+	Interface        *InterfaceService
+	Route            *RouteService
+	RouteLink        *RouteLinkService
+	Segment          *SegmentService
+	SecurityGroup    *SecurityGroupService
+	MacRangeGroup    *MacRangeGroupService
+	MacLease         *MacLeaseService
+	IpLease          *IpLeaseService
+	IpLeaseContainer *IpLeaseContainerService
+	IpRangeGroup     *IpRangeGroupService
+	Topology         *TopologyService
 }
 
 func (c *Client) post(uri string, output interface{}, params interface{}) (*http.Response, error) {
@@ -80,6 +81,7 @@ func NewClient(url *url.URL, httpClient *http.Client) *Client {
 	c.MacRangeGroup = &MacRangeGroupService{client: c}
 	c.MacLease = &MacLeaseService{client: c}
 	c.IpLease = &IpLeaseService{client: c}
+	c.IpLeaseContainer = &IpLeaseContainerService{client: c}
 	c.IpRangeGroup = &IpRangeGroupService{client: c}
 	c.Topology = &TopologyService{client: c}
 	return c
