@@ -2,7 +2,7 @@ provider "openvnet" {
   api_endpoint = "http://localhost:9090/api/1.0"
 }
 
-resource "openvnet_ip_range_group" "iprg" {
+resource "openvnet_ip_range_group" "iprg_sample" {
   uuid = "ipgr-demo"
 
   ip_range {

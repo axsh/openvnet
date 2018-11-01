@@ -52,8 +52,8 @@ func (s *IpRangeGroupService) GetByUUID(id string) (*IpRangeGroup, *http.Respons
 type IpRange struct {
 	ItemBase
 	IpRangeGroupID   int `json:"ip_range_group_id"`
-	BeginIPv4Address int `json:"begin_ipv4_address"`
-	EndIPv4Address   int `json:"end_ipv4_address"`
+	BeginIpv4Address int `json:"begin_ipv4_address"`
+	EndIpv4Address   int `json:"end_ipv4_address"`
 }
 
 type IpRangeList struct {
@@ -62,8 +62,8 @@ type IpRangeList struct {
 }
 
 type IpRangeCreateParams struct {
-	BeginIPv4Address string `url:"begin_ipv4_address,omitempty"`
-	EndIPv4Address   string `url:"end_ipv4_address,omitempty"`
+	BeginIpv4Address string `url:"begin_ipv4_address,omitempty"`
+	EndIpv4Address   string `url:"end_ipv4_address,omitempty"`
 }
 
 func (s *IpRangeGroupService) CreateRange(uuid string, params *IpRangeCreateParams) (*IpRange, *http.Response, error) {

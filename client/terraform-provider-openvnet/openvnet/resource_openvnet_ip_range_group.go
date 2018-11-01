@@ -81,8 +81,8 @@ func openVNetIpRangeGroupCreate(d *schema.ResourceData, m interface{}) error {
 			ipRangeMap := ipRanges.(map[string]interface{})
 
 			ipRange := &openvnet.IpRangeCreateParams{
-				BeginIPv4Address: ipRangeMap["begin_ipv4_address"].(string),
-				EndIPv4Address:   ipRangeMap["end_ipv4_address"].(string),
+				BeginIpv4Address: ipRangeMap["begin_ipv4_address"].(string),
+				EndIpv4Address:   ipRangeMap["end_ipv4_address"].(string),
 			}
 
 			client.IpRangeGroup.CreateRange(d.Id(), ipRange)
@@ -105,8 +105,8 @@ func openVNetIpRangeGroupRead(d *schema.ResourceData, m interface{}) error {
 	for i, ipr := range ipRange.Items {
 		ipRanges[i] = make(map[string]interface{})
 		ipRanges[i]["uuid"] = ipr.UUID
-		ipRanges[i]["begin_ipv4_address"] = ipr.BeginIPv4Address
-		ipRanges[i]["end_ipv4_address"] = ipr.EndIPv4Address
+		ipRanges[i]["begin_ipv4_address"] = ipr.BeginIpv4Address
+		ipRanges[i]["end_ipv4_address"] = ipr.EndIpv4Address
 	}
 	d.Set("ip_range", ipRanges)
 

@@ -108,7 +108,7 @@ func openVNetInterfaceCreate(d *schema.ResourceData, m interface{}) error {
 		SegmentUUID:             d.Get("segment_uuid").(string),
 		NetworkUUID:             d.Get("network_uuid").(string),
 		MacAddress:              d.Get("mac_address").(string),
-		IPv4Address:             d.Get("ipv4_address").(string),
+		Ipv4Address:             d.Get("ipv4_address").(string),
 		PortName:                d.Get("port_name").(string),
 		Mode:                    d.Get("mode").(string),
 	}
@@ -145,7 +145,7 @@ func openVNetInterfaceRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("network_uuid", intfc.NetworkUUID)
 	d.Set("mac_address", intfc.MacAddress)
 	d.Set("mode", intfc.Mode)
-	d.Set("ipv4_address", intfc.IPv4Address)
+	d.Set("ipv4_address", intfc.Ipv4Address)
 
 	return nil
 }

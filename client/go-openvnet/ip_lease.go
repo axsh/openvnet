@@ -8,15 +8,15 @@ type IpLease struct {
 	ItemBase
 	InterfaceID   int    `json:"interface_id"`
 	MacLeaseID    int    `json:"mac_lease_id"`
-	IPAddressID   int    `json:"ip_address_id"`
+	IpAddressID   int    `json:"ip_address_id"`
 	EnableRouting bool   `json:"enable_routing"`
 	NetworkID     int    `json:"network_id"`
-	IPv4Address   string `json:"ipv4_address"`
-	IPAddress     struct {
+	Ipv4Address   string `json:"ipv4_address"`
+	IpAddress     struct {
 		ItemBase
 		ID         int     `json:"id"`
 		NetworkID  int     `json:"network_id"`
-		IPv4Adress int     `json:"ipv4_address"`
+		Ipv4Adress int     `json:"ipv4_address"`
 		Network    Network `json:"network"`
 	} `json:"ip_adress"`
 	InterfaceUUID string `json:"interface_uuid"`
@@ -35,7 +35,7 @@ type IpLeaseService struct {
 
 type IpLeaseCreateParams struct {
 	UUID          string `url:"uuid,omitempty"`
-	IPv4Address   string `url:"ipv4_address"`
+	Ipv4Address   string `url:"ipv4_address"`
 	InterfaceUUID string `url:"interface_uuid,omitempty"`
 	NetworkUUID   string `url:"network_uuid"`
 	MacLeaseUUID  string `url:"mac_lease_uuid,omitempty"`

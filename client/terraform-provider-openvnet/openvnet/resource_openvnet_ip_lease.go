@@ -59,7 +59,7 @@ func openVNetIpLeaseCreate(d *schema.ResourceData, m interface{}) error {
 
 	params := &openvnet.IpLeaseCreateParams{
 		UUID:          d.Get("uuid").(string),
-		IPv4Address:   d.Get("ipv4_address").(string),
+		Ipv4Address:   d.Get("ipv4_address").(string),
 		NetworkUUID:   d.Get("network_uuid").(string),
 		EnableRouting: d.Get("enable_routing").(bool),
 		MacLeaseUUID:  d.Get("mac_lease_uuid").(string),
@@ -78,7 +78,7 @@ func openVNetIpLeaseRead(d *schema.ResourceData, m interface{}) error {
 	ipLease, _, err := client.IpLease.GetByUUID(d.Id())
 
 	d.Set("network_uuid", ipLease.NetworkID)
-	d.Set("ipv4_address", ipLease.IPv4Address)
+	d.Set("ipv4_address", ipLease.Ipv4Address)
 	d.Set("enable_routing", ipLease.EnableRouting)
 	d.Set("interface_uuid", ipLease.InterfaceID)
 	d.Set("mac_lease_uuid", ipLease.MacLeaseID)

@@ -12,7 +12,7 @@ type MacLease struct {
 	MacAddressID  int       `json:"mac_address_id"`
 	MacAddress    string    `json:"mac_address"`
 	SegmentID     int       `json:"segment_id"`
-	IPLeases      []IpLease `json:"ip_leases"`
+	IpLeases      []IpLease `json:"ip_leases"`
 	InterfaceUUID string    `json:"interface_uuid"`
 }
 

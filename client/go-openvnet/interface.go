@@ -18,8 +18,8 @@ type Interface struct {
 	MacLeases               []MacLease `json:"mac_leases"`
 	MacAddress              string     `json:"mac_address"`
 	NetworkUUID             string     `json:"network_uuid"`
-	IPv4Address             string     `json:"ipv4_address"`
-	IPLeases                []IpLease  `json:"ip_leases"`
+	Ipv4Address             string     `json:"ipv4_address"`
+	IpLeases                []IpLease  `json:"ip_leases"`
 }
 
 type InterfaceList struct {
@@ -41,7 +41,7 @@ type InterfaceCreateParams struct {
 	SegmentUUID             string `url:"segment_uuid,omitempty"`
 	NetworkUUID             string `url:"network_uuid,omitempty"`
 	MacAddress              string `url:"mac_address,omitempty"`
-	IPv4Address             string `url:"ipv4_address,omitempty"`
+	Ipv4Address             string `url:"ipv4_address,omitempty"`
 	PortName                string `url:"port_name,omitempty"`
 	Mode                    string `url:"mode,,omitempty"`
 }
