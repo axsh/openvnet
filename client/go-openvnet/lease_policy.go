@@ -8,8 +8,8 @@ const LeasePolicyNamespace = "lease_policies"
 
 type LeasePolicy struct {
 	ItemBase
-	Mode   string `json:"mode"`
-	Timing string `json:"timinig"`
+	Mode   string `json:"mode,omitempty"`
+	Timing string `json:"timing,omitempty"`
 }
 
 type LeasePolicyList struct {
