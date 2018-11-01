@@ -30,6 +30,7 @@ type Client struct {
 	MacRangeGroup *MacRangeGroupService
 	MacLease      *MacLeaseService
 	IpLease       *IpLeaseService
+	IpRangeGroup  *IpRangeGroupService
 	Topology      *TopologyService
 }
 
@@ -79,6 +80,7 @@ func NewClient(url *url.URL, httpClient *http.Client) *Client {
 	c.MacRangeGroup = &MacRangeGroupService{client: c}
 	c.MacLease = &MacLeaseService{client: c}
 	c.IpLease = &IpLeaseService{client: c}
+	c.IpRangeGroup = &IpRangeGroupService{client: c}
 	c.Topology = &TopologyService{client: c}
 	return c
 }
