@@ -21,18 +21,18 @@ type Client struct {
 	sling *sling.Sling
 
 	Datapath             *DatapathService
-	Network              *NetworkService
 	Interface            *InterfaceService
+	IpLeaseContainer     *IpLeaseContainerService
+	IpLease              *IpLeaseService
+	IpRangeGroup         *IpRangeGroupService
+	IpRetentionContainer *IpRetentionContainerService
+	MacLease             *MacLeaseService
+	MacRangeGroup        *MacRangeGroupService
+	Network              *NetworkService
 	Route                *RouteService
 	RouteLink            *RouteLinkService
-	Segment              *SegmentService
 	SecurityGroup        *SecurityGroupService
-	MacRangeGroup        *MacRangeGroupService
-	MacLease             *MacLeaseService
-	IpLease              *IpLeaseService
-	IpLeaseContainer     *IpLeaseContainerService
-	IpRetentionContainer *IpRetentionContainerService
-	IpRangeGroup         *IpRangeGroupService
+	Segment              *SegmentService
 	Topology             *TopologyService
 }
 
@@ -74,17 +74,17 @@ func NewClient(url *url.URL, httpClient *http.Client) *Client {
 	c := &Client{sling: s}
 	c.Datapath = &DatapathService{client: c}
 	c.Interface = &InterfaceService{client: c}
+	c.IpLeaseContainer = &IpLeaseContainerService{client: c}
+	c.IpLease = &IpLeaseService{client: c}
+	c.IpRangeGroup = &IpRangeGroupService{client: c}
+	c.IpRetentionContainer = &IpRetentionContainerService{client: c}
+	c.MacLease = &MacLeaseService{client: c}
+	c.MacRangeGroup = &MacRangeGroupService{client: c}
 	c.Network = &NetworkService{client: c}
-	c.Route = &RouteService{client: c}
 	c.RouteLink = &RouteLinkService{client: c}
+	c.Route = &RouteService{client: c}
 	c.Segment = &SegmentService{client: c}
 	c.SecurityGroup = &SecurityGroupService{client: c}
-	c.MacRangeGroup = &MacRangeGroupService{client: c}
-	c.MacLease = &MacLeaseService{client: c}
-	c.IpLease = &IpLeaseService{client: c}
-	c.IpLeaseContainer = &IpLeaseContainerService{client: c}
-	c.IpRetentionContainer = &IpRetentionContainerService{client: c}
-	c.IpRangeGroup = &IpRangeGroupService{client: c}
 	c.Topology = &TopologyService{client: c}
 	return c
 }
