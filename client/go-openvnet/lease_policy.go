@@ -56,7 +56,7 @@ type LeasePolicyRelation struct {
 }
 
 type LeasePolicyRelationCreateParams struct {
-	IpRangeGroupUUID string `url:"ip_range_group_uuid,omitempty"`
+	IpRangeGroupUUID string `url:"ip_range_group_uuid"`
 }
 
 func (s *LeasePolicyService) CreateLeasePolicyRelation(rel *Relation, params *LeasePolicyRelationCreateParams) (*LeasePolicyRelation, *http.Response, error) {
