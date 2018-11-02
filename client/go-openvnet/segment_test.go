@@ -2,7 +2,7 @@ package openvnet
 
 import "testing"
 
-func TestSegmente(t *testing.T) {
+func TestSegment(t *testing.T) {
 	c := NewClient(nil, nil)
 
 	if c.Segment == nil {
