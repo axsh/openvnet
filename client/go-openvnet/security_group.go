@@ -2,7 +2,6 @@ package openvnet
 
 import (
 	"net/http"
-	"strings"
 )
 
 const SecurityGroupNamespace = "security_groups"
@@ -20,7 +19,7 @@ type SecurityGroupList struct {
 }
 
 type SecurityGroupService struct {
-	client *Client
+	*BaseService
 }
 
 type SecurityGroupCreateParams struct {
@@ -30,25 +29,28 @@ type SecurityGroupCreateParams struct {
 	Rules       []string `url:"rules,omitempty"`
 }
 
-func (s *SecurityGroupService) Create(params *SecurityGroupCreateParams) (*SecurityGroup, *http.Response, error) {
-	sg := new(SecurityGroup)
-	params.Rules = []string{strings.Join(params.Rules, "\n")}
-	resp, err := s.client.post(SecurityGroupNamespace, sg, params)
-	return sg, resp, err
+func NewSecurityGroupService(client *Client) *SecurityGroupService {
+	return &SecurityGroupService{
+		BaseService: &BaseService{
+			client:       client,
+			namespace:    SecurityGroupNamespace,
+			resource:     &SecurityGroup{},
+			resourceList: &SecurityGroupList{},
+		},
+	}
 }
 
-func (s *SecurityGroupService) Delete(id string) (*http.Response, error) {
-	return s.client.del(SecurityGroupNamespace + "/" + id)
+func (s *SecurityGroupService) Create(params *SecurityGroupCreateParams) (*SecurityGroup, *http.Response, error) {
+	item, resp, err := s.BaseService.Create(params)
+	return item.(*SecurityGroup), resp, err
 }
 
 func (s *SecurityGroupService) Get() (*SecurityGroupList, *http.Response, error) {
-	list := new(SecurityGroupList)
-	resp, err := s.client.get(SecurityGroupNamespace, list)
-	return list, resp, err
+	item, resp, err := s.BaseService.Get()
+	return item.(*SecurityGroupList), resp, err
 }
 
 func (s *SecurityGroupService) GetByUUID(id string) (*SecurityGroup, *http.Response, error) {
-	sg := new(SecurityGroup)
-	resp, err := s.client.get(SecurityGroupNamespace+"/"+id, sg)
-	return sg, resp, err
+	item, resp, err := s.BaseService.GetByUUID(id)
+	return item.(*SecurityGroup), resp, err
 }

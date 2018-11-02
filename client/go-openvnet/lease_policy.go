@@ -18,7 +18,7 @@ type LeasePolicyList struct {
 }
 
 type LeasePolicyService struct {
-	client *Client
+	*BaseService
 }
 
 type LeasePolicyCreateParams struct {
@@ -26,26 +26,30 @@ type LeasePolicyCreateParams struct {
 	Timing string `url:"timing,omitempty"`
 }
 
-func (s *LeasePolicyService) Create(params *LeasePolicyCreateParams) (*LeasePolicy, *http.Response, error) {
-	lp := new(LeasePolicy)
-	resp, err := s.client.post(LeasePolicyNamespace, lp, params)
-	return lp, resp, err
+func NewLeasePolicyService(client *Client) *LeasePolicyService {
+	return &LeasePolicyService{
+		BaseService: &BaseService{
+			client:       client,
+			namespace:    LeasePolicyNamespace,
+			resource:     &LeasePolicy{},
+			resourceList: &LeasePolicyList{},
+		},
+	}
 }
 
-func (s *LeasePolicyService) Delete(id string) (*http.Response, error) {
-	return s.client.del(LeasePolicyNamespace + "/" + id)
+func (s *LeasePolicyService) Create(params *LeasePolicyCreateParams) (*LeasePolicy, *http.Response, error) {
+	item, resp, err := s.BaseService.Create(params)
+	return item.(*LeasePolicy), resp, err
 }
 
 func (s *LeasePolicyService) Get() (*LeasePolicyList, *http.Response, error) {
-	list := new(LeasePolicyList)
-	resp, err := s.client.get(LeasePolicyNamespace, list)
-	return list, resp, err
+	item, resp, err := s.BaseService.Get()
+	return item.(*LeasePolicyList), resp, err
 }
 
 func (s *LeasePolicyService) GetByUUID(id string) (*LeasePolicy, *http.Response, error) {
-	lp := new(LeasePolicy)
-	resp, err := s.client.get(LeasePolicyNamespace+"/"+id, lp)
-	return lp, resp, err
+	item, resp, err := s.BaseService.GetByUUID(id)
+	return item.(*LeasePolicy), resp, err
 }
 
 ///

@@ -74,22 +74,22 @@ func NewClient(url *url.URL, httpClient *http.Client) *Client {
 
 	s := sling.New().Base(baseURL).Client(httpClient)
 	c := &Client{sling: s}
-	c.Datapath = &DatapathService{client: c}
-	c.Filter = &FilterService{client: c}
-	c.Interface = &InterfaceService{client: c}
-	c.IpLeaseContainer = &IpLeaseContainerService{client: c}
-	c.IpLease = &IpLeaseService{client: c}
-	c.IpRangeGroup = &IpRangeGroupService{client: c}
-	c.IpRetentionContainer = &IpRetentionContainerService{client: c}
-	c.LeasePolicy = &LeasePolicyService{client: c}
-	c.MacLease = &MacLeaseService{client: c}
-	c.MacRangeGroup = &MacRangeGroupService{client: c}
-	c.Network = &NetworkService{client: c}
-	c.RouteLink = &RouteLinkService{client: c}
-	c.Route = &RouteService{client: c}
-	c.Segment = &SegmentService{client: c}
-	c.SecurityGroup = &SecurityGroupService{client: c}
-	c.Topology = &TopologyService{client: c}
+	c.Datapath = NewDatapathService(c)
+	c.Filter = NewFilterService(c)
+	c.Interface = NewInterfaceService(c)
+	c.IpLeaseContainer = NewIpLeaseContainerService(c)
+	c.IpLease = NewIpLeaseService(c)
+	c.IpRangeGroup = NewIpRangeGroupService(c)
+	c.IpRetentionContainer = NewIpRetentionContainerService(c)
+	c.LeasePolicy = NewLeasePolicyService(c)
+	c.MacLease = NewMacLeaseService(c)
+	c.MacRangeGroup = NewMacRangeGroupService(c)
+	c.Network = NewNetworkService(c)
+	c.RouteLink = NewRouteLinkService(c)
+	c.Route = NewRouteService(c)
+	c.Segment = NewSegmentService(c)
+	c.SecurityGroup = NewSecurityGroupService(c)
+	c.Topology = NewTopologyService(c)
 	return c
 }
 

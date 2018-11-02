@@ -13,7 +13,7 @@ type Topology struct {
 
 type TopologyList struct {
 	ListBase
-	Items[]Topology `json:"items"`
+	Items []Topology `json:"items"`
 }
 
 type TopologyLayerList struct {
@@ -36,7 +36,7 @@ type TopologyDatapathList struct {
 }
 
 type TopologyService struct {
-	client *Client
+	*BaseService
 }
 
 type TopologyCreateParams struct {
@@ -44,33 +44,37 @@ type TopologyCreateParams struct {
 	Mode string `url:"mode,omitempty"`
 }
 
-func (s *TopologyService) Create(params *TopologyCreateParams) (*Topology, *http.Response, error) {
-	tp :=new(Topology)
-	resp, err := s.client.post(TopologyNamespace, tp, params)
-	return tp, resp, err
+func NewTopologyService(client *Client) *TopologyService {
+	return &TopologyService{
+		BaseService: &BaseService{
+			client:       client,
+			namespace:    TopologyNamespace,
+			resource:     &Topology{},
+			resourceList: &TopologyList{},
+		},
+	}
 }
 
-func (s *TopologyService) Delete(id string) (*http.Response, error) {
-	return s.client.del(TopologyNamespace + "/" + id)
+func (s *TopologyService) Create(params *TopologyCreateParams) (*Topology, *http.Response, error) {
+	item, resp, err := s.BaseService.Create(params)
+	return item.(*Topology), resp, err
 }
 
 func (s *TopologyService) Get() (*TopologyList, *http.Response, error) {
-	list := new(TopologyList)
-	resp, err := s.client.get(TopologyNamespace, list)
-	return list, resp, err
+	item, resp, err := s.BaseService.Get()
+	return item.(*TopologyList), resp, err
 }
 
 func (s *TopologyService) GetByUUID(id string) (*Topology, *http.Response, error) {
-	dp := new(Topology)
-	resp, err := s.client.get(TopologyNamespace+"/"+id, dp)
-	return dp, resp, err
+	item, resp, err := s.BaseService.GetByUUID(id)
+	return item.(*Topology), resp, err
 }
 
 type TopologyRelation struct {
 	Type             string
 	TopologyUUID     string
 	RelationTypeUUID string
-	Body     struct {
+	Body             struct {
 		ItemBase
 		NetworkID   int `json:"network_id,omitempty"`
 		SegmentID   int `json:"segment_id,omitempty"`
@@ -121,5 +125,5 @@ func (s *TopologyService) GetLayerRelations(uuid string) (*TopologyLayerList, *h
 func (s *TopologyService) GetDatapathRelations(uuid string) (*TopologyDatapathList, *http.Response, error) {
 	list := new(TopologyDatapathList)
 	resp, err := s.client.get(TopologyNamespace+"/"+uuid+"/datapaths", list)
-	return list, resp ,err
+	return list, resp, err
 }

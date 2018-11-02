@@ -15,7 +15,7 @@ type IpRangeGroupList struct {
 }
 
 type IpRangeGroupService struct {
-	client *Client
+	*BaseService
 }
 
 type IpRangeGroupCreateParams struct {
@@ -23,26 +23,30 @@ type IpRangeGroupCreateParams struct {
 	AllocationType string `url:"allocation_type,omitempty"`
 }
 
-func (s *IpRangeGroupService) Create(params *IpRangeGroupCreateParams) (*IpRangeGroup, *http.Response, error) {
-	iprg := new(IpRangeGroup)
-	resp, err := s.client.post(IpRangeGroupNamespace, iprg, params)
-	return iprg, resp, err
+func NewIpRangeGroupService(client *Client) *IpRangeGroupService {
+	return &IpRangeGroupService{
+		BaseService: &BaseService{
+			client:       client,
+			namespace:    IpRangeGroupNamespace,
+			resource:     &IpRangeGroup{},
+			resourceList: &IpRangeGroupList{},
+		},
+	}
 }
 
-func (s *IpRangeGroupService) Delete(id string) (*http.Response, error) {
-	return s.client.del(IpRangeGroupNamespace + "/" + id)
+func (s *IpRangeGroupService) Create(params *IpRangeGroupCreateParams) (*IpRangeGroup, *http.Response, error) {
+	item, resp, err := s.BaseService.Create(params)
+	return item.(*IpRangeGroup), resp, err
 }
 
 func (s *IpRangeGroupService) Get() (*IpRangeGroupList, *http.Response, error) {
-	list := new(IpRangeGroupList)
-	resp, err := s.client.get(IpRangeGroupNamespace, list)
-	return list, resp, err
+	item, resp, err := s.BaseService.Get()
+	return item.(*IpRangeGroupList), resp, err
 }
 
 func (s *IpRangeGroupService) GetByUUID(id string) (*IpRangeGroup, *http.Response, error) {
-	i := new(IpRangeGroup)
-	resp, err := s.client.get(IpRangeGroupNamespace+"/"+id, i)
-	return i, resp, err
+	item, resp, err := s.BaseService.GetByUUID(id)
+	return item.(*IpRangeGroup), resp, err
 }
 
 ///

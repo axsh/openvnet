@@ -18,7 +18,7 @@ type RouteLinkList struct {
 }
 
 type RouteLinkService struct {
-	client *Client
+	*BaseService
 }
 
 type RouteLinkCreateParams struct {
@@ -26,24 +26,28 @@ type RouteLinkCreateParams struct {
 	MacAddress string `url:"mac_address,omitempty"`
 }
 
-func (s *RouteLinkService) Create(params *RouteLinkCreateParams) (*RouteLink, *http.Response, error) {
-	rl := new(RouteLink)
-	resp, err := s.client.post(RouteLinkNamespace, rl, params)
-	return rl, resp, err
+func NewRouteLinkService(client *Client) *RouteLinkService {
+	return &RouteLinkService{
+		BaseService: &BaseService{
+			client:       client,
+			namespace:    RouteLinkNamespace,
+			resource:     &RouteLink{},
+			resourceList: &RouteLinkList{},
+		},
+	}
 }
 
-func (s *RouteLinkService) Delete(id string) (*http.Response, error) {
-	return s.client.del(RouteLinkNamespace + "/" + id)
+func (s *RouteLinkService) Create(params *RouteLinkCreateParams) (*RouteLink, *http.Response, error) {
+	item, resp, err := s.BaseService.Create(params)
+	return item.(*RouteLink), resp, err
 }
 
 func (s *RouteLinkService) Get() (*RouteLinkList, *http.Response, error) {
-	list := new(RouteLinkList)
-	resp, err := s.client.get(RouteLinkNamespace, list)
-	return list, resp, err
+	item, resp, err := s.BaseService.Get()
+	return item.(*RouteLinkList), resp, err
 }
 
 func (s *RouteLinkService) GetByUUID(id string) (*RouteLink, *http.Response, error) {
-	rl := new(RouteLink)
-	resp, err := s.client.get(RouteLinkNamespace+"/"+id, rl)
-	return rl, resp, err
+	item, resp, err := s.BaseService.GetByUUID(id)
+	return item.(*RouteLink), resp, err
 }

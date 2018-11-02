@@ -15,7 +15,7 @@ type MacRangeGroupList struct {
 }
 
 type MacRangeGroupService struct {
-	client *Client
+	*BaseService
 }
 
 type MacRangeGroupCreateParams struct {
@@ -23,26 +23,30 @@ type MacRangeGroupCreateParams struct {
 	AllocationType string `url:"allocation_type,omitempty"`
 }
 
-func (s *MacRangeGroupService) Create(params *MacRangeGroupCreateParams) (*MacRangeGroup, *http.Response, error) {
-	mrg := new(MacRangeGroup)
-	resp, err := s.client.post(MacRangeGroupNamespace, mrg, params)
-	return mrg, resp, err
+func NewMacRangeGroupService(client *Client) *MacRangeGroupService {
+	return &MacRangeGroupService{
+		BaseService: &BaseService{
+			client:       client,
+			namespace:    MacRangeGroupNamespace,
+			resource:     &MacRangeGroup{},
+			resourceList: &MacRangeGroupList{},
+		},
+	}
 }
 
-func (s *MacRangeGroupService) Delete(id string) (*http.Response, error) {
-	return s.client.del(MacRangeGroupNamespace + "/" + id)
+func (s *MacRangeGroupService) Create(params *MacRangeGroupCreateParams) (*MacRangeGroup, *http.Response, error) {
+	item, resp, err := s.BaseService.Create(params)
+	return item.(*MacRangeGroup), resp, err
 }
 
 func (s *MacRangeGroupService) Get() (*MacRangeGroupList, *http.Response, error) {
-	list := new(MacRangeGroupList)
-	resp, err := s.client.get(MacRangeGroupNamespace, list)
-	return list, resp, err
+	item, resp, err := s.BaseService.Get()
+	return item.(*MacRangeGroupList), resp, err
 }
 
 func (s *MacRangeGroupService) GetByUUID(id string) (*MacRangeGroup, *http.Response, error) {
-	i := new(MacRangeGroup)
-	resp, err := s.client.get(MacRangeGroupNamespace+"/"+id, i)
-	return i, resp, err
+	item, resp, err := s.BaseService.GetByUUID(id)
+	return item.(*MacRangeGroup), resp, err
 }
 
 ///

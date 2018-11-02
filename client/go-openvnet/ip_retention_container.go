@@ -16,7 +16,7 @@ type IpRetentionContainerList struct {
 }
 
 type IpRetentionContainerService struct {
-	client *Client
+	*BaseService
 }
 
 type IpRetentionContainerCreateParams struct {
@@ -25,24 +25,28 @@ type IpRetentionContainerCreateParams struct {
 	GraceTime int    `url:"grace_time,omitempty"`
 }
 
-func (s *IpRetentionContainerService) Create(params *IpRetentionContainerCreateParams) (*IpRetentionContainer, *http.Response, error) {
-	irc := new(IpRetentionContainer)
-	resp, err := s.client.post(IpRetentionContainerNamespace, irc, params)
-	return irc, resp, err
+func NewIpRetentionContainerService(client *Client) *IpRetentionContainerService {
+	return &IpRetentionContainerService{
+		BaseService: &BaseService{
+			client:       client,
+			namespace:    IpRetentionContainerNamespace,
+			resource:     &IpRetentionContainer{},
+			resourceList: &IpRetentionContainerList{},
+		},
+	}
 }
 
-func (s *IpRetentionContainerService) Delete(id string) (*http.Response, error) {
-	return s.client.del(IpRetentionContainerNamespace + "/" + id)
+func (s *IpRetentionContainerService) Create(params *IpRetentionContainerCreateParams) (*IpRetentionContainer, *http.Response, error) {
+	item, resp, err := s.BaseService.Create(params)
+	return item.(*IpRetentionContainer), resp, err
 }
 
 func (s *IpRetentionContainerService) Get() (*IpRetentionContainerList, *http.Response, error) {
-	list := new(IpRetentionContainerList)
-	resp, err := s.client.get(IpRetentionContainerNamespace, list)
-	return list, resp, err
+	item, resp, err := s.BaseService.Get()
+	return item.(*IpRetentionContainerList), resp, err
 }
 
 func (s *IpRetentionContainerService) GetByUUID(id string) (*IpRetentionContainer, *http.Response, error) {
-	lp := new(IpRetentionContainer)
-	resp, err := s.client.get(IpRetentionContainerNamespace+"/"+id, lp)
-	return lp, resp, err
+	item, resp, err := s.BaseService.GetByUUID(id)
+	return item.(*IpRetentionContainer), resp, err
 }

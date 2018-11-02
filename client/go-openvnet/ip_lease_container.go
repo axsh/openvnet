@@ -14,31 +14,35 @@ type IpLeaseContainerList struct {
 }
 
 type IpLeaseContainerService struct {
-	client *Client
+	*BaseService
 }
 
 type IpLeaseContainerCreateParams struct {
 	UUID string `url:"uuid,omitempty"`
 }
 
-func (s *IpLeaseContainerService) Create(params *IpLeaseContainerCreateParams) (*IpLeaseContainer, *http.Response, error) {
-	ilc := new(IpLeaseContainer)
-	resp, err := s.client.post(IpLeaseContainerNamespace, ilc, params)
-	return ilc, resp, err
+func NewIpLeaseContainerService(client *Client) *IpLeaseContainerService {
+	return &IpLeaseContainerService{
+		BaseService: &BaseService{
+			client:       client,
+			namespace:    IpLeaseContainerNamespace,
+			resource:     &IpLeaseContainer{},
+			resourceList: &IpLeaseContainerList{},
+		},
+	}
 }
 
-func (s *IpLeaseContainerService) Delete(id string) (*http.Response, error) {
-	return s.client.del(IpLeaseContainerNamespace + "/" + id)
+func (s *IpLeaseContainerService) Create(params *IpLeaseContainerCreateParams) (*IpLeaseContainer, *http.Response, error) {
+	item, resp, err := s.BaseService.Create(params)
+	return item.(*IpLeaseContainer), resp, err
 }
 
 func (s *IpLeaseContainerService) Get() (*IpLeaseContainerList, *http.Response, error) {
-	list := new(IpLeaseContainerList)
-	resp, err := s.client.get(IpLeaseContainerNamespace, list)
-	return list, resp, err
+	item, resp, err := s.BaseService.Get()
+	return item.(*IpLeaseContainerList), resp, err
 }
 
 func (s *IpLeaseContainerService) GetByUUID(id string) (*IpLeaseContainer, *http.Response, error) {
-	lp := new(IpLeaseContainer)
-	resp, err := s.client.get(IpLeaseContainerNamespace+"/"+id, lp)
-	return lp, resp, err
+	item, resp, err := s.BaseService.GetByUUID(id)
+	return item.(*IpLeaseContainer), resp, err
 }

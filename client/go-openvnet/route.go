@@ -24,7 +24,7 @@ type RouteList struct {
 }
 
 type RouteService struct {
-	client *Client
+	*BaseService
 }
 
 type RouteCreateParams struct {
@@ -38,24 +38,28 @@ type RouteCreateParams struct {
 	Egress        bool   `url:"egress,omitempty"`
 }
 
-func (s *RouteService) Create(params *RouteCreateParams) (*Route, *http.Response, error) {
-	r := new(Route)
-	resp, err := s.client.post(RouteNamespace, r, params)
-	return r, resp, err
+func NewRouteService(client *Client) *RouteService {
+	return &RouteService{
+		BaseService: &BaseService{
+			client:       client,
+			namespace:    RouteNamespace,
+			resource:     &Route{},
+			resourceList: &RouteList{},
+		},
+	}
 }
 
-func (s *RouteService) Delete(id string) (*http.Response, error) {
-	return s.client.del(RouteNamespace + "/" + id)
+func (s *RouteService) Create(params *RouteCreateParams) (*Route, *http.Response, error) {
+	item, resp, err := s.BaseService.Create(params)
+	return item.(*Route), resp, err
 }
 
 func (s *RouteService) Get() (*RouteList, *http.Response, error) {
-	list := new(RouteList)
-	resp, err := s.client.get(RouteNamespace, list)
-	return list, resp, err
+	item, resp, err := s.BaseService.Get()
+	return item.(*RouteList), resp, err
 }
 
 func (s *RouteService) GetByUUID(id string) (*Route, *http.Response, error) {
-	r := new(Route)
-	resp, err := s.client.get(RouteNamespace+"/"+id, r)
-	return r, resp, err
+	item, resp, err := s.BaseService.GetByUUID(id)
+	return item.(*Route), resp, err
 }

@@ -30,7 +30,7 @@ type IpLeaseList struct {
 }
 
 type IpLeaseService struct {
-	client *Client
+	*BaseService
 }
 
 type IpLeaseCreateParams struct {
@@ -47,26 +47,30 @@ type IpLeaseAttachParams struct {
 	MacLeaseUUID  string `url:"mac_lease_uuid,omitempty"`
 }
 
-func (s *IpLeaseService) Create(params *IpLeaseCreateParams) (*IpLease, *http.Response, error) {
-	il := new(IpLease)
-	resp, err := s.client.post(IpLeaseNamespace, il, params)
-	return il, resp, err
+func NewIpLeaseService(client *Client) *IpLeaseService {
+	return &IpLeaseService{
+		BaseService: &BaseService{
+			client:       client,
+			namespace:    IpLeaseNamespace,
+			resource:     &IpLease{},
+			resourceList: &IpLeaseList{},
+		},
+	}
 }
 
-func (s *IpLeaseService) Delete(id string) (*http.Response, error) {
-	return s.client.del(IpLeaseNamespace + "/" + id)
+func (s *IpLeaseService) Create(params *IpLeaseCreateParams) (*IpLease, *http.Response, error) {
+	item, resp, err := s.BaseService.Create(params)
+	return item.(*IpLease), resp, err
 }
 
 func (s *IpLeaseService) Get() (*IpLeaseList, *http.Response, error) {
-	list := new(IpLeaseList)
-	resp, err := s.client.get(IpLeaseNamespace, list)
-	return list, resp, err
+	item, resp, err := s.BaseService.Get()
+	return item.(*IpLeaseList), resp, err
 }
 
 func (s *IpLeaseService) GetByUUID(id string) (*IpLease, *http.Response, error) {
-	i := new(IpLease)
-	resp, err := s.client.get(IpLeaseNamespace+"/"+id, i)
-	return i, resp, err
+	item, resp, err := s.BaseService.GetByUUID(id)
+	return item.(*IpLease), resp, err
 }
 
 func (s *IpLeaseService) Attach(id string, params *IpLeaseAttachParams) (*IpLease, *http.Response, error) {

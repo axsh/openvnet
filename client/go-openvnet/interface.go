@@ -28,7 +28,7 @@ type InterfaceList struct {
 }
 
 type InterfaceService struct {
-	client *Client
+	*BaseService
 }
 
 type InterfaceCreateParams struct {
@@ -51,26 +51,30 @@ type InterfaceCreateSecurityGroup struct {
 	SGUUID string
 }
 
-func (s *InterfaceService) Create(params *InterfaceCreateParams) (*Interface, *http.Response, error) {
-	i := new(Interface)
-	resp, err := s.client.post(InterfaceNamespace, i, params)
-	return i, resp, err
+func NewInterfaceService(client *Client) *InterfaceService {
+	return &InterfaceService{
+		BaseService: &BaseService{
+			client:       client,
+			namespace:    InterfaceNamespace,
+			resource:     &Interface{},
+			resourceList: &InterfaceList{},
+		},
+	}
 }
 
-func (s *InterfaceService) Delete(id string) (*http.Response, error) {
-	return s.client.del(InterfaceNamespace + "/" + id)
+func (s *InterfaceService) Create(params *InterfaceCreateParams) (*Interface, *http.Response, error) {
+	item, resp, err := s.BaseService.Create(params)
+	return item.(*Interface), resp, err
 }
 
 func (s *InterfaceService) Get() (*InterfaceList, *http.Response, error) {
-	list := new(InterfaceList)
-	resp, err := s.client.get(InterfaceNamespace, list)
-	return list, resp, err
+	item, resp, err := s.BaseService.Get()
+	return item.(*InterfaceList), resp, err
 }
 
 func (s *InterfaceService) GetByUUID(id string) (*Interface, *http.Response, error) {
-	i := new(Interface)
-	resp, err := s.client.get(InterfaceNamespace+"/"+id, i)
-	return i, resp, err
+	item, resp, err := s.BaseService.GetByUUID(id)
+	return item.(*Interface), resp, err
 }
 
 func (s *InterfaceService) CreateSecurityGroupRelation(params *InterfaceCreateSecurityGroup) (*SecurityGroup, *http.Response, error) {

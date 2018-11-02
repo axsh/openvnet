@@ -22,7 +22,7 @@ type NetworkList struct {
 }
 
 type NetworkService struct {
-	client *Client
+	*BaseService
 }
 
 type NetworkCreateParams struct {
@@ -35,24 +35,28 @@ type NetworkCreateParams struct {
 	SegmentUUID string `url:"segment_id,omitempty"`
 }
 
-func (s *NetworkService) Create(params *NetworkCreateParams) (*Network, *http.Response, error) {
-	nw := new(Network)
-	resp, err := s.client.post(NetworkNamespace, nw, params)
-	return nw, resp, err
+func NewNetworkService(client *Client) *NetworkService {
+	return &NetworkService{
+		BaseService: &BaseService{
+			client:       client,
+			namespace:    NetworkNamespace,
+			resource:     &Network{},
+			resourceList: &NetworkList{},
+		},
+	}
 }
 
-func (s *NetworkService) Delete(id string) (*http.Response, error) {
-	return s.client.del(NetworkNamespace + "/" + id)
+func (s *NetworkService) Create(params *NetworkCreateParams) (*Network, *http.Response, error) {
+	item, resp, err := s.BaseService.Create(params)
+	return item.(*Network), resp, err
 }
 
 func (s *NetworkService) Get() (*NetworkList, *http.Response, error) {
-	list := new(NetworkList)
-	resp, err := s.client.get(NetworkNamespace, list)
-	return list, resp, err
+	item, resp, err := s.BaseService.Get()
+	return item.(*NetworkList), resp, err
 }
 
 func (s *NetworkService) GetByUUID(id string) (*Network, *http.Response, error) {
-	nw := new(Network)
-	resp, err := s.client.get(NetworkNamespace+"/"+id, nw)
-	return nw, resp, err
+	item, resp, err := s.BaseService.GetByUUID(id)
+	return item.(*Network), resp, err
 }

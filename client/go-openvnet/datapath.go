@@ -20,7 +20,7 @@ type DatapathList struct {
 }
 
 type DatapathService struct {
-	client *Client
+	*BaseService
 }
 
 type DatapathCreateParams struct {
@@ -30,26 +30,30 @@ type DatapathCreateParams struct {
 	NodeId      string `url:"node_id"`
 }
 
-func (s *DatapathService) Create(params *DatapathCreateParams) (*Datapath, *http.Response, error) {
-	dp := new(Datapath)
-	resp, err := s.client.post(DatapathNamespace, dp, params)
-	return dp, resp, err
+func NewDatapathService(client *Client) *DatapathService {
+	return &DatapathService{
+		BaseService: &BaseService{
+			client:       client,
+			namespace:    DatapathNamespace,
+			resource:     &Datapath{},
+			resourceList: &DatapathList{},
+		},
+	}
 }
 
-func (s *DatapathService) Delete(id string) (*http.Response, error) {
-	return s.client.del(DatapathNamespace + "/" + id)
+func (s *DatapathService) Create(params *DatapathCreateParams) (*Datapath, *http.Response, error) {
+	item, resp, err := s.BaseService.Create(params)
+	return item.(*Datapath), resp, err
 }
 
 func (s *DatapathService) Get() (*DatapathList, *http.Response, error) {
-	list := new(DatapathList)
-	resp, err := s.client.get(DatapathNamespace, list)
-	return list, resp, err
+	item, resp, err := s.BaseService.Get()
+	return item.(*DatapathList), resp, err
 }
 
 func (s *DatapathService) GetByUUID(id string) (*Datapath, *http.Response, error) {
-	dp := new(Datapath)
-	resp, err := s.client.get(DatapathNamespace+"/"+id, dp)
-	return dp, resp, err
+	item, resp, err := s.BaseService.GetByUUID(id)
+	return item.(*Datapath), resp, err
 }
 
 ///

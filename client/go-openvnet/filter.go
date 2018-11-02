@@ -17,7 +17,7 @@ type FilterList struct {
 }
 
 type FilterService struct {
-	client *Client
+	*BaseService
 }
 
 type FilterCreateParams struct {
@@ -28,26 +28,30 @@ type FilterCreateParams struct {
 	IngressPassthrough bool   `url:"ingress_passthrough,omitempty"`
 }
 
-func (s *FilterService) Create(params *FilterCreateParams) (*Filter, *http.Response, error) {
-	fil := new(Filter)
-	resp, err := s.client.post(FilterNamespace, fil, params)
-	return fil, resp, err
+func NewFilterService(client *Client) *FilterService {
+	return &FilterService{
+		BaseService: &BaseService{
+			client:       client,
+			namespace:    FilterNamespace,
+			resource:     &Filter{},
+			resourceList: &FilterList{},
+		},
+	}
 }
 
-func (s *FilterService) Delete(id string) (*http.Response, error) {
-	return s.client.del(FilterNamespace + "/" + id)
+func (s *FilterService) Create(params *FilterCreateParams) (*Filter, *http.Response, error) {
+	item, resp, err := s.BaseService.Create(params)
+	return item.(*Filter), resp, err
 }
 
 func (s *FilterService) Get() (*FilterList, *http.Response, error) {
-	list := new(FilterList)
-	resp, err := s.client.get(FilterNamespace, list)
-	return list, resp, err
+	item, resp, err := s.BaseService.Get()
+	return item.(*FilterList), resp, err
 }
 
 func (s *FilterService) GetByUUID(id string) (*Filter, *http.Response, error) {
-	i := new(Filter)
-	resp, err := s.client.get(FilterNamespace+"/"+id, i)
-	return i, resp, err
+	item, resp, err := s.BaseService.GetByUUID(id)
+	return item.(*Filter), resp, err
 }
 
 type FilterStatic struct {

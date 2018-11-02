@@ -22,7 +22,7 @@ type MacLeaseList struct {
 }
 
 type MacLeaseService struct {
-	client *Client
+	*BaseService
 }
 
 type MacLeaseCreateParams struct {
@@ -32,24 +32,28 @@ type MacLeaseCreateParams struct {
 	SegmentUUID   string `url:"segment_uuid,omitempty"`
 }
 
-func (s *MacLeaseService) Create(params *MacLeaseCreateParams) (*MacLease, *http.Response, error) {
-	ml := new(MacLease)
-	resp, err := s.client.post(MacLeaseNamespace, ml, params)
-	return ml, resp, err
+func NewMacLeaseService(client *Client) *MacLeaseService {
+	return &MacLeaseService{
+		BaseService: &BaseService{
+			client:       client,
+			namespace:    MacLeaseNamespace,
+			resource:     &MacLease{},
+			resourceList: &MacLeaseList{},
+		},
+	}
 }
 
-func (s *MacLeaseService) Delete(id string) (*http.Response, error) {
-	return s.client.del(MacLeaseNamespace + "/" + id)
+func (s *MacLeaseService) Create(params *MacLeaseCreateParams) (*MacLease, *http.Response, error) {
+	item, resp, err := s.BaseService.Create(params)
+	return item.(*MacLease), resp, err
 }
 
 func (s *MacLeaseService) Get() (*MacLeaseList, *http.Response, error) {
-	list := new(MacLeaseList)
-	resp, err := s.client.get(MacLeaseNamespace, list)
-	return list, resp, err
+	item, resp, err := s.BaseService.Get()
+	return item.(*MacLeaseList), resp, err
 }
 
 func (s *MacLeaseService) GetByUUID(id string) (*MacLease, *http.Response, error) {
-	i := new(MacLease)
-	resp, err := s.client.get(MacLeaseNamespace+"/"+id, i)
-	return i, resp, err
+	item, resp, err := s.BaseService.GetByUUID(id)
+	return item.(*MacLease), resp, err
 }
