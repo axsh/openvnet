@@ -1,6 +1,8 @@
 package openvnet
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestFilter(t *testing.T) {
 	c := NewClient(nil, nil)
