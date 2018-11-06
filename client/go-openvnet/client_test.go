@@ -1,11 +1,17 @@
 package openvnet
 
 import (
+	"os"
 	"testing"
 )
 
+type testableService struct {
+	service *BaseService
+	data    interface{}
+}
+
 var apiResources = map[string][]string{}
-var services []BaseService
+var serviceTable []testableService
 var client *Client
 
 func TestNewClient(t *testing.T) {
@@ -17,82 +23,59 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestCreate(t *testing.T) {
-
-	testCreate(t, client.Datapath.BaseService, datapath)
-	testCreate(t, client.Filter.BaseService, datapath)
-	testCreate(t, client.Interface.BaseService, datapath)
-	testCreate(t, client.IpLease.BaseService, datapath)
-	testCreate(t, client.IpLeaseContainer.BaseService, datapath)
-	testCreate(t, client.IpRangeGroup.BaseService, datapath)
-	testCreate(t, client.IpRetentionContainer.BaseService, datapath)
-	testCreate(t, client.LeasePolicy.BaseService, datapath)
-	testCreate(t, client.MacLease.BaseService, datapath)
-	testCreate(t, client.MacRangeGroup.BaseService, datapath)
-	testCreate(t, client.Network.BaseService, datapath)
-	testCreate(t, client.Route.BaseService, datapath)
-	testCreate(t, client.RouteLink.BaseService, datapath)
-	testCreate(t, client.Segment.BaseService, datapath)
-	testCreate(t, client.Topology.BaseService, datapath)
-	testCreate(t, client.Translation.BaseService, datapath)
+	for _, i := range serviceTable {
+		testCreate(t, i.service, i.data)
+	}
 }
 
 func TestGetByUUID(t *testing.T) {
-	testGetByUUID(t, client.Datapath.BaseService, datapath)
-	testGetByUUID(t, client.Filter.BaseService, datapath)
-	testGetByUUID(t, client.Interface.BaseService, datapath)
-	testGetByUUID(t, client.IpLease.BaseService, datapath)
-	testGetByUUID(t, client.IpLeaseContainer.BaseService, datapath)
-	testGetByUUID(t, client.IpRangeGroup.BaseService, datapath)
-	testGetByUUID(t, client.IpRetentionContainer.BaseService, datapath)
-	testGetByUUID(t, client.LeasePolicy.BaseService, datapath)
-	testGetByUUID(t, client.MacLease.BaseService, datapath)
-	testGetByUUID(t, client.MacRangeGroup.BaseService, datapath)
-	testGetByUUID(t, client.Network.BaseService, datapath)
-	testGetByUUID(t, client.Route.BaseService, datapath)
-	testGetByUUID(t, client.RouteLink.BaseService, datapath)
-	testGetByUUID(t, client.Segment.BaseService, datapath)
-	testGetByUUID(t, client.Topology.BaseService, datapath)
-	testGetByUUID(t, client.Translation.BaseService, datapath)
+	for _, i := range serviceTable {
+		testGetByUUID(t, i.service, getFieldValue(i.data, "UUID").String())
+	}
 }
 
 func TestGet(t *testing.T) {
-	testGet(t, client.Datapath.BaseService)
-	testGet(t, client.Filter.BaseService)
-	testGet(t, client.Interface.BaseService)
-	testGet(t, client.IpLease.BaseService)
-	testGet(t, client.IpLeaseContainer.BaseService)
-	testGet(t, client.IpRangeGroup.BaseService)
-	testGet(t, client.IpRetentionContainer.BaseService)
-	testGet(t, client.LeasePolicy.BaseService)
-	testGet(t, client.MacLease.BaseService)
-	testGet(t, client.MacRangeGroup.BaseService)
-	testGet(t, client.Network.BaseService)
-	testGet(t, client.Route.BaseService)
-	testGet(t, client.RouteLink.BaseService)
-	testGet(t, client.Segment.BaseService)
-	testGet(t, client.Topology.BaseService)
+	for _, i := range serviceTable {
+		testGet(t, i.service)
+	}
 }
 
 func TestDelete(t *testing.T) {
-	testDelete(t, client.Datapath.BaseService, datapath)
-	testDelete(t, client.Filter.BaseService, datapath)
-	testDelete(t, client.Interface.BaseService, datapath)
-	testDelete(t, client.IpLease.BaseService, datapath)
-	testDelete(t, client.IpLeaseContainer.BaseService, datapath)
-	testDelete(t, client.IpRangeGroup.BaseService, datapath)
-	testDelete(t, client.IpRetentionContainer.BaseService, datapath)
-	testDelete(t, client.LeasePolicy.BaseService, datapath)
-	testDelete(t, client.MacLease.BaseService, datapath)
-	testDelete(t, client.MacRangeGroup.BaseService, datapath)
-	testDelete(t, client.Network.BaseService, datapath)
-	testDelete(t, client.Route.BaseService, datapath)
-	testDelete(t, client.RouteLink.BaseService, datapath)
-	testDelete(t, client.Segment.BaseService, datapath)
-	testDelete(t, client.Topology.BaseService, datapath)
-	testDelete(t, client.Translation.BaseService, datapath)
+	// reverse the array here as deleting the base resources which another depends
+	// depends on automatically sets the depending resource to deleted, which
+	// causes failure
+	s := serviceTable
+	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
+		s[i], s[j] = s[j], s[i]
+	}
+
+	for _, i := range s {
+		testDelete(t, i.service, getFieldValue(i.data, "UUID").String())
+	}
 }
+
 func TestMain(m *testing.M) {
 	client = testClient()
+	// order is important here as some resources depends on other resources and
+	// will use their as the value for the required parameters
+	serviceTable = []testableService{
+		testableService{NewDatapathService(client).BaseService, testDatapath},
+		testableService{NewNetworkService(client).BaseService, testNetwork},
+		testableService{NewInterfaceService(client).BaseService, testInterface},
+		testableService{NewFilterService(client).BaseService, testFilter},
+		testableService{NewIpLeaseService(client).BaseService, testIpLease},
+		testableService{NewIpLeaseContainerService(client).BaseService, testIpLeaseContainer},
+		testableService{NewIpRangeGroupService(client).BaseService, testIpRangeGroup},
+		testableService{NewIpRetentionContainerService(client).BaseService, testIpRetentionContainer},
+		testableService{NewLeasePolicyService(client).BaseService, testLeasePoilcy},
+		testableService{NewMacRangeGroupService(client).BaseService, testMacRangeGroup},
+		testableService{NewMacLeaseService(client).BaseService, testMacLease},
+		testableService{NewRouteLinkService(client).BaseService, testRouteLink},
+		testableService{NewRouteService(client).BaseService, testRoute},
+		testableService{NewSegmentService(client).BaseService, testSegment},
+		testableService{NewTopologyService(client).BaseService, testTopology},
+		testableService{NewTranslationService(client).BaseService, testTranslation},
+	}
 
-	// os.Exit(m.Run())
+	os.Exit(m.Run())
 }
