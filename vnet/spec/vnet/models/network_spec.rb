@@ -4,16 +4,16 @@ require 'spec_helper'
 describe Vnet::Models::Network do
   let(:network1) do
     Fabricate(:network,
-            uuid: "nw-1",
-            ipv4_network: IPAddr.new("10.101.1.0").to_i,
-            ipv4_prefix: 24)
+              uuid: "nw-1",
+              ipv4_network: IPAddr.new("10.101.1.0").to_i,
+              ipv4_prefix: 24)
   end
 
   let(:network2) do
     Fabricate(:network,
-            uuid: "nw-2",
-            ipv4_network: IPAddr.new("10.102.1.0").to_i,
-            ipv4_prefix: 24)
+              uuid: "nw-2",
+              ipv4_network: IPAddr.new("10.102.1.0").to_i,
+              ipv4_prefix: 24)
   end
 
   let(:ipv4_address1) { IPAddr.new("10.101.1.10").to_i }
@@ -35,6 +35,7 @@ describe Vnet::Models::Network do
                            mac_lease_id: mac_lease.id,
                            network_id: network.id,
                            ipv4_address: ipv4_address)
+
       interface
     end
 
@@ -66,15 +67,8 @@ describe Vnet::Models::Network do
     it { expect(subject.map(&:canonical_uuid)).to eq [ "r-1", "r-2", "r-3" ] }
   end
 
-  describe "find_by_mac_address" do
-    it { expect(Vnet::Models::MacAddress[mac_address: 0].mac_lease.ip_leases.first.network).to eq network1 }
-    it { expect(Vnet::Models::MacAddress[mac_address: 2].mac_lease.ip_leases.first.network).to eq network1 }
-    it { expect(Vnet::Models::MacAddress[mac_address: 4].mac_lease.ip_leases.first.network).to eq network1 }
-    it { expect(Vnet::Models::MacAddress[mac_address: 6].mac_lease.ip_leases.first.network).to eq network2 }
-  end
-
   describe "destroy" do
-    subject {  network1.destroy }
+    subject { network1.destroy }
 
     it "deleting a network deletes associated items" do
       expect(subject).to be_a Vnet::Models::Network

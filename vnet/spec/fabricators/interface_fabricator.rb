@@ -12,11 +12,9 @@ end
 Fabricator(:interface_w_mac_lease, class_name: Vnet::Models::Interface) do
   id { id_sequence(:interface_ids) }
 
-  mac_leases do
+  mac_leases do |attrs|
     [
-      Fabricate(:mac_lease,
-                mac_address: sequence(:mac_address)
-               )
+      Fabricate(:mac_lease_any, interface_id: attrs[:id])
     ]
   end
 end
@@ -41,10 +39,7 @@ Fabricator(:filter_interface, class_name: Vnet::Models::Interface) do
     [
      Fabricate(:ip_lease_any) do
        interface_id { attrs[:id] }
-       mac_lease { Fabricate(:mac_lease_any,
-                             mac_address: sequence(:mac_address),
-                             interface_id: attrs[:id]
-                             )}
+       mac_lease { Fabricate(:mac_lease_any, interface_id: attrs[:id]) }
        network_id { Fabricate(:network).id }
        ip_address_id { |attrs|
          Fabricate(:ip_address_no_nw, network_id: attrs[:network_id]).id
@@ -63,10 +58,7 @@ Fabricator(:interface_w_ip_lease, class_name: Vnet::Models::Interface) do
     [
      Fabricate(:ip_lease_any) do
        interface_id { attrs[:id] }
-       mac_lease { Fabricate(:mac_lease_any,
-                             mac_address: sequence(:mac_address),
-                             interface_id: attrs[:id]
-                             )}
+       mac_lease { Fabricate(:mac_lease_any, interface_id: attrs[:id]) }
        network_id { Fabricate(:network).id }
        ip_address_id { |attrs|
          Fabricate(:ip_address_no_nw,

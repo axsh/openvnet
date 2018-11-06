@@ -50,9 +50,7 @@ describe Sequel::Plugins::MacAddress do
 
   context "without attr_name" do
     let(:model) do
-      Vnet::Models::MacLease.create(
-        :mac_address => mac_address_1
-      )
+      Vnet::Models::MacLease.create(mac_address: mac_address_1)
     end
 
     describe "create" do
@@ -66,19 +64,6 @@ describe Sequel::Plugins::MacAddress do
       it { expect(subject.mac_address_id).not_to be_nil }
       it { expect(subject._mac_address.mac_address).to eq mac_address_1.to_i }
       it { expect(subject.reload.mac_address).to eq mac_address_1 }
-    end
-
-    describe "update" do
-      subject do
-        model.update(mac_address: mac_address_2)
-        model
-      end
-
-      it { expect(subject.mac_address).to eq mac_address_2 }
-      it { expect(subject.to_hash[:mac_address]).to eq mac_address_2 }
-      it { expect(subject._mac_address).to be_exists }
-      it { expect(subject.mac_address_id).not_to be_nil }
-      it { expect(subject._mac_address.mac_address).to eq mac_address_2.to_i }
     end
 
     describe "destroy" do

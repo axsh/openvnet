@@ -30,7 +30,7 @@ module Vnet::NodeApi
           handle_new_uuid(options)
 
           options.delete(:mac_range_group_id).tap { |mrg_id|
-            next if options[:mac_address] && mrg_id.nil?
+            next if options[:mac_address] || mrg_id.nil?
             options[:_mac_address] = create_address_from_mrg(mrg_id)
           }
 

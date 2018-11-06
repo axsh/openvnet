@@ -8,7 +8,7 @@ describe Vnet::NodeApi::InterfaceSegment do
   before(:each) { use_mock_event_handler }
 
   let(:interface) { Fabricate(:interface) }
-  let(:other) { Fabricate(:segment) }
+  let(:other) { Fabricate(:segment, mode: 'virtual') }
 
   let(:if_assoc_static) {
     { interface_id: interface.id,
@@ -19,7 +19,7 @@ describe Vnet::NodeApi::InterfaceSegment do
   }
   let(:if_assoc_non_static) { if_assoc_static.merge(static: false) }
 
-  let(:create_lease) { Fabricate(:mac_lease_free, interface_id: interface.id, segment_id: other.id) }
+  let(:create_lease) { Fabricate(:mac_lease_with_segment, interface_id: interface.id, segment_id: other.id) }
   let(:create_if_assoc_static) { Fabricate(:interface_segment, if_assoc_static) }
   let(:create_if_assoc_no_static) { Fabricate(:interface_segment, if_assoc_non_static) }
 

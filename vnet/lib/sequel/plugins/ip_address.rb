@@ -63,25 +63,25 @@ module Sequel
         # TODO: Redo, don't support changing network/address.
         def before_save
           if mac_lease
-            interface_id = mac_lease.interface_id
+            self.interface_id = mac_lease.interface_id
           end
 
           if @network_id
             if ip_address && ip_address.network_id != @network_id
               ip_address.destroy
-              ip_address = nil
+              self.ip_address = nil
             end
           end
 
           if @ipv4_address
             if ip_address && ip_address.ipv4_address != @ipv4_address
               ip_address.destroy
-              ip_address = nil
+              self.ip_address = nil
             end
           end
 
           if ip_address.nil?
-            ip_address = self.class.association_reflection(:ip_address).associated_class.new(ipv4_address: @ipv4_address).tap { |model|
+            self.ip_address = self.class.association_reflection(:ip_address).associated_class.new(ipv4_address: @ipv4_address).tap { |model|
               model.network = model.class.association_reflection(:network).associated_class[@network_id]
               @network = model.network
               model.save

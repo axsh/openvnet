@@ -24,9 +24,8 @@ describe Vnet::Core::TunnelManager do
     let("datapath_#{i}") { Fabricate("datapath_#{i}") }
     let("interface_#{i}") { Fabricate("interface_dp#{i}eth0") }
     let("mac_lease_#{i}") {
-      Fabricate(:mac_lease,
-        interface: send("interface_#{i}"),
-        mac_address: Pio::Mac.new("08:00:27:00:01:0#{i}"))
+      Fabricate(:mac_lease_any,
+                interface: send("interface_#{i}"))
     }
 
     let("ip_lease_#{i}") {

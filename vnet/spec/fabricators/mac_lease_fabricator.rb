@@ -22,7 +22,6 @@ end
 
 Fabricator(:mac_lease_free, class_name: Vnet::Models::MacLease) do
   id { id_sequence(:mac_lease_ids) }
-
   _mac_address { Fabricate(:mac_address) }
 end
 

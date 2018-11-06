@@ -54,7 +54,7 @@ describe Vnet::NodeApi::MacLease do
       [ Vnet::Event::INTERFACE_SEGMENT_CREATED_ITEM, {
           interface_id: interface.id,
           segment_id: segment.id,
-          static: false
+          static: false,
         }]
     }
 

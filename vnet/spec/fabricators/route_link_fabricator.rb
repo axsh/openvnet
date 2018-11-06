@@ -4,17 +4,20 @@ require 'ipaddr'
 
 Fabricator(:route_link, class_name: Vnet::Models::RouteLink) do
   id { id_sequence(:route_link_ids) }
-  mac_address { sequence(:mac_address, 100) }
+
+  _mac_address { Fabricate(:mac_address) }
 end
 
 Fabricator(:route_link_1, class_name: Vnet::Models::RouteLink) do
   id { id_sequence(:route_link_ids) }
   uuid "rl-aaaaaaaa"
-  mac_address { sequence(:mac_address, 101) }
+
+  _mac_address { Fabricate(:mac_address) }
 end
 
 Fabricator(:route_link_2, class_name: Vnet::Models::RouteLink) do
   id { id_sequence(:route_link_ids) }
   uuid "rl-bbbbbbbb"
-  mac_address { sequence(:mac_address, 102) }
+
+  _mac_address { Fabricate(:mac_address) }
 end
