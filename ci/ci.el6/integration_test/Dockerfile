@@ -5,7 +5,7 @@ MAINTAINER "Axsh Co. LTD"
 VOLUME /data
 
 RUN ["yum", "install", "-y", "epel-release"]
-RUN ["yum", "install", "-y", "rsync", "bridge-utils", "qemu-kvm", "qemu-system-x86", "parted", "sudo", "openssh-clients", "nc", "git", "which", "file"]
+RUN ["yum", "install", "-y", "rsync", "bridge-utils", "qemu-kvm", "qemu-system-x86", "parted", "sudo", "openssh-clients", "nc", "git", "file"]
 RUN mkdir /var/tmp/openvnet
 
 # This key is required by rvm
