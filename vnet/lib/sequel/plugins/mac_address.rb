@@ -20,21 +20,21 @@ module Sequel
           end
 
           define_method mac_address_attr_name do
-            return instance_variable_get("@#{mac_address_attr_name}") if instance_variable_get("@#{mac_address_attr_name}")
-            instance_variable_set("@#{mac_address_attr_name}", __send__(mac_address_assoc_name) ? __send__(mac_address_assoc_name).mac_address : nil)
+            return _cached_mac_address if _cached_mac_address
+            _cached_mac_address = _query_mac_address
           end
 
-          define_method "#{mac_address_attr_name}=" do |mac_address|
-            if mac_address != __send__(mac_address_attr_name)
-              instance_variable_set("@#{mac_address_attr_name}", mac_address)
+          define_method "#{mac_address_attr_name}=" do |m_addr|
+            if m_addr != _cached_mac_address
+              _cached_mac_address = mac_address
               modified!(mac_address_attr_name)
             end
-            instance_variable_get("@#{mac_address_attr_name}")
+
+            _cached_mac_address
           end
 
           def segment
-            return @segment if @segment
-            segments.first
+            _mac_address.try(:segment)
           end
 
           def segment_id
@@ -50,22 +50,56 @@ module Sequel
             @segment_id
           end
 
+          private
+
+          def _cached_mac_address
+            instance_variable_get("@#{mac_address_attr_name}")
+          end
+
+          def _cached_mac_address=(a)
+            instance_variable_set("@#{mac_address_attr_name}", a)
+          end
+
+          def _query_mac_address
+            __send__(mac_address_assoc_name).try(:mac_address)
+          end
+
+          def _query_segment_id
+            __send__(mac_address_assoc_name).try(:segment_id)
+          end
+
         end
       end
 
       module InstanceMethods
+        def validate
+          if new?
+            errors.add(mac_address_attr_name, "missing mac address") if _cached_mac_address.nil? && _query_mac_address.nil?
+          else
+            if modified?(:segment_id) && @segment_id != _query_segment_id
+              errors.add(:segment_id, "changing segment is not supported")
+            end
+
+            if modified?(mac_address_attr_name) && _cached_mac_address != _query_mac_address
+              errors.add(mac_address_attr_name, "changing mac address is not supported")
+            end
+          end
+
+          super
+        end
+
         def before_save
-          if value = __send__(mac_address_attr_name)
-            m = __send__(mac_address_assoc_name)
-
-            if m && m.mac_address != value
-              m.destroy
-              __send__("#{mac_address_assoc_name}=", nil)
-            end
-
-            unless __send__(mac_address_assoc_name)
-              __send__("#{mac_address_assoc_name}=", self.class.association_reflection(mac_address_assoc_name).associated_class.create(mac_address: value, segment_id: @segment_id))
-            end
+          if new?
+            __send__(mac_address_assoc_name).tap { |m|
+              if m
+                # TODO: Prioritize properly. Check new? when assigning, don't allow/update if already created?
+                _cached_mac_address = m.mac_address
+                @segment_id = m.segment_id
+              else
+                __send__("#{mac_address_assoc_name}=",
+                         self.class.association_reflection(mac_address_assoc_name).associated_class.create(mac_address: _cached_mac_address, segment_id: @segment_id))
+              end
+            }
           end
 
           super

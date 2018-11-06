@@ -24,10 +24,12 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/interfaces' do
   param :mode, :String, in: C::Interface::MODES, required: true
   param :ipv4_address, :String, transform: PARSE_IPV4
   param :mac_address, :String, transform: PARSE_MAC
+  param :mrg_uuid, :String
   param :mac_range_group_uuid, :String
   param :port_name, :String
   post do
     uuid_to_id(M::Datapath, 'owner_datapath_uuid', 'owner_datapath_id') if params['owner_datapath_uuid']
+    uuid_to_id(M::MacRangeGroup, 'mrg_uuid', 'mac_range_group_id') if params['mrg_uuid']
     uuid_to_id(M::MacRangeGroup, 'mac_range_group_uuid', 'mac_range_group_id') if params['mac_range_group_uuid']
 
     segment_uuid = params['segment_uuid']

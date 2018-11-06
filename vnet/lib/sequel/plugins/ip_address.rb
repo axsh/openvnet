@@ -56,35 +56,36 @@ module Sequel
             end
           end
 
-          errors.add(:network_id, 'cannot be empty') if self.network_id.blank?
-          errors.add(:ipv4_address, 'cannot be empty') if self.ipv4_address.blank?
+          errors.add(:network_id, 'cannot be empty') if network_id.blank?
+          errors.add(:ipv4_address, 'cannot be empty') if ipv4_address.blank?
         end
 
+        # TODO: Redo, don't support changing network/address.
         def before_save
-          if self.mac_lease
-            self.interface_id = self.mac_lease.interface_id
+          if mac_lease
+            interface_id = mac_lease.interface_id
           end
 
           if @network_id
-            if self.ip_address && self.ip_address.network_id != @network_id
-              self.ip_address.destroy
-              self.ip_address = nil
+            if ip_address && ip_address.network_id != @network_id
+              ip_address.destroy
+              ip_address = nil
             end
           end
 
           if @ipv4_address
-            if self.ip_address && self.ip_address.ipv4_address != @ipv4_address
-              self.ip_address.destroy
-              self.ip_address = nil
+            if ip_address && ip_address.ipv4_address != @ipv4_address
+              ip_address.destroy
+              ip_address = nil
             end
           end
 
-          unless self.ip_address
-            self.ip_address = self.class.association_reflection(:ip_address).associated_class.new(ipv4_address: @ipv4_address).tap do |model|
+          if ip_address.nil?
+            ip_address = self.class.association_reflection(:ip_address).associated_class.new(ipv4_address: @ipv4_address).tap { |model|
               model.network = model.class.association_reflection(:network).associated_class[@network_id]
               @network = model.network
               model.save
-            end
+            }
           end
 
           super

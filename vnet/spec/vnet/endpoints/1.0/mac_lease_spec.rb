@@ -24,14 +24,16 @@ describe "/mac_leases" do
 
   describe "POST /" do
     let!(:interface) { Fabricate(:interface) { uuid "if-test" } }
+    let!(:segment) { Fabricate(:segment) { uuid "seg-test" } }
 
     accepted_params = {
-      :uuid => "ml-test",
-      :interface_uuid => "if-test",
-      :mac_address => "00:21:cc:da:e9:cc"
+      uuid: "ml-test",
+      interface_uuid: "if-test",
+      mac_address: "00:21:cc:da:e9:cc",
+      segment_uuid: "seg-test",
     }
-    required_params = [:interface_uuid, :mac_address]
-    uuid_params = [:uuid, :interface_uuid]
+    required_params = [:mac_address]
+    uuid_params = [:uuid, :interface_uuid, :segment_uuid]
 
     include_examples "POST /", accepted_params, required_params, uuid_params
   end

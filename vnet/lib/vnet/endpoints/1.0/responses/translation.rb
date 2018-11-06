@@ -3,7 +3,7 @@
 module Vnet::Endpoints::V10::Responses
   class Translation < Vnet::Endpoints::CollectionResponseGenerator
     def self.generate(object)
-      argument_type_check(object,Vnet::ModelWrappers::Translation)
+      argument_type_check(object, Vnet::ModelWrappers::Translation)
       object.to_hash.tap do |res|
         interface = object.batch.interface.commit
         res[:interface_uuid] = interface.uuid if interface
@@ -11,7 +11,7 @@ module Vnet::Endpoints::V10::Responses
     end
 
     def self.translation_static_addresses(object)
-      argument_type_check(object,Vnet::ModelWrappers::Translation)
+      argument_type_check(object, Vnet::ModelWrappers::Translation)
       {
         :uuid => object.uuid,
         # :translation_static_addresses => DatapathNetworkCollection.generate(
