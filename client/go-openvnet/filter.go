@@ -21,7 +21,7 @@ type FilterService struct {
 }
 
 type FilterCreateParams struct {
-	UUID               string `url:"mode"`
+	UUID               string `url:"uuid"`
 	InterfaceUUID      string `url:"interface_uuid"`
 	Mode               string `url:"mode"`
 	EgressPassthrough  bool   `url:"egress_passthrough,omitempty"`

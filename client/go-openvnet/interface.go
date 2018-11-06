@@ -43,7 +43,7 @@ type InterfaceCreateParams struct {
 	MacAddress              string `url:"mac_address,omitempty"`
 	Ipv4Address             string `url:"ipv4_address,omitempty"`
 	PortName                string `url:"port_name,omitempty"`
-	Mode                    string `url:"mode,,omitempty"`
+	Mode                    string `url:"mode,omitempty"`
 }
 
 type InterfaceCreateSecurityGroup struct {
