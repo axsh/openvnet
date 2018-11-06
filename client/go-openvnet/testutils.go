@@ -2,6 +2,7 @@ package openvnet
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/dghubble/sling"
@@ -17,46 +18,68 @@ func getFieldValue(i interface{}, fieldName string) reflect.Value {
 }
 
 func testCreate(t *testing.T, s *BaseService, data interface{}) {
+	resourceType := reflect.TypeOf(s.resource)
+	serviceName := strings.Join([]string{resourceType.String(), "Service"}, "")
 	r, _, e := s.Create(data)
 
 	if e != nil {
-		t.Errorf("%v.Create() error sohuld be nil: %v", s, e)
+		t.Errorf("%s.Create() error sohuld be nil: %v", serviceName, e)
 	}
 
 	if r == nil {
-		t.Errorf("%v.Create() resource: %v should not be nil", s, r)
+		t.Errorf("%s.Create() resource: %v should not be nil", serviceName, r)
+	}
+
+	if response := reflect.TypeOf(r); response != resourceType {
+		t.Errorf("%s.Create() resource %s should be %s",
+			serviceName, response.String(), resourceType.String())
 	}
 }
 
 func testGet(t *testing.T, s *BaseService) {
+	resourceType := reflect.TypeOf(s.resourceList)
+	serviceName := strings.Join([]string{resourceType.String(), "Service"}, "")
 	r, _, e := s.Get()
 
 	if e != nil {
-		t.Errorf("%v.Get() error should be nil: %v", s, e)
+		t.Errorf("%s.Get() error should be nil: %v", serviceName, e)
 	}
 
 	if r == nil {
-		t.Errorf("%v.Get() resources: %v should not be nil", s, r)
+		t.Errorf("%s.Get() resources: %v should not be nil", serviceName, r)
+	}
+
+	if response := reflect.TypeOf(r); response != resourceType {
+		t.Errorf("%s.Get() resource %s should be %s",
+			serviceName, response.String(), resourceType.String())
 	}
 }
 
 func testDelete(t *testing.T, s *BaseService, data string) {
+	serviceName := strings.Join([]string{reflect.TypeOf(s.resource).String(), "Service"}, "")
 	_, e := s.Delete(data)
 
 	if e != nil {
-		t.Errorf("%v.Delete() error should be nil: %v", s, e)
+		t.Errorf("%s.Delete() error should be nil: %v", serviceName, e)
 	}
 }
 
 func testGetByUUID(t *testing.T, s *BaseService, data string) {
+	resourceType := reflect.TypeOf(s.resource)
+	serviceName := strings.Join([]string{resourceType.String(), "Service"}, "")
 	r, _, e := s.GetByUUID(data)
 
 	if e != nil {
-		t.Errorf("%v.GetByUUID() error should be nil: %v", s, e)
+		t.Errorf("%s.GetByUUID() error should be nil: %v", serviceName, e)
 	}
 
 	if r == nil {
-		t.Errorf("%v.GetByUUDI() resource: %v should not nil", s, r)
+		t.Errorf("%s.GetByUUDI() resource: %v should not nil", serviceName, r)
+	}
+
+	if response := reflect.TypeOf(r); response != resourceType {
+		t.Errorf("%s.GetByUUID() resource %s should be %s",
+			serviceName, response.String(), resourceType.String())
 	}
 }
 
