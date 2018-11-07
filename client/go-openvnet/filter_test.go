@@ -4,7 +4,12 @@ import (
 	"testing"
 )
 
-var filService = NewFilterService(testClient())
+var filService = NewFilterService(testClient)
+var testFilter = &FilterCreateParams{
+	UUID:          "fil-test",
+	InterfaceUUID: testInterface.UUID,
+	Mode:          "static",
+}
 
 func TestFilter(t *testing.T) {
 	c := NewClient(nil, nil)

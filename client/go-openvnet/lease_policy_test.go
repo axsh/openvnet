@@ -2,7 +2,10 @@ package openvnet
 
 import "testing"
 
-var lpService = NewLeasePolicyService(testClient())
+var lpService = NewLeasePolicyService(testClient)
+var testLeasePolicy = &LeasePolicyCreateParams{
+	UUID: "lp-test",
+}
 
 func TestLeasePolicy(t *testing.T) {
 	c := NewClient(nil, nil)

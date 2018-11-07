@@ -1,13 +1,19 @@
 package openvnet
 
 import (
+	"io"
 	"log"
 	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"reflect"
 	"testing"
+
+	"github.com/dghubble/sling"
 )
+
+var testClient = &Client{sling: sling.New().Base("http://localhost:9090/api/1.0/").Client(nil)}
 
 type testService struct {
 	*BaseService
@@ -20,10 +26,32 @@ type testData struct {
 var ts = &testService{
 	BaseService: &BaseService{
 		namespace:    "test",
-		client:       testClient(),
+		client:       testClient,
 		resource:     &testData{},
 		resourceList: &testData{},
 	},
+}
+
+func checkType(t *testing.T, expected interface{}, recieved interface{}) {
+	typeOfRecieved := reflect.TypeOf(recieved)
+	typeOfExpected := reflect.TypeOf(expected)
+
+	if typeOfExpected != typeOfRecieved {
+		t.Errorf("Resource %s should be %s", typeOfRecieved.String(), typeOfExpected.String())
+	}
+
+}
+
+func checkBody(t *testing.T, body io.ReadCloser) {
+	b := make([]byte, 0)
+	if _, e := body.Read(b); e != nil && e != io.EOF {
+		log.Fatalf("failed to read response body: %v", e)
+	}
+	defer body.Close()
+
+	if len(b) != 0 {
+		t.Errorf("Body should be empty was: %d", len(b))
+	}
 }
 
 func TestCreate(t *testing.T) {

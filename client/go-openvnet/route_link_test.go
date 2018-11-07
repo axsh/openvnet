@@ -2,7 +2,10 @@ package openvnet
 
 import "testing"
 
-var rlService = NewRouteLinkService(testClient())
+var rlService = NewRouteLinkService(testClient)
+var testRouteLink = &RouteLinkCreateParams{
+	UUID: "rl-test",
+}
 
 func TestRouteLink(t *testing.T) {
 	c := NewClient(nil, nil)

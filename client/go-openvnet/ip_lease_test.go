@@ -4,7 +4,12 @@ import (
 	"testing"
 )
 
-var ilService = NewIpLeaseService(testClient())
+var ilService = NewIpLeaseService(testClient)
+var testIpLease = &IpLeaseCreateParams{
+	UUID:        "il-test",
+	NetworkUUID: testNetwork.UUID,
+	Ipv4Address: testNetwork.Ipv4Network,
+}
 
 func TestIpLease(t *testing.T) {
 	c := NewClient(nil, nil)

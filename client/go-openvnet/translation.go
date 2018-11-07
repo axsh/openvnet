@@ -46,9 +46,9 @@ func (s *TranslationService) Get() (*TranslationList, *http.Response, error) {
 	return item.(*TranslationList), resp, err
 }
 
-func (s *TranslationService) GetByUUID(uuid string) (*TranslationList, *http.Response, error) {
+func (s *TranslationService) GetByUUID(uuid string) (*Translation, *http.Response, error) {
 	item, resp, err := s.BaseService.GetByUUID(uuid)
-	return item.(*TranslationList), resp, err
+	return item.(*Translation), resp, err
 }
 
 type TranslationStaticAddress struct {

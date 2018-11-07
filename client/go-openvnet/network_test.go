@@ -2,7 +2,13 @@ package openvnet
 
 import "testing"
 
-var nwService = NewNetworkService(testClient())
+var nwService = NewNetworkService(testClient)
+var testNetwork = &NetworkCreateParams{
+	UUID:        "nw-test",
+	Ipv4Network: "10.0.100.0",
+	Ipv4Prefix:  24,
+	Mode:        "virtual",
+}
 
 func TestNetwork(t *testing.T) {
 	c := NewClient(nil, nil)

@@ -2,7 +2,14 @@ package openvnet
 
 import "testing"
 
-var rService = NewRouteService(testClient())
+var rService = NewRouteService(testClient)
+var testRoute = &RouteCreateParams{
+	UUID:          "r-test",
+	RouteLinkUUID: testRouteLink.UUID,
+	InterfaceUUID: testInterface.UUID,
+	NetworkUUID:   testNetwork.UUID,
+	Ipv4Network:   testNetwork.Ipv4Network,
+}
 
 func TestRoute(t *testing.T) {
 	c := NewClient(nil, nil)

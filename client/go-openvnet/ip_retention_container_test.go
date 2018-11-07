@@ -2,7 +2,10 @@ package openvnet
 
 import "testing"
 
-var ircService = NewIpRetentionContainerService(testClient())
+var ircService = NewIpRetentionContainerService(testClient)
+var testIpRetentionContainer = &IpRetentionContainerCreateParams{
+	UUID: "irc-test",
+}
 
 func TestIpRetentionContainer(t *testing.T) {
 	c := NewClient(nil, nil)

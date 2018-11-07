@@ -2,7 +2,11 @@ package openvnet
 
 import "testing"
 
-var segService = NewSegmentService(testClient())
+var segService = NewSegmentService(testClient)
+var testSegment = &SegmentCreateParams{
+	UUID: "seg-test",
+	Mode: "virtual",
+}
 
 func TestSegment(t *testing.T) {
 	c := NewClient(nil, nil)

@@ -2,7 +2,10 @@ package openvnet
 
 import "testing"
 
-var mrgService = NewMacRangeGroupService(testClient())
+var mrgService = NewMacRangeGroupService(testClient)
+var testMacRangeGroup = &MacRangeGroupCreateParams{
+	UUID: "mrg-test",
+}
 
 func TestMacRagneGroup(t *testing.T) {
 	c := NewClient(nil, nil)

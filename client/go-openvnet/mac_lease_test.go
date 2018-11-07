@@ -2,7 +2,12 @@ package openvnet
 
 import "testing"
 
-var mlService = NewMacLeaseService(testClient())
+var mlService = NewMacLeaseService(testClient)
+var testMacLease = &MacLeaseCreateParams{
+	UUID:          "ml-test",
+	InterfaceUUID: testInterface.UUID,
+	MacAddress:    "00:00:00:00:00:01",
+}
 
 func TestMacLease(t *testing.T) {
 	c := NewClient(nil, nil)

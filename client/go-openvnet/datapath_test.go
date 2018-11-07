@@ -4,7 +4,13 @@ import (
 	"testing"
 )
 
-var dpService = NewDatapathService(testClient())
+var dpService = NewDatapathService(testClient)
+var testDatapath = &DatapathCreateParams{
+	DisplayName: "test",
+	UUID:        "dp-test",
+	NodeId:      "test",
+	DPID:        "0000aaaaaaaaaaaa",
+}
 
 func TestDatapath(t *testing.T) {
 	c := NewClient(nil, nil)

@@ -2,7 +2,10 @@ package openvnet
 
 import "testing"
 
-var ilcService = NewIpLeaseContainerService(testClient())
+var ilcService = NewIpLeaseContainerService(testClient)
+var testIpLeaseContainer = &IpLeaseContainerCreateParams{
+	UUID: "ilc-test",
+}
 
 func TestIpLeaseContainer(t *testing.T) {
 	c := NewClient(nil, nil)

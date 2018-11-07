@@ -2,7 +2,12 @@ package openvnet
 
 import "testing"
 
-var trService = NewTranslationService(testClient())
+var trService = NewTranslationService(testClient)
+var testTranslation = &TranslationCreateParams{
+	UUID:          "tr-test",
+	InterfaceUUID: testInterface.UUID,
+	Mode:          "static_address",
+}
 
 func TestTranslation(t *testing.T) {
 	c := NewClient(nil, nil)

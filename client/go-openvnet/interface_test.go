@@ -2,7 +2,11 @@ package openvnet
 
 import "testing"
 
-var ifService = NewInterfaceService(testClient())
+var ifService = NewInterfaceService(testClient)
+var testInterface = &InterfaceCreateParams{
+	UUID: "if-test",
+	Mode: "vif",
+}
 
 func TestInterface(t *testing.T) {
 	c := NewClient(nil, nil)

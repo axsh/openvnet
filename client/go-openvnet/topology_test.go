@@ -2,7 +2,11 @@ package openvnet
 
 import "testing"
 
-var topoService = NewTopologyService(testClient())
+var topoService = NewTopologyService(testClient)
+var testTopology = &TopologyCreateParams{
+	UUID: "topo-test",
+	Mode: "simple_underlay",
+}
 
 func TestTopology(t *testing.T) {
 	c := NewClient(nil, nil)
