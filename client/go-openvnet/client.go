@@ -21,9 +21,10 @@ type Client struct {
 	sling *sling.Sling
 
 	// TODO: do something with the naming convention for 'services' as openvnet
-	// has a resource ending in 'service' (network service)
+	// has a resource ending in 'service' (network service, dns service)
 	Datapath             *DatapathService
 	Filter               *FilterService
+	DnsServices          *DnsServicesService
 	Interface            *InterfaceService
 	IpLeaseContainer     *IpLeaseContainerService
 	IpLease              *IpLeaseService
@@ -78,6 +79,7 @@ func NewClient(url *url.URL, httpClient *http.Client) *Client {
 	s := sling.New().Base(baseURL).Client(httpClient)
 	c := &Client{sling: s}
 	c.Datapath = NewDatapathService(c)
+	c.DnsServices = NewDnsServicesService(c)
 	c.Filter = NewFilterService(c)
 	c.Interface = NewInterfaceService(c)
 	c.IpLeaseContainer = NewIpLeaseContainerService(c)
