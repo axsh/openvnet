@@ -20,6 +20,8 @@ const (
 type Client struct {
 	sling *sling.Sling
 
+	// TODO: do something with the naming convention for 'services' as openvnet
+	// has a resource ending in 'service' (network service)
 	Datapath             *DatapathService
 	Filter               *FilterService
 	Interface            *InterfaceService
@@ -31,6 +33,7 @@ type Client struct {
 	MacLease             *MacLeaseService
 	MacRangeGroup        *MacRangeGroupService
 	Network              *NetworkService
+	NetworkServices      *NetworkServicesService
 	Route                *RouteService
 	RouteLink            *RouteLinkService
 	SecurityGroup        *SecurityGroupService
@@ -86,6 +89,7 @@ func NewClient(url *url.URL, httpClient *http.Client) *Client {
 	c.MacLease = NewMacLeaseService(c)
 	c.MacRangeGroup = NewMacRangeGroupService(c)
 	c.Network = NewNetworkService(c)
+	c.NetworkServices = NewNetworkServicesService(c)
 	c.RouteLink = NewRouteLinkService(c)
 	c.Route = NewRouteService(c)
 	c.Segment = NewSegmentService(c)
