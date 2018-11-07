@@ -53,4 +53,7 @@ end
 
 Vnet::NodeModules::ServiceOpenflow.supervise_as :service_openflow
 
-sleep
+Celluloid::Actor[:service_openflow].prepare_controller(Thread.current).tap { |controller|
+  Celluloid.logger.debug "starting trema controller on thread #{Thread.current.inspect}"
+  controller.run_no_init!
+}
