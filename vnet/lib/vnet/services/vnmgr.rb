@@ -24,6 +24,11 @@ module Vnet::Services
       info log_format('initialized managers')
     end
 
+    def dispatch_publish(event, options)
+      publish(event, options)
+      nil
+    end
+
     #
     # Internal methods:
     #
