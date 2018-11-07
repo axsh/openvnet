@@ -1,15 +1,16 @@
 package openvnet
 
 import (
+	"io"
+	"log"
 	"reflect"
-	"strings"
 	"testing"
 
 	"github.com/dghubble/sling"
 )
 
 func testClient() *Client {
-	return &Client{sling: sling.New().Base("http://192.168.21.100:9090/api/1.0/").Client(nil)}
+	return &Client{sling: sling.New().Base("http://localhost:9090/api/1.0/").Client(nil)}
 }
 
 func getFieldValue(i interface{}, fieldName string) reflect.Value {
@@ -17,69 +18,25 @@ func getFieldValue(i interface{}, fieldName string) reflect.Value {
 	return valueOfT.Elem().FieldByName(fieldName)
 }
 
-func testCreate(t *testing.T, s *BaseService, data interface{}) {
-	resourceType := reflect.TypeOf(s.resource)
-	serviceName := strings.Join([]string{resourceType.String(), "Service"}, "")
-	r, _, e := s.Create(data)
+func checkType(t *testing.T, expected interface{}, recieved interface{}) {
+	typeOfRecieved := reflect.TypeOf(recieved)
+	typeOfExpected := reflect.TypeOf(expected)
 
-	if e != nil {
-		t.Errorf("%s.Create() error sohuld be nil: %v", serviceName, e)
+	if typeOfExpected != typeOfRecieved {
+		t.Errorf("Resource %s should be %s", typeOfRecieved.String(), typeOfExpected.String())
 	}
 
-	if r == nil {
-		t.Errorf("%s.Create() resource: %v should not be nil", serviceName, r)
-	}
-
-	if response := reflect.TypeOf(r); response != resourceType {
-		t.Errorf("%s.Create() resource %s should be %s",
-			serviceName, response.String(), resourceType.String())
-	}
 }
 
-func testGet(t *testing.T, s *BaseService) {
-	resourceType := reflect.TypeOf(s.resourceList)
-	serviceName := strings.Join([]string{resourceType.String(), "Service"}, "")
-	r, _, e := s.Get()
-
-	if e != nil {
-		t.Errorf("%s.Get() error should be nil: %v", serviceName, e)
+func checkBody(t *testing.T, body io.ReadCloser) {
+	b := make([]byte, 0)
+	if _, e := body.Read(b); e != nil && e != io.EOF {
+		log.Fatalf("failed to read response body: %v", e)
 	}
+	defer body.Close()
 
-	if r == nil {
-		t.Errorf("%s.Get() resources: %v should not be nil", serviceName, r)
-	}
-
-	if response := reflect.TypeOf(r); response != resourceType {
-		t.Errorf("%s.Get() resource %s should be %s",
-			serviceName, response.String(), resourceType.String())
-	}
-}
-
-func testDelete(t *testing.T, s *BaseService, data string) {
-	serviceName := strings.Join([]string{reflect.TypeOf(s.resource).String(), "Service"}, "")
-	_, e := s.Delete(data)
-
-	if e != nil {
-		t.Errorf("%s.Delete() error should be nil: %v", serviceName, e)
-	}
-}
-
-func testGetByUUID(t *testing.T, s *BaseService, data string) {
-	resourceType := reflect.TypeOf(s.resource)
-	serviceName := strings.Join([]string{resourceType.String(), "Service"}, "")
-	r, _, e := s.GetByUUID(data)
-
-	if e != nil {
-		t.Errorf("%s.GetByUUID() error should be nil: %v", serviceName, e)
-	}
-
-	if r == nil {
-		t.Errorf("%s.GetByUUDI() resource: %v should not nil", serviceName, r)
-	}
-
-	if response := reflect.TypeOf(r); response != resourceType {
-		t.Errorf("%s.GetByUUID() resource %s should be %s",
-			serviceName, response.String(), resourceType.String())
+	if len(b) != 0 {
+		t.Errorf("Body should be empty was: %d", len(b))
 	}
 }
 
@@ -121,7 +78,7 @@ var testIpRetentionContainer = &IpRetentionContainerCreateParams{
 	UUID: "irc-test",
 }
 
-var testLeasePoilcy = &LeasePolicyCreateParams{
+var testLeasePolicy = &LeasePolicyCreateParams{
 	UUID: "lp-test",
 }
 
