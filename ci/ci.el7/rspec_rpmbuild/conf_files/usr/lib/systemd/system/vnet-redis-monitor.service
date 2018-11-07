@@ -1,0 +1,13 @@
+[Unit]
+Description=OpenVNet Redis monitor process
+After=network.target
+
+[Service]
+EnvironmentFile=/etc/sysconfig/openvnet
+User=vnet-redis-monitor
+SyslogIdentifier=vnet-redis-monitor
+WorkingDirectory=/opt/axsh/openvnet/vnet
+ExecStart=/bin/bash -c "/usr/bin/scl enable ${SCL_RUBY} -- bundle exec ./bin/redis-monitor >> ${LOG_DIRECTORY}/redis-monitor.log 2>&1"
+
+[Install]
+WantedBy=multi-user.target

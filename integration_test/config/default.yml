@@ -17,6 +17,7 @@ ssh_options:
 nodes:
   webapi: [vnmgr]
   vnmgr: [vnmgr]
+  redis_monitor: [vnmgr]
   vna: [vna1, vna2, vna3]
 
 webapi:
