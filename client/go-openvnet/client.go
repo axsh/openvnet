@@ -36,7 +36,6 @@ type Client struct {
 	NetworkServices      *NetworkServicesService
 	Route                *RouteService
 	RouteLink            *RouteLinkService
-	SecurityGroup        *SecurityGroupService
 	Segment              *SegmentService
 	Topology             *TopologyService
 	Translation          *TranslationService
@@ -93,7 +92,6 @@ func NewClient(url *url.URL, httpClient *http.Client) *Client {
 	c.RouteLink = NewRouteLinkService(c)
 	c.Route = NewRouteService(c)
 	c.Segment = NewSegmentService(c)
-	c.SecurityGroup = NewSecurityGroupService(c)
 	c.Topology = NewTopologyService(c)
 	c.Translation = NewTranslationService(c)
 	return c

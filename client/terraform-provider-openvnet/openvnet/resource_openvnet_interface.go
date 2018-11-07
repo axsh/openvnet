@@ -157,15 +157,3 @@ func openVNetInterfaceDelete(d *schema.ResourceData, m interface{}) error {
 
 	return err
 }
-
-func createSecurityGroupRelation(c *openvnet.Client, interfaceUUID string, theMap map[string]interface{}) error {
-
-	sgroup_params := &openvnet.InterfaceCreateSecurityGroup{
-		SGUUID: theMap["security_group_id"].(string),
-		UUID:   interfaceUUID,
-	}
-
-	c.Interface.CreateSecurityGroupRelation(sgroup_params)
-
-	return nil
-}
