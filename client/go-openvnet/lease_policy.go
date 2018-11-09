@@ -27,14 +27,20 @@ type LeasePolicyCreateParams struct {
 }
 
 func NewLeasePolicyService(client *Client) *LeasePolicyService {
-	return &LeasePolicyService{
+	s := &LeasePolicyService{
 		BaseService: &BaseService{
-			client:       client,
-			namespace:    LeasePolicyNamespace,
-			resource:     &LeasePolicy{},
-			resourceList: &LeasePolicyList{},
+			client:           client,
+			namespace:        LeasePolicyNamespace,
+			resource:         &LeasePolicy{},
+			resourceList:     &LeasePolicyList{},
+			relationServices: make(map[string]*RelationService),
 		},
 	}
+	s.NewRelationService(&IpLeaseContainer{}, &IpLeaseContainerList{}, "ip_lease_containers")
+	s.NewRelationService(&IpRetentionContainer{}, &IpRetentionContainerList{}, "ip_retention_containers")
+	s.NewRelationService(&Network{}, &NetworkList{}, "networks")
+	s.NewRelationService(&Interface{}, &InterfaceList{}, "interfaces")
+	return s
 }
 
 func (s *LeasePolicyService) Create(params *LeasePolicyCreateParams) (*LeasePolicy, *http.Response, error) {
@@ -64,6 +70,10 @@ type LeasePolicyRelation struct {
 type LeasePolicyRelationCreateParams struct {
 	IpRangeGroupUUID string `url:"ip_range_group_uuid"`
 }
+
+//
+// Deprecated, should use CreateRelation(), DeleteRelation(), GetRelations()
+//
 
 func (s *LeasePolicyService) CreateLeasePolicyRelation(rel *Relation, params *LeasePolicyRelationCreateParams) (*LeasePolicyRelation, *http.Response, error) {
 	lpr := new(LeasePolicyRelation)

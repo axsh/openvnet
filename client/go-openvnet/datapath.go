@@ -31,14 +31,19 @@ type DatapathCreateParams struct {
 }
 
 func NewDatapathService(client *Client) *DatapathService {
-	return &DatapathService{
+	s := &DatapathService{
 		BaseService: &BaseService{
-			client:       client,
-			namespace:    DatapathNamespace,
-			resource:     &Datapath{},
-			resourceList: &DatapathList{},
+			client:           client,
+			namespace:        DatapathNamespace,
+			resource:         &Datapath{},
+			resourceList:     &DatapathList{},
+			relationServices: make(map[string]*RelationService),
 		},
 	}
+	s.NewRelationService(&DatapathRelation{}, &NetworkList{}, "networks")
+	s.NewRelationService(&DatapathRelation{}, &SegmentList{}, "segments")
+	s.NewRelationService(&DatapathRelation{}, &RouteLinkList{}, "route_links")
+	return s
 }
 
 func (s *DatapathService) Create(params *DatapathCreateParams) (*Datapath, *http.Response, error) {
@@ -61,18 +66,15 @@ func (s *DatapathService) GetByUUID(id string) (*Datapath, *http.Response, error
 ///
 
 type DatapathRelation struct {
-	Relation *Relation
-	Body     struct {
-		ItemBase
-		DPID          int    `json:"datapath_id"`
-		NetworkID     int    `json:"network_id,omitempty"`
-		SegmentID     int    `json:"segment_id,omitempty"`
-		RouteLinkID   int    `json:"route_link_id,omitempty"`
-		InterfaceID   int    `json:"interface_id"`
-		MacAddresssID int    `json:"mac_address_id"`
-		IpLeaseID     int    `json:"ip_lease_id"`
-		MacAddress    string `json:"mac_address"`
-	}
+	ItemBase
+	DPID          int    `json:"datapath_id"`
+	NetworkID     int    `json:"network_id,omitempty"`
+	SegmentID     int    `json:"segment_id,omitempty"`
+	RouteLinkID   int    `json:"route_link_id,omitempty"`
+	InterfaceID   int    `json:"interface_id"`
+	MacAddresssID int    `json:"mac_address_id"`
+	IpLeaseID     int    `json:"ip_lease_id"`
+	MacAddress    string `json:"mac_address"`
 }
 
 type DatapathRelationCreateParams struct {
@@ -80,10 +82,13 @@ type DatapathRelationCreateParams struct {
 	MacAddress    string `url:"mac_address,omitempty"`
 }
 
+//
+// Deprecated, should use CreateRelation(), DeleteRelation(), GetRelations()
+//
+
 func (s *DatapathService) CreateDatapathRelation(rel *Relation, params *DatapathRelationCreateParams) (*DatapathRelation, *http.Response, error) {
 	dpr := new(DatapathRelation)
-	dpr.Relation = rel
-	resp, err := s.client.post(DatapathNamespace+"/"+rel.BaseID+"/"+rel.Type+"/"+rel.RelationTypeUUID, &dpr.Body, params)
+	resp, err := s.client.post(DatapathNamespace+"/"+rel.BaseID+"/"+rel.Type+"/"+rel.RelationTypeUUID, &dpr, params)
 	return dpr, resp, err
 }
 

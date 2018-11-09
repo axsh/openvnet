@@ -45,14 +45,21 @@ type TopologyCreateParams struct {
 }
 
 func NewTopologyService(client *Client) *TopologyService {
-	return &TopologyService{
+	s := &TopologyService{
 		BaseService: &BaseService{
-			client:       client,
-			namespace:    TopologyNamespace,
-			resource:     &Topology{},
-			resourceList: &TopologyList{},
+			client:           client,
+			namespace:        TopologyNamespace,
+			resource:         &Topology{},
+			resourceList:     &TopologyList{},
+			relationServices: make(map[string]*RelationService),
 		},
 	}
+	s.NewRelationService(&Network{}, &NetworkList{}, "networks")
+	s.NewRelationService(&Segment{}, &SegmentList{}, "segments")
+	s.NewRelationService(&Network{}, &RouteLinkList{}, "route_links")
+	s.NewRelationService(&Datapath{}, &DatapathList{}, "datapaths")
+	s.NewRelationService(nil, &TopologyLayerList{}, "underlays")
+	return s
 }
 
 func (s *TopologyService) Create(params *TopologyCreateParams) (*Topology, *http.Response, error) {
@@ -87,6 +94,10 @@ type TopologyRelation struct {
 type TopologyDatapathParams struct {
 	InterfaceUUID string `url:"interface_uuid"`
 }
+
+//
+// Deprecated, should use CreateRelation(), DeleteRelation(), GetRelations()
+//
 
 func (s *TopologyService) CreateTopologyRelation(rel *TopologyRelation, params interface{}) (*TopologyRelation, *http.Response, error) {
 	tpr := rel
