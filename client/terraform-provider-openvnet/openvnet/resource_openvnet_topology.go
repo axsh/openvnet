@@ -1,9 +1,19 @@
 package openvnet
 
 import (
+	"fmt"
+
 	"github.com/axsh/openvnet/client/go-openvnet"
 	"github.com/hashicorp/terraform/helper/schema"
 )
+
+var topoRelations = []string{
+	"underlays",
+	"segments",
+	"networks",
+	"route_links",
+	"datapaths",
+}
 
 func OpenVNetTopology() *schema.Resource {
 	return &schema.Resource{
@@ -121,33 +131,20 @@ func openVNetTopologyCreate(d *schema.ResourceData, m interface{}) error {
 	tp, _, _ := client.Topology.Create(params)
 	d.SetId(tp.UUID)
 
-	createRelation := func(relationType string) {
-
-		var extraParams interface{}
-		if r := d.Get(relationType[:len(relationType)-1]); r != nil {
-			for _, relationTypeMap := range r.([]interface{}) {
-				relationMap := relationTypeMap.(map[string]interface{})
-
-				params := &openvnet.TopologyRelation{
-					Type:             relationType,
-					TopologyUUID:     d.Id(),
-					RelationTypeUUID: relationMap["uuid"].(string),
-				}
-
-				if relationType == "datapaths" {
-					extraParams = &openvnet.TopologyDatapathParams{InterfaceUUID: relationMap["interface_uuid"].(string)}
-				}
-
-				client.Topology.CreateTopologyRelation(params, extraParams)
+	for _, relation := range topoRelations {
+		_, err := parseRelation(d, relation, func(p map[string]interface{}) (interface{}, error) {
+			var ep interface{}
+			if relation == "datapaths" {
+				ep = &openvnet.TopologyDatapathParams{InterfaceUUID: p["interface_uuid"].(string)}
 			}
+			r, _, e := client.Topology.CreateRelation(relation, ep, d.Id(), p["uuid"].(string))
+			return r, e
+		})
+
+		if err != nil {
+			return fmt.Errorf("failed to create relation %s: %v", relation, err)
 		}
 	}
-
-	createRelation("networks")
-	createRelation("route_links")
-	createRelation("segments")
-	createRelation("underlays")
-	createRelation("datapaths")
 
 	return openVNetTopologyRead(d, m)
 }
@@ -169,29 +166,20 @@ func openVNetTopologyRead(d *schema.ResourceData, m interface{}) error {
 func openVNetTopologyDelete(d *schema.ResourceData, m interface{}) error {
 
 	client := m.(*openvnet.Client)
-	_, err := client.Topology.Delete(d.Id())
 
-	deleteRelation := func(relationType string) {
-		if r := d.Get(relationType[:len(relationType)-1]); r != nil {
-			for _, relationTypeMap := range r.([]interface{}) {
-				relationMap := relationTypeMap.(map[string]interface{})
+	for _, relation := range topoRelations {
+		_, err := parseRelation(d, relation, func(p map[string]interface{}) (interface{}, error) {
 
-				relation := &openvnet.TopologyRelation{
-					TopologyUUID:     d.Id(),
-					RelationTypeUUID: relationMap["uuid"].(string),
-					Type:             relationType,
-				}
+			_, err := client.Topology.DeleteRelation(relation, d.Id(), p["uuid"].(string))
+			return nil, err
+		})
 
-				client.Topology.DeleteTopologyRelation(relation)
-			}
+		if err != nil {
+			return fmt.Errorf("failed to create relation %s: %v", relation, err)
 		}
 	}
 
-	deleteRelation("networks")
-	deleteRelation("route_links")
-	deleteRelation("segments")
-	deleteRelation("underlays")
-	deleteRelation("datapaths")
+	_, err := client.Topology.Delete(d.Id())
 
 	return err
 }

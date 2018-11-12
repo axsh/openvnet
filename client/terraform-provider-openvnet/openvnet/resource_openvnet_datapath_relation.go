@@ -1,9 +1,17 @@
 package openvnet
 
 import (
+	"fmt"
+
 	"github.com/axsh/openvnet/client/go-openvnet"
 	"github.com/hashicorp/terraform/helper/schema"
 )
+
+var dpRelations = []string{
+	"networks",
+	"route_links",
+	"segments",
+}
 
 func OpenVNetDatapathRelation() *schema.Resource {
 	return &schema.Resource{
@@ -109,30 +117,19 @@ func openVNetDatapathRelationCreate(d *schema.ResourceData, m interface{}) error
 	d.SetId(d.Get("uuid").(string))
 	client := m.(*openvnet.Client)
 
-	createRelation := func(relationType string) {
-		if r := d.Get(relationType[:len(relationType)-1]); r != nil {
-			for _, relationTypeMap := range r.([]interface{}) {
-				relationMap := relationTypeMap.(map[string]interface{})
+	for _, relation := range dpRelations {
+		_, err := parseRelation(d, relation, func(p map[string]interface{}) (interface{}, error) {
+			r, _, e := client.Datapath.CreateRelation(relation, &openvnet.DatapathRelationCreateParams{
+				InterfaceUUID: p["interface_uuid"].(string),
+				MacAddress:    p["mac_address"].(string),
+			}, d.Id(), p["uuid"].(string))
+			return r, e
+		})
 
-				relation := &openvnet.Relation{
-					DatapathID:       d.Id(),
-					Type:             relationType,
-					RelationTypeUUID: relationMap["uuid"].(string),
-				}
-
-				relationParams := &openvnet.DatapathRelationCreateParams{
-					InterfaceUUID: relationMap["interface_uuid"].(string),
-					MacAddress:    relationMap["mac_address"].(string),
-				}
-
-				client.Datapath.CreateDatapathRelation(relation, relationParams)
-			}
+		if err != nil {
+			return fmt.Errorf("failed to create relation %s: %v", relation, err)
 		}
 	}
-
-	createRelation("networks")
-	createRelation("route_links")
-	createRelation("segments")
 
 	return nil
 }
@@ -145,25 +142,16 @@ func openVNetDatapathRelationDelete(d *schema.ResourceData, m interface{}) error
 
 	client := m.(*openvnet.Client)
 
-	deleteRelation := func(relationType string) {
-		if r := d.Get(relationType[:len(relationType)-1]); r != nil {
-			for _, relationTypeMap := range r.([]interface{}) {
-				relationMap := relationTypeMap.(map[string]interface{})
+	for _, relation := range dpRelations {
+		_, err := parseRelation(d, relation, func(p map[string]interface{}) (interface{}, error) {
+			_, err := client.Datapath.DeleteRelation(relation, d.Id(), p["uuid"].(string))
+			return nil, err
+		})
 
-				relation := &openvnet.Relation{
-					DatapathID:       d.Id(),
-					Type:             relationType,
-					RelationTypeUUID: relationMap["uuid"].(string),
-				}
-
-				client.Datapath.DeleteDatapathRelation(relation)
-			}
+		if err != nil {
+			return fmt.Errorf("failed to create relation %s: %v", relation, err)
 		}
 	}
-
-	deleteRelation("networks")
-	deleteRelation("route_links")
-	deleteRelation("segments")
 
 	return nil
 }
