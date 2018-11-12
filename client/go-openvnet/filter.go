@@ -75,14 +75,14 @@ type FilterStaticCreateParams struct {
 	Protocol   string `url:"protocol"`
 	SrcAddress string `url:"src_address,omitempty"`
 	DstAddress string `url:"dst_address,omitempty"`
-	SrcPort    string `url:"src_port,omitempty"`
-	DstPort    string `url:"dst_port,omitempty"`
+	SrcPort    int    `url:"src_port,omitempty"`
+	DstPort    int    `url:"dst_port,omitempty"`
 	Action     string `url:"action,omitempty"`
 }
 
 func (s *FilterService) CreateStatic(uuid string, params *FilterStaticCreateParams) (*FilterStatic, *http.Response, error) {
 	st := new(FilterStatic)
-	resp, err := s.client.post(FilterNamespace+"/"+uuid+"/static", st, params)
+	resp, err := s.client.post(FilterNamespace+"/"+uuid+"/static", &st, params)
 	return st, resp, err
 }
 

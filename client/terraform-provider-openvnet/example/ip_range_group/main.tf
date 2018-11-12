@@ -3,7 +3,7 @@ provider "openvnet" {
 }
 
 resource "openvnet_ip_range_group" "iprg_sample" {
-  uuid = "ipgr-demo"
+  uuid = "iprg-demo"
 
   ip_range {
     begin_ipv4_address = "10.0.0.1"
