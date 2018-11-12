@@ -61,7 +61,7 @@ func TestCreate(t *testing.T) {
 		t.Errorf("Create() error should be nil: %v", e)
 	}
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != 204 {
 		t.Errorf("Status code should be 200")
 	}
 
@@ -75,7 +75,7 @@ func TestGet(t *testing.T) {
 		t.Errorf("Get() error should be nil: %v", e)
 	}
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != 204 {
 		t.Errorf("Status code should be 200")
 	}
 }
@@ -87,7 +87,7 @@ func TestDelete(t *testing.T) {
 		t.Errorf("Delete() error should be nil: %v", e)
 	}
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != 204 {
 		t.Errorf("Status code should be 200")
 	}
 
@@ -101,7 +101,7 @@ func TestGetByUUID(t *testing.T) {
 		t.Errorf("GetByUUID() error should be nil: %v", e)
 	}
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != 204 {
 		t.Errorf("Status code should be 200")
 	}
 
@@ -116,7 +116,10 @@ func TestMain(m *testing.M) {
 	server := &httptest.Server{
 		Listener: l,
 		Config: &http.Server{
-			Handler: http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {}),
+			Handler: http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+				rw.Header().Set("Content-Type", "application/json")
+				rw.WriteHeader(204) // no-content
+			}),
 		},
 	}
 	server.Start()
