@@ -67,49 +67,17 @@ func (s *DatapathService) GetByUUID(id string) (*Datapath, *http.Response, error
 
 type DatapathRelation struct {
 	ItemBase
-	DPID          int    `json:"datapath_id"`
-	NetworkID     int    `json:"network_id,omitempty"`
-	SegmentID     int    `json:"segment_id,omitempty"`
-	RouteLinkID   int    `json:"route_link_id,omitempty"`
-	InterfaceID   int    `json:"interface_id"`
-	MacAddresssID int    `json:"mac_address_id"`
-	IpLeaseID     int    `json:"ip_lease_id"`
-	MacAddress    string `json:"mac_address"`
+	DPID          int `json:"datapath_id"`
+	NetworkID     int `json:"network_id,omitempty"`
+	SegmentID     int `json:"segment_id,omitempty"`
+	RouteLinkID   int `json:"route_link_id,omitempty"`
+	InterfaceID   int `json:"interface_id"`
+	MacAddresssID int `json:"mac_address_id"`
+	IpLeaseID     int `json:"ip_lease_id"`
+	MacAddress    int `json:"mac_address"`
 }
 
 type DatapathRelationCreateParams struct {
 	InterfaceUUID string `url:"interface_uuid"`
 	MacAddress    string `url:"mac_address,omitempty"`
-}
-
-//
-// Deprecated, should use CreateRelation(), DeleteRelation(), GetRelations()
-//
-
-func (s *DatapathService) CreateDatapathRelation(rel *Relation, params *DatapathRelationCreateParams) (*DatapathRelation, *http.Response, error) {
-	dpr := new(DatapathRelation)
-	resp, err := s.client.post(DatapathNamespace+"/"+rel.BaseID+"/"+rel.Type+"/"+rel.RelationTypeUUID, &dpr, params)
-	return dpr, resp, err
-}
-
-func (s *DatapathService) DeleteDatapathRelation(params *Relation) (*http.Response, error) {
-	return s.client.del(DatapathNamespace + "/" + params.BaseID + "/" + params.Type + "/" + params.RelationTypeUUID)
-}
-
-func (s *DatapathService) GetNetworkRelations(uuid string) (*NetworkList, *http.Response, error) {
-	list := new(NetworkList)
-	resp, err := s.client.get(DatapathNamespace+"/"+uuid+"/networks", list)
-	return list, resp, err
-}
-
-func (s *DatapathService) GetRouteLinkRelations(uuid string) (*RouteLinkList, *http.Response, error) {
-	list := new(RouteLinkList)
-	resp, err := s.client.get(DatapathNamespace+"/"+uuid+"/route_links", list)
-	return list, resp, err
-}
-
-func (s *DatapathService) GetSegmentRelations(uuid string) (*SegmentList, *http.Response, error) {
-	list := new(SegmentList)
-	resp, err := s.client.get(DatapathNamespace+"/"+uuid+"/segments", list)
-	return list, resp, err
 }

@@ -11,7 +11,6 @@ var testDatapath = &DatapathCreateParams{
 	NodeId:      "test",
 	DPID:        "0000aaaaaaaaaaaa",
 }
-
 var testDatapathRelation = &DatapathRelationCreateParams{
 	InterfaceUUID: testInterface.UUID,
 	MacAddress:    "00:00:10:10:10:10",
