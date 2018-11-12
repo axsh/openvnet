@@ -33,7 +33,7 @@ func Provider() terraform.ResourceProvider {
 			"openvnet_ip_lease_container":     OpenVNetIpLeaseContainer(),
 			"openvnet_ip_retention_container": OpenVNetIpRetentionContainer(),
 			"openvnet_lease_policy":           OpenVNetLeasePolicy(),
-			"openvnet_lease_policy_relation":  OpenVNetLeasePolicyRelation(),
+			"openvnet_filter":                 OpenVNetFilter(),
 		},
 
 		ConfigureFunc: providerConfigure,
