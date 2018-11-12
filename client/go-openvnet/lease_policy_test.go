@@ -34,7 +34,7 @@ func TestLeasePolicy(t *testing.T) {
 func TestLeasePolicyCreate(t *testing.T) {
 	r, _, e := lpService.Create(testLeasePolicy)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(LeasePolicy), r)
@@ -43,7 +43,7 @@ func TestLeasePolicyCreate(t *testing.T) {
 func TestLeasePolicyGet(t *testing.T) {
 	r, _, e := lpService.Get()
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(LeasePolicyList), r)
@@ -52,7 +52,7 @@ func TestLeasePolicyGet(t *testing.T) {
 func TestLeasePolicyGetByUUID(t *testing.T) {
 	r, _, e := lpService.GetByUUID(testLeasePolicy.UUID)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(LeasePolicy), r)
@@ -61,7 +61,7 @@ func TestLeasePolicyGetByUUID(t *testing.T) {
 func TestLeasePolicyDelete(t *testing.T) {
 	_, e := lpService.Delete(testLeasePolicy.UUID)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 }
 
@@ -79,7 +79,7 @@ func TestLeasePolicyCreateRelation(t *testing.T) {
 		}
 
 		if e != nil {
-			t.Errorf("Error should be nil")
+			t.Errorf("Error should be nil: %v", e)
 		}
 
 		checkType(t, s.resource, r)
@@ -90,7 +90,7 @@ func TestLeasePolicyDeleteRelation(t *testing.T) {
 	for k := range lpService.relationServices {
 		_, e := lpService.DeleteRelation(k, testLeasePolicy.UUID, "test_id")
 		if e != nil {
-			t.Errorf("Error should be nil")
+			t.Errorf("Error should be nil: %v", e)
 		}
 	}
 }
@@ -99,7 +99,7 @@ func TestLeasePolicyGetRelation(t *testing.T) {
 	for k, s := range lpService.relationServices {
 		r, _, e := lpService.GetRelations(k, testLeasePolicy.UUID)
 		if e != nil {
-			t.Errorf("Error should be nil")
+			t.Errorf("Error should be nil: %v", e)
 		}
 
 		checkType(t, s.resourceList, r)

@@ -21,7 +21,7 @@ func TestNetwork(t *testing.T) {
 func TestNetworkCreate(t *testing.T) {
 	r, _, e := nwService.Create(testNetwork)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(Network), r)
@@ -30,7 +30,7 @@ func TestNetworkCreate(t *testing.T) {
 func TestNetworkGet(t *testing.T) {
 	r, _, e := nwService.Get()
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(NetworkList), r)
@@ -39,7 +39,7 @@ func TestNetworkGet(t *testing.T) {
 func TestNetworkGetByUUID(t *testing.T) {
 	r, _, e := nwService.GetByUUID(testNetwork.UUID)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(Network), r)
@@ -48,6 +48,6 @@ func TestNetworkGetByUUID(t *testing.T) {
 func TestNetworkDelete(t *testing.T) {
 	_, e := nwService.Delete(testNetwork.UUID)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 }

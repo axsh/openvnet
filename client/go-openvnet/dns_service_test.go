@@ -19,7 +19,7 @@ func TestDnsServices(t *testing.T) {
 func TestDnsServicesCreate(t *testing.T) {
 	r, _, e := dnssService.Create(testDnsServices)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(DnsServices), r)
@@ -28,7 +28,7 @@ func TestDnsServicesCreate(t *testing.T) {
 func TestDnsServicesGet(t *testing.T) {
 	r, _, e := dnssService.Get()
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(DnsServicesList), r)
@@ -37,7 +37,7 @@ func TestDnsServicesGet(t *testing.T) {
 func TestDnsServicesGetByUUID(t *testing.T) {
 	r, _, e := dnssService.GetByUUID(testDnsServices.UUID)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(DnsServices), r)
@@ -46,6 +46,6 @@ func TestDnsServicesGetByUUID(t *testing.T) {
 func TestDnsServicesDelete(t *testing.T) {
 	_, e := dnssService.Delete(testDnsServices.UUID)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 }

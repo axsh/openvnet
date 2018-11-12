@@ -39,7 +39,7 @@ func TestDatapath(t *testing.T) {
 func TestDatapathCreate(t *testing.T) {
 	r, _, e := dpService.Create(testDatapath)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(Datapath), r)
@@ -48,7 +48,7 @@ func TestDatapathCreate(t *testing.T) {
 func TestDatapathGet(t *testing.T) {
 	r, _, e := dpService.Get()
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(DatapathList), r)
@@ -57,7 +57,7 @@ func TestDatapathGet(t *testing.T) {
 func TestDatapathGetByUUID(t *testing.T) {
 	r, _, e := dpService.GetByUUID(testDatapath.UUID)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(Datapath), r)
@@ -66,7 +66,7 @@ func TestDatapathGetByUUID(t *testing.T) {
 func TestDatapathDelete(t *testing.T) {
 	_, e := dpService.Delete(testDatapath.UUID)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 }
 
@@ -74,7 +74,7 @@ func TestDatapathCreateRelation(t *testing.T) {
 	for k, s := range dpService.relationServices {
 		r, _, e := dpService.CreateRelation(k, testDatapathRelation, testDatapath.UUID, "test_id")
 		if e != nil {
-			t.Errorf("Error should be nil")
+			t.Errorf("Error should be nil: %v", e)
 		}
 
 		checkType(t, s.resource, r)
@@ -85,7 +85,7 @@ func TestDatapathDeleteRelation(t *testing.T) {
 	for k := range dpService.relationServices {
 		_, e := dpService.DeleteRelation(k, testDatapath.UUID, "test_id")
 		if e != nil {
-			t.Errorf("Error should be nil")
+			t.Errorf("Error should be nil: %v", e)
 		}
 	}
 }
@@ -94,7 +94,7 @@ func TestDatapathGetRelation(t *testing.T) {
 	for k, s := range dpService.relationServices {
 		r, _, e := dpService.GetRelations(k, testDatapath.UUID)
 		if e != nil {
-			t.Errorf("Error should be nil")
+			t.Errorf("Error should be nil: %v", e)
 		}
 
 		checkType(t, s.resourceList, r)

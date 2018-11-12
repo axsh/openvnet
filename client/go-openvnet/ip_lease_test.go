@@ -22,7 +22,7 @@ func TestIpLease(t *testing.T) {
 func TestIpLeaseCreate(t *testing.T) {
 	r, _, e := ilService.Create(testIpLease)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(IpLease), r)
@@ -31,7 +31,7 @@ func TestIpLeaseCreate(t *testing.T) {
 func TestIpLeaseGet(t *testing.T) {
 	r, _, e := ilService.Get()
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(IpLeaseList), r)
@@ -40,7 +40,7 @@ func TestIpLeaseGet(t *testing.T) {
 func TestIpLeaseGetByUUID(t *testing.T) {
 	r, _, e := ilService.GetByUUID(testIpLease.UUID)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(IpLease), r)
@@ -49,6 +49,6 @@ func TestIpLeaseGetByUUID(t *testing.T) {
 func TestIpLeaseDelete(t *testing.T) {
 	_, e := ilService.Delete(testIpLease.UUID)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 }

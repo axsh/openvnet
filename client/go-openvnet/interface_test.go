@@ -19,7 +19,7 @@ func TestInterface(t *testing.T) {
 func TestInterfaceCreate(t *testing.T) {
 	r, _, e := ifService.Create(testInterface)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(Interface), r)
@@ -28,7 +28,7 @@ func TestInterfaceCreate(t *testing.T) {
 func TestInterfaceGet(t *testing.T) {
 	r, _, e := ifService.Get()
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(InterfaceList), r)
@@ -37,7 +37,7 @@ func TestInterfaceGet(t *testing.T) {
 func TestInterfaceGetByUUID(t *testing.T) {
 	r, _, e := ifService.GetByUUID(testInterface.UUID)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(Interface), r)
@@ -46,6 +46,6 @@ func TestInterfaceGetByUUID(t *testing.T) {
 func TestInterfaceDelete(t *testing.T) {
 	_, e := ifService.Delete(testInterface.UUID)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 }

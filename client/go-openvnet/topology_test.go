@@ -41,7 +41,7 @@ func TestTopology(t *testing.T) {
 func TestTopologyCreate(t *testing.T) {
 	r, _, e := topoService.Create(testTopology)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(Topology), r)
@@ -50,7 +50,7 @@ func TestTopologyCreate(t *testing.T) {
 func TestTopologyGet(t *testing.T) {
 	r, _, e := topoService.Get()
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(TopologyList), r)
@@ -59,7 +59,7 @@ func TestTopologyGet(t *testing.T) {
 func TestTopologyGetByUUID(t *testing.T) {
 	r, _, e := topoService.GetByUUID(testTopology.UUID)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(Topology), r)
@@ -68,7 +68,7 @@ func TestTopologyGetByUUID(t *testing.T) {
 func TestTopologyDelete(t *testing.T) {
 	_, e := topoService.Delete(testTopology.UUID)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 }
 
@@ -76,7 +76,7 @@ func TestTopologyCreateRelation(t *testing.T) {
 	for k, s := range topoService.relationServices {
 		r, _, e := topoService.CreateRelation(k, nil, testTopology.UUID, "test_id")
 		if e != nil {
-			t.Errorf("Error should be nil")
+			t.Errorf("Error should be nil: %v", e)
 		}
 
 		checkType(t, s.resource, r)
@@ -88,7 +88,7 @@ func TestTopologyDeleteRelation(t *testing.T) {
 	for k := range topoService.relationServices {
 		_, e := topoService.DeleteRelation(k, testTopology.UUID, "test_id")
 		if e != nil {
-			t.Errorf("Error should be nil")
+			t.Errorf("Error should be nil: %v", e)
 		}
 	}
 }
@@ -97,7 +97,7 @@ func TestTopologyGetRelation(t *testing.T) {
 	for k, s := range topoService.relationServices {
 		r, _, e := topoService.GetRelations(k, testTopology.UUID)
 		if e != nil {
-			t.Errorf("Error should be nil")
+			t.Errorf("Error should be nil: %v", e)
 		}
 
 		checkType(t, s.resourceList, r)

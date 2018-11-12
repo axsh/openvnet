@@ -18,7 +18,7 @@ func TestMacRagneGroup(t *testing.T) {
 func TestMacRangeGroupCreate(t *testing.T) {
 	r, _, e := mrgService.Create(testMacRangeGroup)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(MacRangeGroup), r)
@@ -27,7 +27,7 @@ func TestMacRangeGroupCreate(t *testing.T) {
 func TestMacRangeGroupGet(t *testing.T) {
 	r, _, e := mrgService.Get()
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(MacRangeGroupList), r)
@@ -36,7 +36,7 @@ func TestMacRangeGroupGet(t *testing.T) {
 func TestMacRangeGroupGetByUUID(t *testing.T) {
 	r, _, e := mrgService.GetByUUID(testMacRangeGroup.UUID)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(MacRangeGroup), r)
@@ -45,6 +45,6 @@ func TestMacRangeGroupGetByUUID(t *testing.T) {
 func TestMacRangeGroupDelete(t *testing.T) {
 	_, e := mrgService.Delete(testMacRangeGroup.UUID)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 }

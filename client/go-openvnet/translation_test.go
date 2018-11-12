@@ -20,7 +20,7 @@ func TestTranslation(t *testing.T) {
 func TestTranslationCreate(t *testing.T) {
 	r, _, e := trService.Create(testTranslation)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(Translation), r)
@@ -29,7 +29,7 @@ func TestTranslationCreate(t *testing.T) {
 func TestTranslationGet(t *testing.T) {
 	r, _, e := trService.Get()
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(TranslationList), r)
@@ -38,7 +38,7 @@ func TestTranslationGet(t *testing.T) {
 func TestTranslationGetByUUID(t *testing.T) {
 	r, _, e := trService.GetByUUID(testTranslation.UUID)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(Translation), r)
@@ -47,6 +47,6 @@ func TestTranslationGetByUUID(t *testing.T) {
 func TestTranslationDelete(t *testing.T) {
 	_, e := trService.Delete(testTranslation.UUID)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 }

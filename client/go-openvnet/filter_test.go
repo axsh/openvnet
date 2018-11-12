@@ -22,7 +22,7 @@ func TestFilter(t *testing.T) {
 func TestFilterCreate(t *testing.T) {
 	r, _, e := filService.Create(testFilter)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(Filter), r)
@@ -31,7 +31,7 @@ func TestFilterCreate(t *testing.T) {
 func TestFilterGet(t *testing.T) {
 	r, _, e := filService.Get()
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(FilterList), r)
@@ -40,7 +40,7 @@ func TestFilterGet(t *testing.T) {
 func TestFilterGetByUUID(t *testing.T) {
 	r, _, e := filService.GetByUUID(testFilter.UUID)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(Filter), r)
@@ -49,6 +49,6 @@ func TestFilterGetByUUID(t *testing.T) {
 func TestFilterDelete(t *testing.T) {
 	_, e := filService.Delete(testFilter.UUID)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 }

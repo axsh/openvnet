@@ -18,7 +18,7 @@ func TestIpRetentionContainer(t *testing.T) {
 func TestIpRetentionContainerCreate(t *testing.T) {
 	r, _, e := ircService.Create(testIpRetentionContainer)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(IpRetentionContainer), r)
@@ -27,7 +27,7 @@ func TestIpRetentionContainerCreate(t *testing.T) {
 func TestIpRetentionContainerGet(t *testing.T) {
 	r, _, e := ircService.Get()
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(IpRetentionContainerList), r)
@@ -36,7 +36,7 @@ func TestIpRetentionContainerGet(t *testing.T) {
 func TestIpRetentionContainerGetByUUID(t *testing.T) {
 	r, _, e := ircService.GetByUUID(testIpRetentionContainer.UUID)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(IpRetentionContainer), r)
@@ -45,6 +45,6 @@ func TestIpRetentionContainerGetByUUID(t *testing.T) {
 func TestIpRetentionContainerDelete(t *testing.T) {
 	_, e := ircService.Delete(testIpRetentionContainer.UUID)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 }

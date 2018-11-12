@@ -18,7 +18,7 @@ func TestIpLeaseContainer(t *testing.T) {
 func TestIpLeaseContainerCreate(t *testing.T) {
 	r, _, e := ilcService.Create(testIpLeaseContainer)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(IpLeaseContainer), r)
@@ -27,7 +27,7 @@ func TestIpLeaseContainerCreate(t *testing.T) {
 func TestIpLeaseContainerGet(t *testing.T) {
 	r, _, e := ilcService.Get()
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(IpLeaseContainerList), r)
@@ -36,7 +36,7 @@ func TestIpLeaseContainerGet(t *testing.T) {
 func TestIpLeaseContainerGetByUUID(t *testing.T) {
 	r, _, e := ilcService.GetByUUID(testIpLeaseContainer.UUID)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(IpLeaseContainer), r)
@@ -45,6 +45,6 @@ func TestIpLeaseContainerGetByUUID(t *testing.T) {
 func TestIpLeaseContainerDelete(t *testing.T) {
 	_, e := ilcService.Delete(testIpLeaseContainer.UUID)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 }

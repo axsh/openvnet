@@ -19,7 +19,7 @@ func TestSegment(t *testing.T) {
 func TestSegmentCreate(t *testing.T) {
 	r, _, e := segService.Create(testSegment)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(Segment), r)
@@ -28,7 +28,7 @@ func TestSegmentCreate(t *testing.T) {
 func TestSegmentGet(t *testing.T) {
 	r, _, e := segService.Get()
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(SegmentList), r)
@@ -37,7 +37,7 @@ func TestSegmentGet(t *testing.T) {
 func TestSegmentGetByUUID(t *testing.T) {
 	r, _, e := segService.GetByUUID(testSegment.UUID)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(Segment), r)
@@ -46,6 +46,6 @@ func TestSegmentGetByUUID(t *testing.T) {
 func TestSegmentDelete(t *testing.T) {
 	_, e := segService.Delete(testSegment.UUID)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 }

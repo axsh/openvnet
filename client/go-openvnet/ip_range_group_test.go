@@ -18,7 +18,7 @@ func TestIpRangeGroup(t *testing.T) {
 func TestIpRangeGroupCreate(t *testing.T) {
 	r, _, e := iprgService.Create(testIpRangeGroup)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(IpRangeGroup), r)
@@ -27,7 +27,7 @@ func TestIpRangeGroupCreate(t *testing.T) {
 func TestIpRangeGroupGet(t *testing.T) {
 	r, _, e := iprgService.Get()
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(IpRangeGroupList), r)
@@ -36,7 +36,7 @@ func TestIpRangeGroupGet(t *testing.T) {
 func TestIpRangeGroupGetByUUID(t *testing.T) {
 	r, _, e := iprgService.GetByUUID(testIpRangeGroup.UUID)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(IpRangeGroup), r)
@@ -45,6 +45,6 @@ func TestIpRangeGroupGetByUUID(t *testing.T) {
 func TestIpRangeGroupDelete(t *testing.T) {
 	_, e := iprgService.Delete(testIpRangeGroup.UUID)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 }

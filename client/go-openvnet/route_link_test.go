@@ -18,7 +18,7 @@ func TestRouteLink(t *testing.T) {
 func TestRouteLinkCreate(t *testing.T) {
 	r, _, e := rlService.Create(testRouteLink)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(RouteLink), r)
@@ -27,7 +27,7 @@ func TestRouteLinkCreate(t *testing.T) {
 func TestRouteLinkGet(t *testing.T) {
 	r, _, e := rlService.Get()
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(RouteLinkList), r)
@@ -36,7 +36,7 @@ func TestRouteLinkGet(t *testing.T) {
 func TestRouteLinkGetByUUID(t *testing.T) {
 	r, _, e := rlService.GetByUUID(testRouteLink.UUID)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 
 	checkType(t, new(RouteLink), r)
@@ -45,6 +45,6 @@ func TestRouteLinkGetByUUID(t *testing.T) {
 func TestRouteLinkDelete(t *testing.T) {
 	_, e := rlService.Delete(testRouteLink.UUID)
 	if e != nil {
-		t.Errorf("Error should be nil")
+		t.Errorf("Error should be nil: %v", e)
 	}
 }
