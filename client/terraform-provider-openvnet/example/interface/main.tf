@@ -5,7 +5,7 @@ provider "openvnet" {
 resource "openvnet_interface" "if_sample" {
 	 display_name = "interface with all possible parameters"
 	 uuid = "if-demo"
-	 mode = "virtual"
+	 mode = "vif"
 	 ipv4_address = "10.0.0.1"
 	 mac_address = "00:00:00:00:00:01"
 	 network_uuid = "nw-demo"
