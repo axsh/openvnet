@@ -76,8 +76,8 @@ func openVNetIpRangeGroupCreate(d *schema.ResourceData, m interface{}) error {
 
 	d.SetId(ipRangeGroup.UUID)
 
-	if ipr := d.Get("ip_range"); mr != nil {
-		for _, ipRanges := range mr.([]interface{}) {
+	if ipr := d.Get("ip_range"); ipr != nil {
+		for _, ipRanges := range ipr.([]interface{}) {
 			ipRangeMap := ipRanges.(map[string]interface{})
 
 			ipRange := &openvnet.IpRangeCreateParams{
@@ -116,8 +116,8 @@ func openVNetIpRangeGroupRead(d *schema.ResourceData, m interface{}) error {
 func openVNetIpRangeGroupDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*openvnet.Client)
 
-	if ipr := d.Get("ip_range"); mr != nil {
-		for _, ipRanges := range mr.([]interface{}) {
+	if ipr := d.Get("ip_range"); ipr != nil {
+		for _, ipRanges := range ipr.([]interface{}) {
 			ipRange := ipRanges.(map[string]interface{})
 			client.IpRangeGroup.DeleteRange(d.Id(), ipRange["uuid"].(string))
 		}

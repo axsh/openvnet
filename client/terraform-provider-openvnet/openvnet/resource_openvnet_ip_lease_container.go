@@ -13,7 +13,7 @@ func OpenVNetIpLeaseContainer() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 
-			"ip_lease_container_uuid": &schema.Schema{
+			"uuid": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
@@ -27,8 +27,8 @@ func openVNetIpLeaseContainerCreate(d *schema.ResourceData, m interface{}) error
 
 	client := m.(*openvnet.Client)
 
-	params := &openvnet.IpLeaseCreateParams{
-		UUID: d.Get("ip_lease_container_uuid").(string),
+	params := &openvnet.IpLeaseContainerCreateParams{
+		UUID: d.Get("uuid").(string),
 	}
 
 	ipLeaseContainer, _, err := client.IpLeaseContainer.Create(params)

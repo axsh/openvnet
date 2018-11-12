@@ -37,23 +37,23 @@ func OpenVNetIpRetentionContainer() *schema.Resource {
 	}
 }
 
-func openVNetIpRetentionCreate(d *schema.ResourceData, m interface{}) error {
+func openVNetIpRetentionContainerCreate(d *schema.ResourceData, m interface{}) error {
 
 	client := m.(*openvnet.Client)
 
-	params := &openvnet.IpRetentionCreateParams{
+	params := &openvnet.IpRetentionContainerCreateParams{
 		UUID:      d.Get("uuid").(string),
 		LeaseTime: d.Get("lease_time").(int),
 		GraceTime: d.Get("grace_time").(int),
 	}
 
 	ipRetentionContainer, _, err := client.IpRetentionContainer.Create(params)
-	d.SetId(ipRetention.UUID)
+	d.SetId(ipRetentionContainer.UUID)
 
 	return err
 }
 
-func openVNetIpRetentionRead(d *schema.ResourceData, m interface{}) error {
+func openVNetIpRetentionContainerRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*openvnet.Client)
 	ipRetentionContainer, _, err := client.IpRetentionContainer.GetByUUID(d.Id())
 
@@ -63,9 +63,9 @@ func openVNetIpRetentionRead(d *schema.ResourceData, m interface{}) error {
 	return err
 }
 
-func openVNetIpRetentionDelete(d *schema.ResourceData, m interface{}) error {
+func openVNetIpRetentionContainerDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*openvnet.Client)
-	_, err := client.IpRetention.Delete(d.Id())
+	_, err := client.IpRetentionContainer.Delete(d.Id())
 
 	return err
 }
