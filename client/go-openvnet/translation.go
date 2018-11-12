@@ -1,6 +1,9 @@
 package openvnet
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+)
 
 type Translation struct {
 	ItemBase
@@ -85,4 +88,8 @@ func (s *TranslationService) DeleteRelation(uuid string, param *TranslationStati
 	ovnError := new(OpenVNetError)
 	resp, err := s.client.sling.New().Delete(FilterNamespace+"/"+uuid+"/static_address").BodyForm(param).Receive(nil, ovnError)
 	return checkError(ovnError, resp, err)
+}
+
+func (s *TranslationService) GetRelations(uuid string) (*TranslationStaticAddressList, *http.Response, error) {
+	return nil, nil, fmt.Errorf("not implemented in vnet api")
 }
