@@ -31,7 +31,6 @@ type Relation struct {
 type BaseService struct {
 	client *Client
 
-	relations        []string
 	namespace        string
 	resource         interface{}
 	resourceList     interface{}
