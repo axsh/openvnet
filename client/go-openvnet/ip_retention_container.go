@@ -20,7 +20,7 @@ type IpRetentionContainerService struct {
 }
 
 type IpRetentionContainerCreateParams struct {
-	UUID      string `url:"uuid"`
+	UUID      string `url:"uuid,omitempty"`
 	LeaseTime int    `url:"lease_time,omitempty"`
 	GraceTime int    `url:"grace_time,omitempty"`
 }

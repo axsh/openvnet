@@ -54,11 +54,11 @@ func NewTopologyService(client *Client) *TopologyService {
 			relationServices: make(map[string]*RelationService),
 		},
 	}
-	s.NewRelationService(&Network{}, &NetworkList{}, "networks")
-	s.NewRelationService(&Segment{}, &SegmentList{}, "segments")
-	s.NewRelationService(&Network{}, &RouteLinkList{}, "route_links")
-	s.NewRelationService(&Datapath{}, &DatapathList{}, "datapaths")
-	s.NewRelationService(nil, &TopologyLayerList{}, "underlays")
+	s.NewRelationService(&TopologyRelation{}, &NetworkList{}, "networks")
+	s.NewRelationService(&TopologyRelation{}, &SegmentList{}, "segments")
+	s.NewRelationService(&TopologyRelation{}, &RouteLinkList{}, "route_links")
+	s.NewRelationService(&TopologyRelation{}, &DatapathList{}, "datapaths")
+	s.NewRelationService(&TopologyRelation{}, &TopologyLayerList{}, "underlays")
 	return s
 }
 
