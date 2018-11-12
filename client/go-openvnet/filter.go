@@ -29,14 +29,17 @@ type FilterCreateParams struct {
 }
 
 func NewFilterService(client *Client) *FilterService {
-	return &FilterService{
+	s := &FilterService{
 		BaseService: &BaseService{
-			client:       client,
-			namespace:    FilterNamespace,
-			resource:     &Filter{},
-			resourceList: &FilterList{},
+			client:           client,
+			namespace:        FilterNamespace,
+			resource:         &Filter{},
+			resourceList:     &FilterList{},
+			relationServices: make(map[string]*RelationService),
 		},
 	}
+	s.NewRelationService(&FilterStatic{}, &FilterStaticList{}, "static")
+	return s
 }
 
 func (s *FilterService) Create(params *FilterCreateParams) (*Filter, *http.Response, error) {
@@ -80,20 +83,8 @@ type FilterStaticCreateParams struct {
 	Action     string `url:"action,omitempty"`
 }
 
-func (s *FilterService) CreateStatic(uuid string, params *FilterStaticCreateParams) (*FilterStatic, *http.Response, error) {
-	st := new(FilterStatic)
-	resp, err := s.client.post(FilterNamespace+"/"+uuid+"/static", &st, params)
-	return st, resp, err
-}
-
-func (s *FilterService) DeleteStatic(uuid string, param *FilterStaticCreateParams) (*http.Response, error) {
+func (s *FilterService) DeleteRelation(uuid string, param *FilterStaticCreateParams) (*http.Response, error) {
 	ovnError := new(OpenVNetError)
 	resp, err := s.client.sling.New().Delete(FilterNamespace+"/"+uuid+"/static").BodyForm(param).Receive(nil, ovnError)
 	return checkError(ovnError, resp, err)
-}
-
-func (s *FilterService) GetStatic(uuid string) (*FilterStaticList, *http.Response, error) {
-	list := new(FilterStaticList)
-	resp, err := s.client.get(FilterNamespace+"/"+uuid+"/static", list)
-	return list, resp, err
 }

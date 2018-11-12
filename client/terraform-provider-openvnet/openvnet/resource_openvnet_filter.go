@@ -117,14 +117,15 @@ func openVNetFilterCreate(d *schema.ResourceData, m interface{}) error {
 	if statics := d.Get("static").([]interface{}); statics[:len(statics)-1] != nil {
 		for _, static := range statics {
 			params := static.(map[string]interface{})
-			_, _, err := client.Filter.CreateStatic(filter.UUID, &openvnet.FilterStaticCreateParams{
+
+			_, _, err := client.Filter.CreateRelation("static", &openvnet.FilterStaticCreateParams{
 				Protocol:   params["protocol"].(string),
 				Action:     params["action"].(string),
 				SrcAddress: params["src_address"].(string),
 				DstAddress: params["dst_address"].(string),
 				SrcPort:    params["src_port"].(int),
 				DstPort:    params["dst_port"].(int),
-			})
+			}, filter.UUID)
 
 			if err != nil {
 				return fmt.Errorf("faield to create static filter: %v", err)
@@ -148,13 +149,13 @@ func openVNetFilterRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("ingress_passthrough", filter.IngressPassthrough)
 	d.Set("egress_passthrough", filter.EgressPassthrough)
 
-	staticsList, _, err := client.Filter.GetStatic(d.Id())
+	resp, _, err := client.Filter.GetRelations("static", filter.UUID)
 	if err != nil {
-		return fmt.Errorf("failed to read list of statics")
+		return fmt.Errorf("failed to read list of statics: %v", err)
 	}
 
+	staticsList := resp.(*openvnet.FilterStaticList)
 	statics := make([]map[string]interface{}, len(staticsList.Items))
-	// if statics := d.Get("static").([]interface{}); statics[:len(statics)-1] != nil {
 	for i, static := range staticsList.Items {
 		statics[i] = make(map[string]interface{})
 		statics[i]["protocol"] = static.Protocol
