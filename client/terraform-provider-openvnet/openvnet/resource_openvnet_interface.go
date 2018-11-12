@@ -116,16 +116,6 @@ func openVNetInterfaceCreate(d *schema.ResourceData, m interface{}) error {
 	intfc, _, err := client.Interface.Create(params)
 	d.SetId(intfc.UUID)
 
-	interfaceUUID := intfc.UUID
-
-	if x := d.Get("security_group"); x != nil {
-		for _, y := range x.(*schema.Set).List() {
-			z := y.(map[string]interface{})
-
-			createSecurityGroupRelation(client, interfaceUUID, z)
-		}
-	}
-
 	return err
 }
 
