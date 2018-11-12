@@ -140,6 +140,6 @@ func (s *RelationService) get(baseService *BaseService, uuid ...string) (interfa
 	}
 
 	r := newResource(s.resourceList)
-	resp, err := baseService.client.post(s.joinUUID(baseService.namespace, uuid...), r, nil)
+	resp, err := baseService.client.get(s.joinUUID(baseService.namespace, uuid...), r)
 	return r, resp, err
 }
