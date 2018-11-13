@@ -18,5 +18,5 @@ resource "openvnet_ip_lease" "il_sample" {
    ipv4_address = "10.0.0.221"
    # mac_lease_uuid = ""
    # interface_uuid = ""
-   enable_routing = true
+   # enable_routing = true
 }

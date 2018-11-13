@@ -8,6 +8,6 @@ resource "openvnet_network" "nw_sample" {
 	 ipv4_network = "10.0.0.0"
 	 ipv4_prefix = "24"
 	 mode = "virtual"
-	 segment_uuid = ""
-	 editable = true
+	 # segment_uuid = ""
+	 # editable = true
 }

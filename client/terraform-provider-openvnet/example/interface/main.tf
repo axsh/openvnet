@@ -22,8 +22,4 @@ resource "openvnet_interface" "if_sample" {
 	       port_name = ""
 	       singular =
 	 }
-
-	 security_group {
-	 	security_group_id = ""
-	 }
 }

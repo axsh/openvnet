@@ -4,6 +4,6 @@ provider "openvnet" {
 
 resource "openvnet_ip_retention_container" "irc_sample" {
   uuid = "irc-demo"
-  lease_time = 60
-  grace_time = 60
+  # lease_time = 60
+  # grace_time = 60
 }
