@@ -20,6 +20,7 @@ func Provider() terraform.ResourceProvider {
 		ResourcesMap: map[string]*schema.Resource{
 			"openvnet_datapath":               OpenVNetDatapath(),
 			"openvnet_datapath_relation":      OpenVNetDatapathRelation(),
+			"openvnet_dns_service":            OpenVNetDnsService(),
 			"openvnet_filter":                 OpenVNetFilter(),
 			"openvnet_interface":              OpenVNetInterface(),
 			"openvnet_network":                OpenVNetNetwork(),
@@ -34,8 +35,8 @@ func Provider() terraform.ResourceProvider {
 			"openvnet_ip_lease_container":     OpenVNetIpLeaseContainer(),
 			"openvnet_ip_retention_container": OpenVNetIpRetentionContainer(),
 			"openvnet_lease_policy":           OpenVNetLeasePolicy(),
-			"openvnet_translation":            OpenVNetTranslation(),
 			"openvnet_topology":               OpenVNetTopology(),
+			"openvnet_translation":            OpenVNetTranslation(),
 		},
 
 		ConfigureFunc: providerConfigure,
