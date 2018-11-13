@@ -28,14 +28,17 @@ type DnsServicesCreateParams struct {
 }
 
 func NewDnsServicesService(client *Client) *DnsServicesService {
-	return &DnsServicesService{
+	s := &DnsServicesService{
 		BaseService: &BaseService{
-			client:       client,
-			namespace:    DnsServicesNamespace,
-			resource:     &DnsServices{},
-			resourceList: &DnsServicesList{},
+			client:           client,
+			namespace:        DnsServicesNamespace,
+			resource:         &DnsServices{},
+			resourceList:     &DnsServicesList{},
+			relationServices: make(map[string]*RelationService),
 		},
 	}
+	s.NewRelationService(&DnsRecord{}, &DnsRecordList{}, "dns_records")
+	return s
 }
 
 func (s *DnsServicesService) Create(params *DnsServicesCreateParams) (*DnsServices, *http.Response, error) {
@@ -72,18 +75,18 @@ type DnsRecordCreateParams struct {
 	Ipv4Address string `url:"ipv4_address"`
 }
 
-func (s *DnsServicesService) CreateDnsRecord(rel *Relation, params *DnsRecordCreateParams) (*DnsRecord, *http.Response, error) {
-	dnsr := new(DnsRecord)
-	resp, err := s.client.post(DnsServicesNamespace+"/"+rel.BaseID+"/"+rel.Type, &dnsr, params)
-	return dnsr, resp, err
-}
+// func (s *DnsServicesService) CreateDnsRecord(rel *Relation, params *DnsRecordCreateParams) (*DnsRecord, *http.Response, error) {
+// 	dnsr := new(DnsRecord)
+// 	resp, err := s.client.post(DnsServicesNamespace+"/"+rel.BaseID+"/"+rel.Type, &dnsr, params)
+// 	return dnsr, resp, err
+// }
 
-func (s *DnsServicesService) DeleteDnsRecord(params *Relation) (*http.Response, error) {
-	return s.client.del(DnsServicesNamespace + "/" + params.BaseID + "/" + params.Type + "/" + params.RelationTypeUUID)
-}
+// func (s *DnsServicesService) DeleteDnsRecord(params *Relation) (*http.Response, error) {
+// 	return s.client.del(DnsServicesNamespace + "/" + params.BaseID + "/" + params.Type + "/" + params.RelationTypeUUID)
+// }
 
-func (s *DnsServicesService) GetDnsRecords(uuid string) (*NetworkList, *http.Response, error) {
-	list := new(NetworkList)
-	resp, err := s.client.get(DnsServicesNamespace+"/"+uuid+"/dns_records", list)
-	return list, resp, err
-}
+// func (s *DnsServicesService) GetDnsRecords(uuid string) (*NetworkList, *http.Response, error) {
+// 	list := new(NetworkList)
+// 	resp, err := s.client.get(DnsServicesNamespace+"/"+uuid+"/dns_records", list)
+// 	return list, resp, err
+// }
