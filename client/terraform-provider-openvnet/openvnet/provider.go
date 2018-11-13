@@ -28,6 +28,7 @@ func Provider() terraform.ResourceProvider {
 			"openvnet_segment":                OpenVNetSegment(),
 			"openvnet_mac_range_group":        OpenVNetMacRangeGroup(),
 			"openvnet_mac_lease":              OpenVNetMacLease(),
+			"openvnet_network_services":       OpenVNetNetworkServices(),
 			"openvnet_ip_lease":               OpenVNetIpLease(),
 			"openvnet_ip_range_group":         OpenVNetIpRangeGroup(),
 			"openvnet_ip_lease_container":     OpenVNetIpLeaseContainer(),

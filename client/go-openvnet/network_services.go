@@ -28,7 +28,7 @@ type NetworkServicesService struct {
 type NetworkServicesCreateParams struct {
 	UUID          string `url:"uuid,omitempty"`
 	DisplayName   string `url:"display_name,omitempty"`
-	InterfaecUUID string `url:"interface_uuid,omitempty"`
+	InterfaceUUID string `url:"interface_uuid,omitempty"`
 	IncomingPort  int    `url:"incoming_port,omitempty"`
 	OutgoingPort  int    `url:"outgoing_port,omitempty"`
 	Type          string `url:"type,omitempty"`

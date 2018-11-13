@@ -140,7 +140,6 @@ func openVNetFilterCreate(d *schema.ResourceData, m interface{}) error {
 func openVNetFilterRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*openvnet.Client)
 	filter, _, err := client.Filter.GetByUUID(d.Id())
-
 	if err != nil {
 		return err
 	}
@@ -166,7 +165,7 @@ func openVNetFilterRead(d *schema.ResourceData, m interface{}) error {
 		statics[i]["dst_port"] = static.DstPort
 	}
 	d.Set("static", statics)
-	// }
+
 	return nil
 }
 
