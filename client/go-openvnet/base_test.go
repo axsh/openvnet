@@ -25,10 +25,11 @@ type testData struct {
 
 var ts = &testService{
 	BaseService: &BaseService{
-		namespace:    "test",
-		client:       testClient,
-		resource:     &testData{},
-		resourceList: &testData{},
+		namespace:        "test",
+		client:           testClient,
+		resource:         &testData{},
+		resourceList:     &testData{},
+		relationServices: make(map[string]*RelationService),
 	},
 }
 
@@ -108,7 +109,87 @@ func TestGetByUUID(t *testing.T) {
 	checkBody(t, resp.Body)
 }
 
+func TestCreateRelation(t *testing.T) {
+	_, resp, e := ts.CreateRelation("test", nil, "test_id")
+
+	if e != nil {
+		t.Errorf("CreateRelation() error should be nil: %v", e)
+	}
+
+	if resp.StatusCode != 204 {
+		t.Errorf("Status code should be 200")
+	}
+
+	checkBody(t, resp.Body)
+
+	_, resp, e = ts.CreateRelation("test", nil, "test_id", "test_id")
+
+	if e != nil {
+		t.Errorf("CreateRelation() error should be nil: %v", e)
+	}
+
+	if resp.StatusCode != 204 {
+		t.Errorf("Status code should be 200")
+	}
+
+	checkBody(t, resp.Body)
+}
+
+func TestDeleteRelation(t *testing.T) {
+	resp, e := ts.DeleteRelation("test", "test_id")
+
+	if e != nil {
+		t.Errorf("CreateRelation() error should be nil: %v", e)
+	}
+
+	if resp.StatusCode != 204 {
+		t.Errorf("Status code should be 200")
+	}
+
+	checkBody(t, resp.Body)
+
+	resp, e = ts.DeleteRelation("test", "test_id", "test_id")
+
+	if e != nil {
+		t.Errorf("CreateRelation() error should be nil: %v", e)
+	}
+
+	if resp.StatusCode != 204 {
+		t.Errorf("Status code should be 200")
+	}
+
+	checkBody(t, resp.Body)
+}
+
+func TestGetRelations(t *testing.T) {
+	_, resp, e := ts.GetRelations("test", "test_id")
+
+	if e != nil {
+		t.Errorf("CreateRelation() error should be nil: %v", e)
+	}
+
+	if resp.StatusCode != 204 {
+		t.Errorf("Status code should be 200")
+	}
+
+	checkBody(t, resp.Body)
+
+	_, resp, e = ts.GetRelations("test", "test_id", "test_id")
+
+	if e != nil {
+		t.Errorf("CreateRelation() error should be nil: %v", e)
+	}
+
+	if resp.StatusCode != 204 {
+		t.Errorf("Status code should be 200")
+	}
+
+	checkBody(t, resp.Body)
+}
+
 func TestMain(m *testing.M) {
+	ts.NewRelationService(&testData{}, &testData{}, "test")
+
 	l, err := net.Listen("tcp", net.JoinHostPort("localhost", "9090"))
 	if err != nil {
 		log.Fatal("failed to create listener")
