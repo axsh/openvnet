@@ -11,6 +11,12 @@ RUN ["yum", "install", "-y", "createrepo", "rpmdevtools", "rpm-build", "yum-util
 RUN ["yum", "install", "-y", "zeromq3-devel", "yum-utils", "make", "gcc", "gcc-c++", "git", "mariadb-devel", "sqlite-devel", "mariadb", "mariadb-server"]
 RUN yum install -y ${SCL_RUBY}-build && mysql_install_db && chown mysql:mysql -R /var/lib/mysql
 
+RUN curl -L https://dl.google.com/go/go1.11.linux-amd64.tar.gz | tar -C /usr/local/ -xzf -
+
+ENV GOPATH=/var/tmp/go
+RUN mkdir -p ${GOPATH}/bin/
+ENV PATH=$PATH:/usr/local/go/bin:${GOPATH}
+
 ADD ci/ci.el7/rspec_rpmbuild/yum.repo/dev.repo /etc/yum.repos.d/
 # Only enables "openvnet-third-party" repo.
 RUN yum-config-manager --disable openvnet
