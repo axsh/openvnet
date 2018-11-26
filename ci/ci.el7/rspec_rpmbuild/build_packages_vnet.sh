@@ -102,11 +102,11 @@ try_load_cache "${BUILD_CACHE_DIR}" "${CACHE_VOLUME}" "${COMMIT_ID}"
 #
 
 (
-    cd vnet
-    bundle install --path vendor/bundle --standalone
-    bundle exec rake test:db:create
-    bundle exec rake test:db:init
-    bundle exec rspec spec
+  cd vnet
+  bundle install --path vendor/bundle --standalone
+  bundle exec rake test:db:create
+  bundle exec rake test:db:init
+  bundle exec rspec spec
 )
 
 # Copy only the tracked files to rpmbuild SOURCES/.
