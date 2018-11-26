@@ -89,15 +89,6 @@ try_load_cache "${BUILD_CACHE_DIR}" "${CACHE_VOLUME}" "${COMMIT_ID}"
 
 
 #
-# Run go test -v
-#
-
-(
-  cd client/go-openvnet
-  GO111MODULE=on go test -v ./...
-)
-
-#
 # Run rspec
 #
 
@@ -108,6 +99,16 @@ try_load_cache "${BUILD_CACHE_DIR}" "${CACHE_VOLUME}" "${COMMIT_ID}"
   bundle exec rake test:db:init
   bundle exec rspec spec
 )
+
+#
+# Run go test -v
+#
+
+(
+  cd client/go-openvnet
+  GO111MODULE=on go test -v ./...
+)
+
 
 # Copy only the tracked files to rpmbuild SOURCES/.
 (
