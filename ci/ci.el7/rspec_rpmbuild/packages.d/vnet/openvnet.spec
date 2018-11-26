@@ -53,6 +53,11 @@ cd "$RPM_SOURCE_DIR/openvnet"
   cd "client/vnctl"
   bundle install --path vendor/bundle --without development test --standalone
 )
+(
+  cd "client/terraform-provider-openvnet"
+  GO111MODULE=on go build
+)
+
 
 %install
 cd "$RPM_SOURCE_DIR/openvnet"
@@ -65,6 +70,7 @@ cp -r ci/ci.el7/rspec_rpmbuild/conf_files/* "$RPM_BUILD_ROOT"/
 echo "SCL_RUBY=%{scl_ruby}" >> "$RPM_BUILD_ROOT"/etc/sysconfig/openvnet
 echo ". scl_source enable %{scl_ruby}" >> "$RPM_BUILD_ROOT"/etc/openvnet/vnctl-ruby
 install -m 755 ci/ci.el7/rspec_rpmbuild/conf_files/usr/bin/vnctl "$RPM_BUILD_ROOT"/usr/bin/
+install -m 755 client/terrform-provider-openvnet/terraform-provider-openvnet "$RPM_BUILD_ROOT"/usr/bin/
 cp vnet/Gemfile "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
 cp vnet/Gemfile.lock "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
 cp vnet/LICENSE "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
@@ -259,3 +265,16 @@ This package contains the vnctl client for OpenVNet's WebAPI. It's a simple comm
 /usr/bin/vnctl
 %config(noreplace) /etc/openvnet/vnctl.conf
 %config /etc/openvnet/vnctl-ruby
+
+%package terraform-proivder
+#
+# openvnet terraform provider package
+#
+Summary: terraform provider for OpenVNet
+BuildArch: noarhc
+
+%decription terraform-provider
+This package contains a provider for terraform. This can be used to integrate OpenVNet's resources with applications that make use of terraform.
+
+%files terraform-provider
+/usr/bin/terraform-provider-openvnet

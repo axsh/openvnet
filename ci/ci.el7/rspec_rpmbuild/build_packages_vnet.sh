@@ -87,6 +87,16 @@ mkdir -p "${OPENVNET_SRC_BUILD_DIR}"
 
 try_load_cache "${BUILD_CACHE_DIR}" "${CACHE_VOLUME}" "${COMMIT_ID}"
 
+
+#
+# Run go test -v
+#
+
+(
+  cd client/go-openvnet
+  GO111MODULE=on go test -v ./...
+)
+
 #
 # Run rspec
 #
