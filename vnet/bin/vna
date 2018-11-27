@@ -9,12 +9,14 @@ require 'vnet'
 
 # Start the switch manager before any celluloid services in order to
 # avoid cloned file descriptors to e.g. zmq remaining open.
-Vnet::NodeModules::SwitchManager.new.tap { |sm|
+Vnet::Openflow::SwitchManager.new.tap { |sm|
   sm.configure_trema
   sm.cleanup_current_session
   sm.kill_old_switches
   sm.start
 }
+
+require 'celluloid'
 
 controller = Vnet::Openflow::Controller.new.tap { |controller|
   controller.init_trema
@@ -22,7 +24,6 @@ controller = Vnet::Openflow::Controller.new.tap { |controller|
   controller.trema_thread = Thread.current
 }
 
-require 'celluloid'
 require 'celluloid/autostart'
 require 'dcell'
 

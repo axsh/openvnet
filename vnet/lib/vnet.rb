@@ -536,7 +536,6 @@ module Vnet
     autoload :Rpc, 'vnet/node_modules/rpc'
     autoload :EventHandler, 'vnet/node_modules/event_handler'
     autoload :ServiceOpenflow, 'vnet/node_modules/service_openflow'
-    autoload :SwitchManager, 'vnet/node_modules/service_openflow'
   end
 
   module Openflow
@@ -550,6 +549,7 @@ module Vnet
     autoload :OvsOfctl, 'vnet/openflow/ovs_ofctl'
     autoload :PacketHelpers, 'vnet/openflow/packet_handler'
     autoload :Switch, 'vnet/openflow/switch'
+    autoload :SwitchManager, 'vnet/openflow/switch_manager'
     autoload :TremaTasks, 'vnet/openflow/trema_tasks'
   end
 
