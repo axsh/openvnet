@@ -6,5 +6,5 @@ Fabricator(:datapath_segment, class_name: Vnet::Models::DatapathSegment) do
   interface_id { id_sequence(:interface_ids) }
   ip_lease_id { id_sequence(:ip_lease_ids) }
 
-  mac_address { Pio::Mac.new(id_sequence(:mac_address)) }
+  mac_address_id { Fabricate(:mac_address).id }
 end

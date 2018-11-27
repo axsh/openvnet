@@ -21,7 +21,7 @@ Vnet::Endpoints::V10::VnetAPI.namespace '/mac_leases' do
     uuid_to_id(M::MacRangeGroup, 'mac_range_group_uuid', 'mac_range_group_id') if params['mac_range_group_uuid']
 
     if params['mac_address'].nil? && params['mac_range_group_id'].nil?
-      raise(E::MissingArgument, "missing mac_address, mrg_uuid or mac_range_group_uuid argument")
+      raise(E::MissingArgument, "mac_address")
     end
 
     post_new(:MacLease, fill_options)

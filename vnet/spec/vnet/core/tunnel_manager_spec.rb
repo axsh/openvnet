@@ -55,11 +55,11 @@ describe Vnet::Core::TunnelManager do
         end
       }
 
-      Fabricate(:datapath_network, datapath_id: 1, network: public_networks[1], interface: send("interface_#{1}"), ip_lease: send("ip_lease_#{1}"), mac_address: 1)
-      Fabricate(:datapath_network, datapath_id: 1, network: public_networks[2], interface: send("interface_#{1}"), ip_lease: send("ip_lease_#{1}"), mac_address: 2)
-      Fabricate(:datapath_network, datapath_id: 2, network: public_networks[1], interface: send("interface_#{2}"), ip_lease: send("ip_lease_#{2}"), mac_address: 3)
-      Fabricate(:datapath_network, datapath_id: 2, network: public_networks[2], interface: send("interface_#{2}"), ip_lease: send("ip_lease_#{2}"), mac_address: 4)
-      Fabricate(:datapath_network, datapath_id: 3, network: public_networks[1], interface: send("interface_#{3}"), ip_lease: send("ip_lease_#{3}"), mac_address: 5)
+      Fabricate(:datapath_network, datapath_id: 1, network: public_networks[1], interface: send("interface_#{1}"), ip_lease: send("ip_lease_#{1}"))
+      Fabricate(:datapath_network, datapath_id: 1, network: public_networks[2], interface: send("interface_#{1}"), ip_lease: send("ip_lease_#{1}"))
+      Fabricate(:datapath_network, datapath_id: 2, network: public_networks[1], interface: send("interface_#{2}"), ip_lease: send("ip_lease_#{2}"))
+      Fabricate(:datapath_network, datapath_id: 2, network: public_networks[2], interface: send("interface_#{2}"), ip_lease: send("ip_lease_#{2}"))
+      Fabricate(:datapath_network, datapath_id: 3, network: public_networks[1], interface: send("interface_#{3}"), ip_lease: send("ip_lease_#{3}"))
     end
 
     let(:datapath) do
@@ -240,8 +240,8 @@ describe Vnet::Core::TunnelManager do
         end
       }
 
-      Fabricate(:datapath_network, datapath_id: 1, network: public_networks[1], interface: send("interface_#{1}"), ip_lease: send("ip_lease_#{1}"), mac_address: 1)
-      Fabricate(:datapath_network, datapath_id: 2, network: public_networks[1], interface: send("interface_#{2}"), ip_lease: send("ip_lease_#{2}"), mac_address: 2)
+      Fabricate(:datapath_network, datapath_id: 1, network: public_networks[1], interface: send("interface_#{1}"), ip_lease: send("ip_lease_#{1}"))
+      Fabricate(:datapath_network, datapath_id: 2, network: public_networks[1], interface: send("interface_#{2}"), ip_lease: send("ip_lease_#{2}"))
     end
 
     let(:ofctl) { double(:ofctl) }

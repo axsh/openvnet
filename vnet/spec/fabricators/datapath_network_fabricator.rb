@@ -6,5 +6,11 @@ Fabricator(:datapath_network, class_name: Vnet::Models::DatapathNetwork) do
   interface_id { id_sequence(:interface_ids) }
   ip_lease_id { id_sequence(:ip_lease_ids) }
 
-  mac_address { Pio::Mac.new(id_sequence(:mac_address)) }
+  mac_address_id { |attr|
+    if attr[:mac]
+      Fabricate(:mac_address, mac_address: attr[:mac]).id
+    else
+      Fabricate(:mac_address).id
+    end
+  }
 end
