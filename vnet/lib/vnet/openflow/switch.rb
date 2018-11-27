@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-require 'celluloid'
-
 module Vnet::Openflow
 
   class Switch

@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-require 'dcell/registries/redis_adapter'
-
 module Vnet::Configurations
   class Common < Fuguta::Configuration
     cattr_accessor :paths

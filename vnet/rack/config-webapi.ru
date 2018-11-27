@@ -4,6 +4,9 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
 require 'vnet'
 require 'rack/cors'
+require 'celluloid/autostart'
+require 'dcell'
+require 'dcell/registries/redis_adapter'
 
 Vnet::Initializers::Logger.run("webapi.log")
 Vnet::NodeApi.set_proxy(Vnet::Configurations::Webapi.conf.node_api_proxy)

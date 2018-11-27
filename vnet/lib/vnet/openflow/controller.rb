@@ -9,7 +9,6 @@ module Vnet::Openflow
 
   class Controller < Trema::Controller
     include TremaTasks
-    include Celluloid::Logger
     include Vnet::Constants::Openflow
 
     attr_reader :datapaths
@@ -20,21 +19,21 @@ module Vnet::Openflow
     end
 
     def start
-      info "starting OpenFlow controller."
+      Celluloid::Logger.info "starting OpenFlow controller."
     end
 
     def switch_ready(datapath_id)
-      info "switch_ready from %#x." % datapath_id
+      Celluloid::Logger.info "switch_ready from %#x." % datapath_id
       initialize_datapath(datapath_id)
     end
 
     def switch_disconnected(datapath_id)
-      info "switch_disconnected from %#x." % datapath_id
+      Celluloid::Logger.info "switch_disconnected from %#x." % datapath_id
       terminate_datapath(datapath_id)
     end
 
     def features_reply(dpid, message)
-      info "features_reply from %#x." % dpid
+      Celluloid::Logger.info "features_reply from %#x." % dpid
 
       datapath = datapath(dpid) || return
       switch = datapath.switch || return
@@ -42,20 +41,20 @@ module Vnet::Openflow
     end
 
     def port_desc_multipart_reply(dpid, message)
-      info "port_desc_multipart_reply from %#x." % dpid
+      Celluloid::Logger.info "port_desc_multipart_reply from %#x." % dpid
 
       dp_info = dp_info(dpid)
       return unless dp_info
 
       message.parts.each { |port_descs|
-        debug "ports: %s" % port_descs.ports.collect { |each| each.port_no }.sort.join( ", " )
+        Celluloid::Logger.debug "ports: %s" % port_descs.ports.collect { |each| each.port_no }.sort.join( ", " )
 
         port_descs.ports.each { |port_desc| dp_info.port_manager.async.insert(port_desc) }
       }
     end
 
     def port_status(dpid, message)
-      debug "port_status from %#x." % dpid
+      Celluloid::Logger.debug "port_status from %#x." % dpid
 
       datapath = datapath(dpid) || return
       switch = datapath.switch || return
@@ -83,9 +82,9 @@ module Vnet::Openflow
     end
 
     def vendor(dpid, message)
-      debug "vendor message from #{dpid.to_hex}."
-      debug "transaction_id: #{message.transaction_id.to_hex}"
-      debug "data: #{message.buffer.unpack('H*')}"
+      Celluloid::Logger.debug "vendor message from #{dpid.to_hex}."
+      Celluloid::Logger.debug "transaction_id: #{message.transaction_id.to_hex}"
+      Celluloid::Logger.debug "data: #{message.buffer.unpack('H*')}"
     end
 
     def public_send_message(dpid, message)
@@ -114,7 +113,7 @@ module Vnet::Openflow
     def initialize_datapath(dpid)
       terminate_datapath(dpid)
 
-      info "initialize datapath actor. dpid: 0x%016x" % dpid
+      Celluloid::Logger.info "initialize datapath actor. dpid: 0x%016x" % dpid
 
       # There is no need to clean up the old switch, as all the
       # previous flows are removed. Just let it rebuild everything.
@@ -125,7 +124,7 @@ module Vnet::Openflow
       datapath = Datapath.new(self, dpid, OvsOfctl.new(dpid))
 
       if @datapaths[dpid]
-        info "initialize datapath actor cancelled, already intitialized after termination. dpid: 0x%016x" % dpid
+        Celluloid::Logger.info "initialize datapath actor cancelled, already intitialized after termination. dpid: 0x%016x" % dpid
         return
       end
 
@@ -141,9 +140,9 @@ module Vnet::Openflow
       datapath_map = @datapaths.delete(dpid) || return
       datapath = datapath_map[:datapath] || return
 
-      info "terminating datapath actor. dpid: 0x%016x" % dpid
+      Celluloid::Logger.info "terminating datapath actor. dpid: 0x%016x" % dpid
       datapath.terminate
-      info "terminated datapath actor. dpid: 0x%016x" % dpid
+      Celluloid::Logger.info "terminated datapath actor. dpid: 0x%016x" % dpid
     end
 
     def datapath(dpid)

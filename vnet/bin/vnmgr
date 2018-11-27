@@ -6,13 +6,15 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'rubygems'
 require 'bundler/setup'
 require 'vnet'
+require 'celluloid/autostart'
+require 'dcell'
+require 'dcell/registries/redis_adapter'
 
 conf = Vnet::Configurations::Vnmgr.conf
 
 Vnet::Initializers::Logger.run("vnmgr.log")
 Vnet::Initializers::DB.run(conf.db_uri)
 
-Celluloid.start
 DCell.start(Vnet::Configurations::Vnmgr.dcell_params)
 
 Vnet::NodeModules::Rpc.supervise_as :rpc
