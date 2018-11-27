@@ -44,16 +44,16 @@ params = {
 
 params.merge!(:public => conf.node.pub_addr_string) if conf.node.addr.public != ""
 
-DCell.start(params)
-
-
 trap 'TTIN' do
   Celluloid.stack_dump
 end
 
-Vnet::NodeModules::ServiceOpenflow.supervise_as :service_openflow
+Vnet::NodeModules::ServiceOpenflow.prepare_controller(Thread.current).tap { |controller|
+  DCell.start(params)
 
-Celluloid::Actor[:service_openflow].prepare_controller(Thread.current).tap { |controller|
+  Vnet::NodeModules::ServiceOpenflow.supervise_as :service_openflow
+  Celluloid::Actor[:service_openflow].set_controller(controller)
+
   Celluloid.logger.debug "starting trema controller on thread #{Thread.current.inspect}"
   controller.run_no_init!
 }
