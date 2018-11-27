@@ -6,13 +6,6 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'rubygems'
 require 'bundler/setup'
 require 'vnet'
-require 'celluloid'
-require 'celluloid/autostart'
-require 'dcell'
-
-#Vnet::Initializers::Logger.run("vna.log")
-
-conf = Vnet::Configurations::Vna.conf
 
 # Start the switch manager before any celluloid services in order to
 # avoid cloned file descriptors to e.g. zmq remaining open.
@@ -21,6 +14,14 @@ switch_manager_new.configure_trema
 switch_manager_new.cleanup_current_session
 switch_manager_new.kill_old_switches
 switch_manager_new.start
+
+require 'celluloid'
+require 'celluloid/autostart'
+require 'dcell'
+
+#Vnet::Initializers::Logger.run("vna.log")
+
+conf = Vnet::Configurations::Vna.conf
 
 Vnet::NodeApi.set_proxy(conf.node_api_proxy)
 Vnet::NodeApi.raise_on_error = false # dont raise any errors
