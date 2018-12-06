@@ -114,12 +114,8 @@ module Vnspec
           Vnet.dump_database
         end
 
-<<<<<<< HEAD
-          sleep 1000000
-=======
         if !result && ENV['SLEEP_SPEC_FAILURE'].to_s == '1'
           sleep 12 * 60 * 60
->>>>>>> ci-monitor-redis
         end
 
         result
