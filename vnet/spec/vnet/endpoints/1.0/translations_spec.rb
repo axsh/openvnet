@@ -96,7 +96,7 @@ describe "/translations" do
         delete api_suffix, request_params
       end
 
-      include_examples "required parameters", accepted_params, required_params
+      include_examples "fails without the required parameters", accepted_params, required_params
 
       context "with parameters describing a non existing static address translation" do
         let(:request_params) { accepted_params.merge({ingress_port_number: 2}) }

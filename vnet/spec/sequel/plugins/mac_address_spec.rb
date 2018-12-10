@@ -26,16 +26,13 @@ describe Sequel::Plugins::MacAddress do
       it { expect(subject.reload.mac_address).to eq mac_address_1 }
     end
 
-    describe "update" do
-      subject do
-        model.mac_address = mac_address_2
-        model.save
-      end
-
-      it { expect(subject.mac_address).to eq mac_address_2 }
-      it { expect(subject.to_hash[:mac_address]).to eq mac_address_2 }
-      it { expect(subject._mac_address).to be_exists }
-      it { expect(subject._mac_address.mac_address).to eq mac_address_2.to_i }
+    describe "update fails" do
+      it {
+        expect {
+          model.mac_address = mac_address_2
+          model.save
+        }.to raise_error(Sequel::ValidationFailed)
+      }
     end
 
     describe "destroy" do

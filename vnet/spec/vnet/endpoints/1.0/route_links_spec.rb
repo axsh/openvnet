@@ -26,12 +26,12 @@ describe "/route_links" do
     accepted_params = {
       uuid: "rl-link",
       mac_address: "fe:17:9b:9f:e8:33",
-      topology_uuid: 'topo-test'
+      topology_uuid: 'topo-test',
     }
     expected_response = accepted_params.dup.tap { |map|
       map.delete(:topology_uuid)
     }
-    required_params = []
+    required_params = [[:mac_address, :topology_uuid]]
     uuid_params = [:uuid]
 
     include_examples "POST /", accepted_params, required_params, uuid_params, expected_response, Proc.new { |model, last_response|

@@ -114,7 +114,7 @@ describe '/filters' do
 
       before(:each) { delete api_suffix, request_params }
 
-      include_examples 'required parameters', accepted_params, required_params
+      include_examples "fails without the required parameters", accepted_params, required_params
 
       # context 'with parameters describing a non existing static filter' do
       #   # let(:request_params) { accepted_params.merge(action: 'drop') }
