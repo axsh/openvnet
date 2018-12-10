@@ -15,11 +15,7 @@ module Vnet::Services
 
     def do_initialize
       info log_format('initializing managers')
-
-      # Do linking here?...
-
       @vnet_info.start_managers
-
       info log_format('initialized managers')
     end
 

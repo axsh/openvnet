@@ -132,24 +132,6 @@ module Vnet
       nil
     end
 
-    # TODO: Move to core/manager.
-    def set_datapath_info(datapath_info)
-      if @datapath_info
-        raise("Manager.set_datapath_info called twice.")
-      end
-
-      if datapath_info.nil? || datapath_info.id.nil?
-        raise("Manager.set_datapath_info received invalid datapath info.")
-      end
-
-      @datapath_info = datapath_info
-
-      # We need to update remote interfaces in case they are now in
-      # our datapath.
-      initialized_datapath_info
-      nil
-    end
-
     def start_initialize
       if @state != :uninitialized
         raise("Manager.start_initialized must be called on an uninitialized manager.")

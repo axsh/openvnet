@@ -46,7 +46,7 @@ module Vnet::Event
       end
 
       def event_handler_default_state
-        @event_handler_default_state ||= :active
+        @event_handler_default_state ||= :drop_all
       end
 
       def event_handler_default_active
