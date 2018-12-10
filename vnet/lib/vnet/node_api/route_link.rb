@@ -10,12 +10,17 @@ module Vnet::NodeApi
       def create_with_transaction(options)
         options = options.dup
 
+        mrg_id = options.delete(:mac_range_group_id)
         topology_id = options.delete(:topology_id)
 
         transaction {
           handle_new_uuid(options)
 
-          mac_address_random_assign(options)
+          if mrg_id && options[:mac_address].nil?
+            options[:_mac_address] = create_address_from_mrg(mrg_id)
+          else
+            mac_address_random_assign(options)
+          end
 
           internal_create(options).tap { |model|
             next if model.nil?

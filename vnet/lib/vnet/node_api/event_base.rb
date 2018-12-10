@@ -103,6 +103,16 @@ module Vnet::NodeApi
         end
       end
 
+      def create_address_from_mrg(mrg_id)
+        M::MacRangeGroup[id: mrg_id].tap { |mrg|
+          if mrg.nil?
+            raise ArgumentError, 'Unknown MacRangeGroup id'
+          end
+
+          return mrg.address_random
+        }
+      end
+
       #
       # Internal methods:
       #

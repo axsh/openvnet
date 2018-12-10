@@ -26,28 +26,19 @@ module Vnet::NodeApi
       private
 
       def create_with_transaction(options)
+        mrg_id = options.delete(:mac_range_group_id)
+
         transaction {
           handle_new_uuid(options)
 
-          options.delete(:mac_range_group_id).tap { |mrg_id|
-            next if options[:mac_address] || mrg_id.nil?
+          if mrg_id && options[:mac_address].nil?
             options[:_mac_address] = create_address_from_mrg(mrg_id)
-          }
+          end
 
           internal_create(options).tap { |model|
             next if model.nil?
             InterfaceSegment.update_assoc(model.interface_id, model.segment_id)
           }
-        }
-      end
-
-      def create_address_from_mrg(mrg_id)
-        M::MacRangeGroup[id: mrg_id].tap { |mrg|
-          if mrg.nil?
-            raise ArgumentError, 'Unknown MacRangeGroup id'
-          end
-
-          return mrg.address_random
         }
       end
 
