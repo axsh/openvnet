@@ -13,9 +13,11 @@ describe Vnet::Event::Notifications do
         attr_accessor :db_items
         attr_reader :items, :executed_methods
 
-        subscribe_event "item_created", :create_item
-        subscribe_event "item_updated", :update_item
-        subscribe_event "item_deleted", :delete_item
+        event_handler_default_active
+
+        subscribe_event 'item_created', :create_item
+        subscribe_event 'item_updated', :update_item
+        subscribe_event 'item_deleted', :delete_item
 
         def initialize(options = {})
           @items = {}
