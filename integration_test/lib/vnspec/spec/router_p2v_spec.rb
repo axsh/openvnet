@@ -3,6 +3,11 @@
 require_relative 'spec_helper'
 
 describe 'router_p2v' do
+  before(:all) do
+    # Give extra time for the vm's and vna's to start up.
+    sleep 30
+  end
+
   describe 'public to public' do
     context 'vm1 to vm3' do
       it 'reachable' do
