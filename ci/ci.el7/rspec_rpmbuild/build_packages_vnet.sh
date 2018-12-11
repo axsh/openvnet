@@ -104,9 +104,20 @@ try_load_cache "${BUILD_CACHE_DIR}" "${CACHE_VOLUME}" "${COMMIT_ID}"
 # Run go test -v
 #
 
+
+export GO111MODULE=off
+export GODIR="${GOPATH}/src/github.com/axsh/openvnet"
 (
-  cd client/go-openvnet
-  GO111MODULE=on go test -v ./...
+  mkdir -p "${GODIR%/*}"
+  ln -s "${PWD}" "${GODIR}"
+
+	go get "github.com/hashicorp/terraform/helper/schema"
+	go get "github.com/hashicorp/terraform/terraform"
+  go get "github.com/hashicorp/terraform/plugin"
+  go get "github.com/dghubble/sling"
+
+  cd "${GODIR}/client/go-openvnet"
+  go test -v ./...
 )
 
 
@@ -140,6 +151,8 @@ else
 
   rpmbuild -ba --define "_topdir ${WORK_DIR}" ${STRIP_VENDOR:+--define "strip_vendor ${STRIP_VENDOR}"} --define "dev_release_suffix ${RELEASE_SUFFIX}" "${OPENVNET_SPEC_FILE}"
 fi
+
+rm -rf "${GODIR}"
 
 #
 # Prepare the yum repo

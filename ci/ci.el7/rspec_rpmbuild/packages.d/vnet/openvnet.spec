@@ -54,8 +54,8 @@ cd "$RPM_SOURCE_DIR/openvnet"
   bundle install --path vendor/bundle --without development test --standalone
 )
 (
-  cd "client/terraform-provider-openvnet"
-  GO111MODULE=on go build
+  cd "${GOPATH}/src/github.com/axsh/openvnet/client/terraform-provider-openvnet"
+  go build -o "$RPM_SOURCE_DIR/openvnet/terraform-provider-openvnet" main.go
 )
 
 
@@ -70,7 +70,7 @@ cp -r ci/ci.el7/rspec_rpmbuild/conf_files/* "$RPM_BUILD_ROOT"/
 echo "SCL_RUBY=%{scl_ruby}" >> "$RPM_BUILD_ROOT"/etc/sysconfig/openvnet
 echo ". scl_source enable %{scl_ruby}" >> "$RPM_BUILD_ROOT"/etc/openvnet/vnctl-ruby
 install -m 755 ci/ci.el7/rspec_rpmbuild/conf_files/usr/bin/vnctl "$RPM_BUILD_ROOT"/usr/bin/
-install -m 755 client/terrform-provider-openvnet/terraform-provider-openvnet "$RPM_BUILD_ROOT"/usr/bin/
+install -m 755 terraform-provider-openvnet "$RPM_BUILD_ROOT"/usr/bin/
 cp vnet/Gemfile "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
 cp vnet/Gemfile.lock "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
 cp vnet/LICENSE "$RPM_BUILD_ROOT"/opt/axsh/openvnet/vnet/
