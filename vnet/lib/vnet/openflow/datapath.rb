@@ -73,13 +73,15 @@ module Vnet::Openflow
     end
 
     def run_normal
-      info log_format('starting normal vnet datapath')
+      info log_format('starting normal datapath initialization')
 
       @dp_info.initialize_bootstrap_managers
       wait_for_load_of_host_datapath
-      @dp_info.initialize_main_managers(@datapath_info)
-      wait_for_unload_of_host_datapath
 
+      @dp_info.initialize_main_managers(@datapath_info)
+      info log_format('completed normal datapath initialization')
+
+      wait_for_unload_of_host_datapath
       info log_format('resetting datapath info')
 
       # TODO: Replace with proper terminate.
