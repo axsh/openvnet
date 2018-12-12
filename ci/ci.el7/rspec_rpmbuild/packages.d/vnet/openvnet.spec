@@ -272,7 +272,6 @@ This package contains the vnctl client for OpenVNet's WebAPI. It's a simple comm
 #
 
 Summary: terraform provider for OpenVNet.
-BuildArch: noarch
 
 %description terraform-proivder
 This package contains a provider for terraform. This can be used to integrate OpenVNet's resources with applications that make use of terraform.
