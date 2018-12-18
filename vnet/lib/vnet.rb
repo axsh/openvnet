@@ -23,6 +23,9 @@ module Vnet
   class ManagerInitializationFailed < StandardError
   end
 
+  class ParamError < ArgumentError
+  end
+
   class << self
     attr_accessor :logger
   end
@@ -38,11 +41,9 @@ module Vnet
   autoload :ItemDatapathUuidMode, 'vnet/item_base'
   autoload :Manager,              'vnet/manager'
   autoload :ManagerAssocs,        'vnet/manager_assocs'
-  autoload :LookupParams,         'vnet/manager_params'
   autoload :UpdateItemStates,     'vnet/manager_modules'
   autoload :UpdatePropertyStates, 'vnet/manager_modules'
-
-  autoload :ParamError, 'vnet/manager_params'
+  autoload :Params,               'vnet/params'
 
   module Configurations
     autoload :Base,   'vnet/configurations/base'

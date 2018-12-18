@@ -4,7 +4,7 @@ module Vnet
 
   class ItemBase
     include Celluloid::Logger
-    include Vnet::LookupParams
+    include Vnet::Params
 
     MW = Vnet::ModelWrappers
 

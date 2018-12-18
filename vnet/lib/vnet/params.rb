@@ -18,12 +18,7 @@
 # end
 
 module Vnet
-
-  class ParamError < ArgumentError
-    # TODO: Separate msg from message, params and key.
-  end
-
-  module LookupParams
+  module Params
 
     # TODO: Use the backtrace to get the root calling get_param_*
     # method name, and the root Manager method name.

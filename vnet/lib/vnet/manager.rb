@@ -3,6 +3,8 @@
 require 'sequel/core'
 require 'sequel/sql'
 
+require 'vnet/manager_query'
+
 module Vnet
 
   class Manager
@@ -11,7 +13,8 @@ module Vnet
     include Vnet::Constants::Openflow
     include Vnet::Event::EventTasks
     include Vnet::Event::Notifications
-    include Vnet::LookupParams
+    include Vnet::Manager::Query
+    include Vnet::Params
 
     # Main events:
     #
@@ -50,7 +53,7 @@ module Vnet
       @items = {}
       @messages = {}
 
-      @load_queries = {}
+      init_query
     end
 
     # TODO: Depricate, and create a method that ensures the item is
@@ -293,28 +296,6 @@ module Vnet
       raise NotImplementedError, params.inspect
     end
 
-    def select_filter_from_params(params)
-      return nil if params.has_key?(:uuid) && params[:uuid].nil?
-
-      create_batch(mw_class.batch, params[:uuid], query_filter_from_params(params))
-    end
-
-    # Creates a batch object for querying a set of item to load,
-    # excluding the 'uuid' parameter.
-    def query_filter_from_params(params)
-      # Must be implemented by subclass
-      raise NotImplementedError
-    end
-
-    def create_batch(batch, uuid, filters)
-      expression = (filters.size > 1) ? Sequel.&(*filters) : filters.first
-
-      return unless expression || uuid
-
-      dataset = uuid ? batch.dataset_where_uuid(uuid) : batch.dataset
-      dataset = expression ? dataset.where(expression) : dataset
-    end
-
     #
     # Item-related methods:
     #
@@ -329,7 +310,7 @@ module Vnet
       item = internal_detect(params)
       return item if item
 
-      if @load_queries.has_key?(params)
+      if has_query?(params)
         item = create_event_task_match_proc(:retrieved, params, nil)
 
         if item.nil?
@@ -355,45 +336,44 @@ module Vnet
       # TODO: This should not start another query while loading is
       # being done, only delete load_queries once loading is done.
 
-      if @load_queries.has_key?(params)
-        raise "Manager.internal_retrieve_query_db @load_queries.has_key?(params) is not nil."
-      end
+      begin
+        item = nil
 
-      @load_queries[params] = :querying
+        start_query(params).tap { |select_filter|
+          # TODO: Only allow one fiber at the time to make a request with
+          # the exact same select_filter. The remaining fibers should use
+          # internal_wait_for_loaded/initializing.
 
-      item = nil
-      select_filter = select_filter_from_params(params) || return
-      item_map = select_item(select_filter.first) || return
+          select_item(select_filter.first).tap { |item_map|
+            return if item_map.nil?
 
-      # TODO: Only allow one fiber at the time to make a request with
-      # the exact same select_filter. The remaining fibers should use
-      # internal_wait_for_loaded/initializing.
+            item = internal_new_item(item_map)
 
-      item = internal_new_item(item_map)
+            # TODO: Set querying to something else?
+            # TODO: Expand load_queries to handle :loading state.
 
-      # TODO: Set querying to something else?
-      # TODO: Expand load_queries to handle :loading state.
+            return item
+          }
+        }
+      ensure
+        # TODO: Ensure should only include the fiber that does the query.
 
-      item
+        # We can assume that the load failed if item is nil, and such
+        # there will be no trigger of event tasks once the item is
+        # initialized.
+        #
+        # Therefor we use event task to pass a nil value to the waiting
+        # tasks that have the same query params.
 
-    ensure
-      # TODO: Ensure should only include the fiber that does the query.
+        clear_query(params)
 
-      # We can assume that the load failed if item is nil, and such
-      # there will be no trigger of event tasks once the item is
-      # initialized.
-      #
-      # Therefor we use event task to pass a nil value to the waiting
-      # tasks that have the same query params.
+        # TODO: Should we make sure no event tasks are left with
+        # 'params' task_id?
+        resume_event_tasks(:retrieved, item)
 
-      @load_queries.delete(params)
-
-      # TODO: Should we make sure no event tasks are left with
-      # 'params' task_id?
-      resume_event_tasks(:retrieved, item)
-
-      if item.nil?
-        info log_format_h("internal_retrieve main fiber query FAILED", params && params.to_h)
+        if item.nil?
+          info log_format_h("internal_retrieve main fiber query FAILED", params && params.to_h)
+        end
       end
     end
 
@@ -604,7 +584,7 @@ module Vnet
       item = internal_detect(params)
       return item if item && item.loaded?
 
-      if item.nil? && !@load_queries.has_key?(params)
+      if item.nil? && !has_query?(params)
         internal_retrieve_query_db(params)
       end
 
