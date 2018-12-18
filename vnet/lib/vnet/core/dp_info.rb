@@ -24,7 +24,7 @@ module Vnet::Core
     #
     # TODO: Port manager should be moved to bootstrap.
 
-    MANAGER_NAMES = %w(
+    MAIN_MANAGER_NAMES = %w(
       active_interface
       active_network
       active_port
@@ -47,7 +47,7 @@ module Vnet::Core
       port
     ).freeze
 
-    MANAGER_NAMES.each do |name|
+    MAIN_MANAGER_NAMES.each do |name|
       attr_reader "#{name}_manager"
     end
 
@@ -67,7 +67,7 @@ module Vnet::Core
       @ovs_ofctl = params[:ovs_ofctl]
 
       internal_initialize_managers(BOOTSTRAP_MANAGER_NAMES)
-      internal_initialize_managers(MANAGER_NAMES)
+      internal_initialize_managers(MAIN_MANAGER_NAMES)
     end
 
     def inspect
@@ -180,20 +180,55 @@ module Vnet::Core
     # Managers:
     #
 
-    def managers
-      MANAGER_NAMES.map { |name| __send__("#{name}_manager") }
-    end
-
     def bootstrap_managers
       BOOTSTRAP_MANAGER_NAMES.map { |name| __send__("#{name}_manager") }
     end
 
-    def terminate_managers(timeout = 10.0)
-      internal_terminate_managers(managers, timeout)
+    def main_managers
+      MAIN_MANAGER_NAMES.map { |name| __send__("#{name}_manager") }
+    end
+
+    def initialize_bootstrap_managers(timeout, interval = 10.0)
+      bootstrap_managers.tap { |manager_list|
+        manager_list.each { |manager| manager.event_handler_queue_only }
+        manager_list.each { |manager| manager.async.start_initialize }
+        internal_wait_for_initialized(manager_list, timeout, interval).tap { |stuck_managers|
+          next if stuck_managers.nil?
+
+          stuck_managers.each { |manager|
+            Celluloid.logger.warn log_format("#{manager.class.name.to_s.demodulize.underscore} failed to initialize within #{timeout} seconds")
+          }
+          raise Vnet::ManagerInitializationFailed
+        }
+        manager_list.each { |manager| manager.event_handler_active }
+      }
+    end
+
+    def initialize_main_managers(datapath_info, timeout, interval = 10.0)
+      main_managers.tap { |manager_list|
+        manager_list.each { |manager| manager.event_handler_queue_only }
+        manager_list.each { |manager| manager.set_datapath_info(datapath_info) }
+        manager_list.each { |manager| manager.async.start_initialize }
+        internal_wait_for_initialized(manager_list, timeout, interval).tap { |stuck_managers|
+          next if stuck_managers.nil?
+
+          stuck_managers.each { |manager|
+            Celluloid.logger.warn log_format("#{manager.class.name.to_s.demodulize.underscore} failed to initialize within #{timeout} seconds")
+          }
+          raise Vnet::ManagerInitializationFailed
+        }
+        manager_list.each { |manager| manager.event_handler_active }
+      }
+
+      datapath_manager.async.retrieve(dpid: datapath_info.dpid)
     end
 
     def terminate_bootstrap_managers(timeout = 10.0)
       internal_terminate_managers(bootstrap_managers, timeout)
+    end
+
+    def terminate_main_managers(timeout = 10.0)
+      internal_terminate_managers(main_managers, timeout)
     end
 
     #
@@ -202,9 +237,32 @@ module Vnet::Core
 
     private
 
+    def log_format(message, values = nil)
+      "#{@dpid_s} dp_info: #{message}" + (values ? " (#{values})" : '')
+    end
+
     def internal_initialize_managers(name_list)
       name_list.each { |name|
         instance_variable_set("@#{name}_manager", Vnet::Core.const_get("#{name.to_s.camelize}Manager").new(self))
+      }
+    end
+
+    def internal_wait_for_initialized(manager_list, timeout, interval)
+      manager_list.dup.tap { |waiting_managers|
+        start_timeout = Time.new
+
+        while true
+          # Celluloid.logger.debug log_format('internal_wait_for_initialized interval loop')
+          start_interval = Time.new
+
+          waiting_managers.delete_if { |manager|
+            # Celluloid.logger.debug log_format("internal_wait_for_initialized waiting for #{manager.class.name}")
+            manager.wait_for_initialized(interval - (Time.new - start_interval))
+          }
+
+          return if waiting_managers.empty?
+          return waiting_managers if timeout < (Time.new - start_timeout)
+        end
       }
     end
 

@@ -49,6 +49,7 @@ module Vnet
       (was_installed == true) && uninstall
     end
 
+    # TODO: Add unloaded state.
     def set_loaded
       @loaded = true
     end

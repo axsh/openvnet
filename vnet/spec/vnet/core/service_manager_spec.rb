@@ -5,6 +5,8 @@ require 'spec_helper'
 include Vnet::Constants::Openflow
 
 describe Vnet::Core::ServiceManager do
+  before(:each) { use_mock_event_handler }
+
   let(:datapath) { create_mock_datapath }
   let(:dp_info) { datapath.dp_info }
 

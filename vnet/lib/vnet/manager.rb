@@ -53,6 +53,8 @@ module Vnet
       @load_queries = {}
     end
 
+    # TODO: Depricate, and create a method that ensures the item is
+    # fully loaded before returning.
     def retrieve(params)
       begin
         item_to_hash(internal_retrieve(params))
@@ -97,6 +99,10 @@ module Vnet
       end
     end
 
+    def load_first(params)
+      item_to_hash(internal_load_first(params))
+    end
+
     #
     # Polling methods:
     #
@@ -107,7 +113,11 @@ module Vnet
     end
 
     # Returns item if loaded, nil otherwise.
+    #
+    # If the item is created while waiting the created_item subscriber
+    # method is responsible for loading the item.
     def wait_for_loaded(params, max_wait = 10.0, try_load = false)
+      # TODO: Deprecate try_load, use load_detect.
       item_to_hash(internal_wait_for_loaded(params, max_wait, try_load))
     end
 
@@ -152,7 +162,7 @@ module Vnet
 
     def start_initialize
       if @state != :uninitialized
-        raise("Manager.start_initialized must be called on an uninitialized manager.")
+        raise "Manager.start_initialized must be called on an uninitialized manager."
       end
 
       do_initialize
@@ -313,6 +323,8 @@ module Vnet
       item && item.to_hash
     end
 
+    # TODO: This should not return unloaded items!!!
+    # TODO: Look into :retrieved.
     def internal_retrieve(params)
       item = internal_detect(params)
       return item if item
@@ -334,6 +346,19 @@ module Vnet
     end
 
     def internal_retrieve_query_db(params)
+      if internal_detect(params)
+        raise "Manager.internal_retrieve_query_db internal_detect(params) must be nil."
+      end
+
+      # TODO: This overwrites load_queries, make this handle multiple queries.
+
+      # TODO: This should not start another query while loading is
+      # being done, only delete load_queries once loading is done.
+
+      if @load_queries.has_key?(params)
+        raise "Manager.internal_retrieve_query_db @load_queries.has_key?(params) is not nil."
+      end
+
       @load_queries[params] = :querying
 
       item = nil
@@ -347,6 +372,7 @@ module Vnet
       item = internal_new_item(item_map)
 
       # TODO: Set querying to something else?
+      # TODO: Expand load_queries to handle :loading state.
 
       item
 
@@ -571,12 +597,27 @@ module Vnet
     end
 
     #
+    # Internal load/unload methods::
+    #
+
+    def internal_load_first(params)
+      item = internal_detect(params)
+      return item if item && item.loaded?
+
+      if item.nil? && !@load_queries.has_key?(params)
+        internal_retrieve_query_db(params)
+      end
+
+      return
+    end
+
+    #
     # Internal polling methods:
     #
 
     def internal_wait_for_initialized(max_wait)
       if @state == :initialized
-        return
+        return true
       end
 
       # TODO: Check for invalid state, cleaned up, etc.
@@ -588,22 +629,38 @@ module Vnet
     # TODO: Wait_for_loaded needs to work correctly when create is
     # called and the manager doesn't know the item is wanted.
 
+    # TODO: wait_for_loaded doesn't work correctly if created_item
+    # does not load the item.
+
     def internal_wait_for_loaded(params, max_wait, try_load)
-      item = internal_detect_loaded(params)
-      return item if item
-
-      if try_load
-        # TODO: internal_retrieve does not have max_wait or immediate
-        # return if in retrieve queue.
-        self.async.retrieve(params)
-
+      task_init = proc {
         item = internal_detect_loaded(params)
         return item if item
 
-        # TODO: Check if the item is uninstalling, or other edge cases. (?)
-      end
+        if try_load
+          # TODO: If retrieve fails we're not retrying, it relies on
+          # created_item event being sent. Change this to instead be
+          # handled with task_init.
 
-      create_event_task_match_proc(:loaded, params, max_wait)
+          # - check load_queries for params.
+          # - check is loading
+
+          # If retrieve fails due to item not existing we rely on
+          # created_item event load item.
+          #
+          # TODO: Verify that created_item actually loads the item.
+
+          # TODO: Use internal methods for this.
+          self.async.load_first(params)
+
+          # TODO: Verify that we are loading. (?)
+          # TODO: Check if the item is uninstalling, or other edge cases. (?)
+          item = internal_detect_loaded(params)
+          return item if item
+        end
+      }
+
+      create_event_task_match_proc(:loaded, params, max_wait, task_init)
     end
 
     def internal_wait_for_unloaded(params, max_wait)
