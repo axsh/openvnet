@@ -18,7 +18,7 @@
 
     (
         $starting_step "Enable RHSCL"
-        run_cmd "which yum-config-manager > /dev/null"
+        run_cmd "command -v yum-config-manager" > /dev/null
         $skip_step_if_already_done
         run_cmd "yum-config-manager --enable rhel-server-rhscl-7-rpms"
     ) ; prev_cmd_failed
