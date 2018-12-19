@@ -238,65 +238,6 @@ module Vnet
     end
 
     #
-    # Filters:
-    #
-
-    # We explicity initialize each proc parts into the method's local
-    # context, and create the block by referencing those for
-    # optimization reasons.
-    #
-    # Properly verify the speed of any changes to the implementation.
-
-    def match_item_proc(params)
-      case params.size
-      when 1
-        part_1 = params.to_a.first
-        match_item_proc_part(part_1)
-      when 2
-        part_1, part_2 = params.to_a
-        part_1 = match_item_proc_part(part_1)
-        part_2 = match_item_proc_part(part_2)
-        part_1 && part_2 &&
-          proc { |id, item|
-          part_1.call(id, item) &&
-          part_2.call(id, item)
-        }
-      when 3
-        part_1, part_2, part_3 = params.to_a
-        part_1 = match_item_proc_part(part_1)
-        part_2 = match_item_proc_part(part_2)
-        part_3 = match_item_proc_part(part_3)
-        part_1 && part_2 && part_3 &&
-          proc { |id, item|
-          part_1.call(id, item) &&
-          part_2.call(id, item) &&
-          part_3.call(id, item)
-        }
-      when 4
-        part_1, part_2, part_3, part_4 = params.to_a
-        part_1 = match_item_proc_part(part_1)
-        part_2 = match_item_proc_part(part_2)
-        part_3 = match_item_proc_part(part_3)
-        part_4 = match_item_proc_part(part_4)
-        part_1 && part_2 && part_3 && part_4 &&
-          proc { |id, item|
-          part_1.call(id, item) &&
-          part_2.call(id, item) &&
-          part_3.call(id, item) &&
-          part_4.call(id, item)
-        }
-      when 0
-        proc { |id, item| true }
-      else
-        raise NotImplementedError, params.inspect
-      end
-    end
-
-    def match_item_proc_part(filter_part)
-      raise NotImplementedError, params.inspect
-    end
-
-    #
     # Item-related methods:
     #
 
@@ -339,21 +280,15 @@ module Vnet
       begin
         item = nil
 
-        start_query(params).tap { |select_filter|
-          # TODO: Only allow one fiber at the time to make a request with
-          # the exact same select_filter. The remaining fibers should use
-          # internal_wait_for_loaded/initializing.
+        start_query(params) { |item_map|
+          return if item_map.nil?
 
-          select_item(select_filter.first).tap { |item_map|
-            return if item_map.nil?
+          item = internal_new_item(item_map)
 
-            item = internal_new_item(item_map)
+          # TODO: Set querying to something else?
+          # TODO: Expand load_queries to handle :loading state.
 
-            # TODO: Set querying to something else?
-            # TODO: Expand load_queries to handle :loading state.
-
-            return item
-          }
+          return item
         }
       ensure
         # TODO: Ensure should only include the fiber that does the query.
@@ -365,8 +300,6 @@ module Vnet
         # Therefor we use event task to pass a nil value to the waiting
         # tasks that have the same query params.
 
-        clear_query(params)
-
         # TODO: Should we make sure no event tasks are left with
         # 'params' task_id?
         resume_event_tasks(:retrieved, item)
@@ -375,11 +308,6 @@ module Vnet
           info log_format_h("internal_retrieve main fiber query FAILED", params && params.to_h)
         end
       end
-    end
-
-    # The default select call with no fill options.
-    def select_item(batch)
-      batch.commit
     end
 
     #
