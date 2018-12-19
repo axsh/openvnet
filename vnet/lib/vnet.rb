@@ -41,6 +41,7 @@ module Vnet
   autoload :ItemDatapathUuidMode, 'vnet/item_base'
   autoload :Manager,              'vnet/manager'
   autoload :ManagerAssocs,        'vnet/manager_assocs'
+  autoload :ManagerList,          'vnet/manager_list'
   autoload :UpdateItemStates,     'vnet/manager_modules'
   autoload :UpdatePropertyStates, 'vnet/manager_modules'
   autoload :Params,               'vnet/params'
