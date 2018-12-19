@@ -60,11 +60,11 @@ module Vnet::Openflow
     end
 
     def bootstrap_timeout
-      600.0
+      Vnet::Configurations::Vna.conf.bootstrap_timeout
     end
 
     def main_timeout
-      120.0
+      Vnet::Configurations::Vna.conf.main_timeout
     end
 
     def create_switch
@@ -98,7 +98,7 @@ module Vnet::Openflow
         info log_format('resetting datapath info')
 
       rescue Vnet::ManagerInitializationFailed
-        warn log_format("failed to initialize some managers within 120 seconds")
+        warn log_format("failed to initialize some managers")
       end
 
       return nil
