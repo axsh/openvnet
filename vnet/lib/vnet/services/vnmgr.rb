@@ -14,14 +14,27 @@ module Vnet::Services
       @vnet_info = VnetInfo.new
     end
 
-    def do_initialize
-      info log_format('initializing managers')
+    def service_init_timeout
+      Vnet::Configurations::Vnmgr.conf.service_init_timeout
+    end
 
-      # Do linking here?...
+    def run_services
+      begin
+        info log_format('initializing service managers')
 
-      @vnet_info.start_managers
+        info log_format("waiting for service managers to finish initialization (timeout:#{service_init_timeout})")
+        @vnet_info.initialize_service_managers(service_init_timeout)
 
-      info log_format('initialized managers')
+        info log_format('initialized service managers')
+
+      rescue Vnet::ManagerInitializationFailed => e
+        warn log_format("failed to initialize some managers due to timeout")
+        raise e
+      end
+
+    ensure
+      # TODO: Replace with proper terminate.
+      @vnet_info.service_managers.each { |manager| manager.event_handler_drop_all }
     end
 
     #

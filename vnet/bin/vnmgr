@@ -47,6 +47,6 @@ elsif Vnet::Models::MacRangeGroup[dp_mg_uuid].nil?
                      "OpenVNet will not be able to auto-assign MAC addresses."
 end
 
-Celluloid::Actor[:vnmgr].do_initialize
+Celluloid::Actor[:vnmgr].run_services
 
 sleep

@@ -59,12 +59,12 @@ module Vnet::Openflow
       @ovs_ofctl = @dp_info.ovs_ofctl
     end
 
-    def bootstrap_timeout
-      Vnet::Configurations::Vna.conf.bootstrap_timeout
+    def bootstrap_init_timeout
+      Vnet::Configurations::Vna.conf.bootstrap_init_timeout
     end
 
-    def main_timeout
-      Vnet::Configurations::Vna.conf.main_timeout
+    def main_init_timeout
+      Vnet::Configurations::Vna.conf.main_init_timeout
     end
 
     def create_switch
@@ -84,13 +84,13 @@ module Vnet::Openflow
       info log_format('starting normal datapath initialization')
 
       begin
-        info log_format("waiting for bootstrap managers to finish initialization (timeout:#{bootstrap_timeout})")
-        @dp_info.initialize_bootstrap_managers(bootstrap_timeout)
+        info log_format("waiting for bootstrap managers to finish initialization (timeout:#{bootstrap_init_timeout})")
+        @dp_info.initialize_bootstrap_managers(bootstrap_init_timeout)
 
         wait_for_load_of_host_datapath
 
-        info log_format("waiting for main managers to finish initialization (timeout:#{main_timeout})")
-        @dp_info.initialize_main_managers(@datapath_info, main_timeout)
+        info log_format("waiting for main managers to finish initialization (timeout:#{main_init_timeout})")
+        @dp_info.initialize_main_managers(@datapath_info, main_init_timeout)
 
         info log_format('completed normal datapath initialization')
 
@@ -98,7 +98,7 @@ module Vnet::Openflow
         info log_format('resetting datapath info')
 
       rescue Vnet::ManagerInitializationFailed
-        warn log_format("failed to initialize some managers")
+        warn log_format("failed to initialize some managers due to timeout")
       end
 
       return nil

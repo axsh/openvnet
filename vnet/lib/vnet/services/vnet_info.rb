@@ -7,21 +7,20 @@
 # thread for every time we use a manager.
 
 module Vnet::Services
-
   class VnetInfo
 
-    MANAGER_NAMES = %w(
+    SERVICE_MANAGER_NAMES = %w(
       ip_retention_container
       lease_policy
       topology
     )
 
-    MANAGER_NAMES.each do |name|
+    SERVICE_MANAGER_NAMES.each do |name|
       attr_reader "#{name}_manager"
     end
 
     def initialize
-      internal_initialize_managers(MANAGER_NAMES)
+      internal_initialize_managers(SERVICE_MANAGER_NAMES)
     end
 
     def inspect
@@ -32,20 +31,28 @@ module Vnet::Services
     # Managers:
     #
 
-    def managers
-      MANAGER_NAMES.map { |name| __send__("#{name}_manager") }
+    def service_managers
+      SERVICE_MANAGER_NAMES.map { |name| __send__("#{name}_manager") }
     end
 
-    def start_managers(manager_list = managers)
-      manager_list.each { |manager| manager.event_handler_queue_only }
-      manager_list.each { |manager| manager.async.start_initialize }
-      manager_list.each { |manager| manager.wait_for_initialized(nil) }
-      manager_list.each { |manager| manager.event_handler_active }
+    def initialize_service_managers(timeout, interval = 10.0)
+      service_managers.tap { |manager_list|
+        manager_list.each { |manager| manager.event_handler_queue_only }
+        manager_list.each { |manager| manager.async.start_initialize }
+        internal_wait_for_initialized(manager_list, timeout, interval).tap { |stuck_managers|
+          next if stuck_managers.nil?
+
+          stuck_managers.each { |manager|
+            Celluloid.logger.warn log_format("#{manager.class.name.to_s.demodulize.underscore} failed to initialize within #{timeout} seconds")
+          }
+          raise Vnet::ManagerInitializationFailed
+        }
+        manager_list.each { |manager| manager.event_handler_active }
+      }
     end
 
-
-    def terminate_managers(timeout = 10.0)
-      internal_terminate_managers(managers, timeout)
+    def terminate_service_managers(timeout = 10.0)
+      internal_terminate_managers(service_managers, timeout)
     end
 
     #
@@ -54,9 +61,32 @@ module Vnet::Services
 
     private
 
+    def log_format(message, values = nil)
+      "#{@dpid_s} dp_info: #{message}" + (values ? " (#{values})" : '')
+    end
+
     def internal_initialize_managers(name_list)
       name_list.each { |name|
         instance_variable_set("@#{name}_manager", Vnet::Services.const_get("#{name.to_s.camelize}Manager").new(self))
+      }
+    end
+
+    def internal_wait_for_initialized(manager_list, timeout, interval)
+      manager_list.dup.tap { |waiting_managers|
+        start_timeout = Time.new
+
+        while true
+          # Celluloid.logger.debug log_format('internal_wait_for_initialized interval loop')
+          start_interval = Time.new
+
+          waiting_managers.delete_if { |manager|
+            # Celluloid.logger.debug log_format("internal_wait_for_initialized waiting for #{manager.class.name}")
+            manager.wait_for_initialized(interval - (Time.new - start_interval))
+          }
+
+          return if waiting_managers.empty?
+          return waiting_managers if timeout < (Time.new - start_timeout)
+        end
       }
     end
 
