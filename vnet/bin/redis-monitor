@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+
+require 'rubygems'
+require 'bundler/setup'
+require 'vnet'
+
+conf = Vnet::Configurations::Vna.conf
+
+if conf.registry.adapter.to_s != 'redis'
+  puts "only 'redis' registry adapter supported: #{conf.registry.adapter}"
+  exit -1
+end
+
+Kernel.system("redis-cli -h #{conf.registry.host} -p #{conf.registry.port} MONITOR")
