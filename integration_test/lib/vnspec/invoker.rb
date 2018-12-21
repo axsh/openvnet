@@ -108,6 +108,11 @@ module Vnspec
 
         result = SPec.exec(name)
 
+        if Vnet.has_log_string?('failed to initialize some managers due to timeout')
+          logger.info("a manager failed to initialize triggering timeout")
+          result = false
+        end
+
         if !result || ENV['ALWAYS_PRINT_LOGS'].to_s == '1'
           Vnet.dump_logs
           Vnet.dump_flows
