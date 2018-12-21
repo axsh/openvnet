@@ -8,6 +8,8 @@ module Vnet::Services
 
     attr_reader :vnet_info
 
+    finalizer :do_cleanup
+
     def initialize
       info log_format("initalizing on node '#{DCell.me.id}'")
 
@@ -28,12 +30,17 @@ module Vnet::Services
         info log_format('initialized service managers')
 
       rescue Vnet::ManagerInitializationFailed => e
+        # TODO: Replace with proper terminate.
+        @vnet_info.service_managers.each { |manager| manager.event_handler_drop_all }
+
         warn log_format("failed to initialize some managers due to timeout")
         raise e
       end
+    end
 
-    ensure
-      # TODO: Replace with proper terminate.
+    def do_cleanup
+      info log_format("cleanup of service managers")
+
       @vnet_info.service_managers.each { |manager| manager.event_handler_drop_all }
     end
 
