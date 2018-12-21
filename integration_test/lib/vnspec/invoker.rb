@@ -83,12 +83,16 @@ module Vnspec
       end
 
       VM.stop_network
-      Vnet.stop
+      Vnet.stop(:vna)
+      Vnet.stop(:vnmgr)
+      Vnet.stop(:webapi)
+      ENV['REDIS_MONITOR_LOGS'].to_s == '1' && Vnet.stop(:redis_monitor)
       Vnet.delete_tunnels
 
       Vnet.reset_db
 
       Vnet.aggregate_logs(job_id, name) do
+        ENV['REDIS_MONITOR_LOGS'].to_s == '1' && Vnet.start(:redis_monitor)
         Vnet.start(:vnmgr)
         Vnet.start(:webapi)
 
@@ -104,12 +108,14 @@ module Vnspec
 
         result = SPec.exec(name)
 
-        if !result
+        if !result || ENV['ALWAYS_PRINT_LOGS'].to_s == '1'
           Vnet.dump_logs
           Vnet.dump_flows
           Vnet.dump_database
+        end
 
-          #sleep 1000000
+        if !result && ENV['SLEEP_SPEC_FAILURE'].to_s == '1'
+          sleep 12 * 60 * 60
         end
 
         result
