@@ -128,7 +128,7 @@ module Vnet
     autoload :Tunnel, 'vnet/node_api/tunnel'
   end
 
-  Vnet::NodeApi.set_api_proxy(Vnet::NodeApi::DirectProxy.new)
+  Vnet::NodeApi.set_proxy_class(Vnet::NodeApi::DirectProxy)
 
 end
 

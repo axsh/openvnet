@@ -4,14 +4,22 @@ module Vnet
   module NodeApi
     class << self
       attr_accessor :raise_on_error
-      attr_reader :proxy
+      attr_reader :proxy_class
 
-      def set_api_proxy(new_proxy)
-        if @proxy
-          raise "Api proxy is already set."
+      def proxy
+        if @proxy_class.nil?
+          raise "Api proxy class not set."
         end
 
-        @proxy = new_proxy
+        @proxy_class.new
+      end
+
+      def set_proxy_class(p_class)
+        if @proxy_class
+          raise "Api proxy class already set."
+        end
+
+        @proxy_class = p_class
       end
     end
 

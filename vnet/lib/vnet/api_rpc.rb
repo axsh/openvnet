@@ -14,6 +14,6 @@ module Vnet
     autoload :RpcProxy, 'vnet/node_api/rpc_proxy'
   end
 
-  Vnet::NodeApi.set_api_proxy(Vnet::NodeApi::RpcProxy.new)
+  Vnet::NodeApi.set_proxy_class(Vnet::NodeApi::RpcProxy)
 
 end
