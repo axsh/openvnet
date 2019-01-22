@@ -4,7 +4,6 @@ module Vnet::Core::HostDatapaths
 
   class Base < Vnet::ItemDpUuid
     include Celluloid::Logger
-    include Vnet::Openflow::FlowHelpers
 
     attr_reader :display_name
     attr_reader :dpid

@@ -23,6 +23,8 @@ require 'webmock/rspec'
 
 require 'coveralls'
 
+ENV['RACK_ENV'] = 'test'
+
 Coveralls.wear!
 
 DCell.setup
