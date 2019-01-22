@@ -170,6 +170,13 @@ module Vnet::Openflow
     end
 
     def link_with_managers(managers)
+      # TODO: Handle vnmgr node link differently.
+      vnmgr_node = DCell::Node[:vnmgr]
+
+      if vnmgr_node.nil?
+        warn log_format('could not find vnmgr dcell node, cannot create link for actor cleanup')
+      end
+
       # The DCell messenger should not close before we have had a
       # chance to clean up all managers, however it seems to not work
       # properly.
@@ -179,7 +186,7 @@ module Vnet::Openflow
       managers.each { |manager|
         begin
           link(manager)
-          # vnmgr_node && vnmgr_node.link(manager)
+          vnmgr_node && vnmgr_node.link(manager)
         rescue => e
           error log_format("Fail to link with #{manager.class.name}", e)
           raise e
