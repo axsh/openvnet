@@ -1,23 +1,18 @@
 # -*- coding: utf-8 -*-
+
 module Vnet
   module NodeApi
     class << self
       attr_accessor :raise_on_error
-      attr_accessor :proxy
-    end
+      attr_reader :proxy
 
-    module_function
-
-    def set_proxy(name)
-      self.proxy =
-        case name.to_sym
-        when :rpc
-          RpcProxy.new
-        when :direct
-          DirectProxy.new
-        else
-          raise "Unknown proxy: #{name}"
+      def set_api_proxy(new_proxy)
+        if @proxy
+          raise "Api proxy is already set."
         end
+
+        @proxy = new_proxy
+      end
     end
   end
 end
@@ -25,4 +20,3 @@ end
 require_relative("node_api/proxies")
 
 Vnet::NodeApi.raise_on_error = true
-Vnet::NodeApi.set_proxy(:direct)

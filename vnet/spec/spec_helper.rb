@@ -9,7 +9,7 @@ Bundler.require(:test)
 
 require 'dcell'
 require 'trema' # Needed for the to_trema_hash methods in mock_datapath
-require 'vnet'
+require 'vnet/api_direct'
 
 Dir['./spec/helpers/*.rb'].map {|f| require f }
 Dir['./spec/support/*.rb'].map {|f| require f }
@@ -47,7 +47,6 @@ RSpec.configure do |config|
   vnmgr_conf = Vnet::Configurations::Vnmgr.load
   webapi_conf = Vnet::Configurations::Webapi.load
 
-  Vnet::NodeApi.set_proxy(webapi_conf.node_api_proxy)
   Vnet::Initializers::DB.run(webapi_conf.db_uri)
   #Vnet::Initializers::DB.run(vnmgr_conf.db_uri, :debug_sql => true)
 

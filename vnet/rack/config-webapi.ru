@@ -2,7 +2,7 @@
 
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
-require 'vnet'
+require 'vnet/api_rpc'
 require 'rack/cors'
 require 'dcell'
 
@@ -10,18 +10,9 @@ Vnet::Initializers::Logger.run("webapi.log")
 
 conf = Vnet::Configurations::Webapi.conf
 
-Vnet::NodeApi.set_proxy(conf.node_api_proxy)
-
 if defined?(::Unicorn)
   require 'unicorn/oob_gc'
   use Unicorn::OobGC
-end
-
-case conf.node_api_proxy
-when :rpc
-  # do nothing
-when :direct
-  Vnet::Initializers::DB.run(conf.db_uri)
 end
 
 params = {

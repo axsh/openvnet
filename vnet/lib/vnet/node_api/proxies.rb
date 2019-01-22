@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 module Vnet::NodeApi
   class Proxy
     def method_missing(class_name, *args, &block)
@@ -15,8 +16,9 @@ module Vnet::NodeApi
     end
 
     protected
+
     def _call_class
-      raise "Not implemented"
+      raise NotImplementedError
     end
 
     class Call
@@ -35,6 +37,7 @@ module Vnet::NodeApi
       private
 
       def _call(method_name, *args, &block)
+        raise NotImplementedError
       end
 
       def logger
