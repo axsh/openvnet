@@ -422,8 +422,7 @@ module Vnet
   autoload :NodeApi, 'vnet/node_api'
 
   module NodeApi
-    autoload :RpcProxy, 'vnet/node_api/proxies'
-    autoload :DirectProxy, 'vnet/node_api/proxies'
+    autoload :Proxy, 'vnet/node_api'
   end
 
   module NodeModules

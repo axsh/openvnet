@@ -10,8 +10,6 @@ module Vnet
 
   use_api_proxy = :direct
 
-  Vnet::NodeApi.set_api_proxy(Vnet::NodeApi::DirectProxy.new)
-
   module Models
     autoload :Base, 'vnet/models/base'
     autoload :BaseMode, 'vnet/models/base_mode'
@@ -71,6 +69,8 @@ module Vnet
   end
 
   module NodeApi
+    autoload :DirectProxy, 'vnet/node_api/direct_proxy'
+
     autoload :Base, 'vnet/node_api/base'
     autoload :BaseValidateUpdateFields, 'vnet/node_api/base_valid_update_fields'
     autoload :AssocBase, 'vnet/node_api/assoc_base'
@@ -127,6 +127,8 @@ module Vnet
     autoload :TranslationStaticAddress, 'vnet/node_api/translation_static_address'
     autoload :Tunnel, 'vnet/node_api/tunnel'
   end
+
+  Vnet::NodeApi.set_api_proxy(Vnet::NodeApi::DirectProxy.new)
 
 end
 
