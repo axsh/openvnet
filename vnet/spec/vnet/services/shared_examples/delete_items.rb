@@ -34,7 +34,7 @@ shared_examples 'delete items on service manager' do |item_names|
               raise "Invalid create_when '#{created_when.inspect}'"
             end
 
-            vnet_info.start_managers([manager])
+            vnet_info.initialize_manager_list([manager], 10, 5)
 
             item_models.each { |item_model|
               expect(manager).to be_manager_with_loaded(item_model)

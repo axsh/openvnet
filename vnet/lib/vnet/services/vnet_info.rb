@@ -7,21 +7,21 @@
 # thread for every time we use a manager.
 
 module Vnet::Services
-
   class VnetInfo
+    include Vnet::ManagerList
 
-    MANAGER_NAMES = %w(
+    SERVICE_MANAGER_NAMES = %w(
       ip_retention_container
       lease_policy
       topology
     )
 
-    MANAGER_NAMES.each do |name|
+    SERVICE_MANAGER_NAMES.each do |name|
       attr_reader "#{name}_manager"
     end
 
     def initialize
-      internal_initialize_managers(MANAGER_NAMES)
+      internal_initialize_managers(SERVICE_MANAGER_NAMES)
     end
 
     def inspect
@@ -32,20 +32,16 @@ module Vnet::Services
     # Managers:
     #
 
-    def managers
-      MANAGER_NAMES.map { |name| __send__("#{name}_manager") }
+    def service_managers
+      SERVICE_MANAGER_NAMES.map { |name| __send__("#{name}_manager") }
     end
 
-    def start_managers(manager_list = managers)
-      manager_list.each { |manager| manager.event_handler_queue_only }
-      manager_list.each { |manager| manager.async.start_initialize }
-      manager_list.each { |manager| manager.wait_for_initialized(nil) }
-      manager_list.each { |manager| manager.event_handler_active }
+    def initialize_service_managers(timeout, interval = 10.0)
+      initialize_manager_list(service_managers, timeout, interval)
     end
 
-
-    def terminate_managers(timeout = 10.0)
-      internal_terminate_managers(managers, timeout)
+    def terminate_service_managers(timeout = 10.0)
+      terminate_manager_list(service_managers, timeout)
     end
 
     #
@@ -54,26 +50,13 @@ module Vnet::Services
 
     private
 
+    def log_format(message, values = nil)
+      "#{@dpid_s} dp_info: #{message}" + (values ? " (#{values})" : '')
+    end
+
     def internal_initialize_managers(name_list)
       name_list.each { |name|
         instance_variable_set("@#{name}_manager", Vnet::Services.const_get("#{name.to_s.camelize}Manager").new(self))
-      }
-    end
-
-    def internal_terminate_managers(manager_list, timeout)
-      manager_list.each { |manager|
-        begin
-          manager.terminate
-        rescue Celluloid::DeadActorError
-        end
-      }
-
-      start_time = Time.new
-
-      manager_list.each { |manager|
-        next_timeout = timeout - (Time.new - start_time)
-
-        Celluloid::Actor.join(manager, (next_timeout < 0.1) ? 0.1 : next_timeout)
       }
     end
 

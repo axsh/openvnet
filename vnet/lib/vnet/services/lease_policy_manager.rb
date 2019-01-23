@@ -38,16 +38,12 @@ module Vnet::Services
     # Specialize Manager:
     #
 
-    def select_filter_from_params(params)
-      case
-      when params[:id]   then {:id => params[:id]}
-      when params[:uuid] then params[:uuid]
-      when params[:interface_id] then params
-      else
-        # Any invalid params that should cause an exception needs to
-        # be caught by the internal_retrieve_direct method.
-        return nil
-      end
+    def query_filter_from_params(params)
+      filter = []
+      filter << {id: params[:id]} if params.has_key? :id
+      filter << {uuid: params[:uuid]} if params.has_key? :uuid
+      filter << {interface_id: params[:interface_id]} if params.has_key? :interface_id
+      filter
     end
 
     def select_item(filter)

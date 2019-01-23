@@ -20,6 +20,12 @@ module Vnet
   CONFIG_PATH = ["/etc/openvnet", "/etc/wakame-vnet"].unshift(ENV['CONFIG_PATH']).compact
   LOG_DIRECTORY = ENV['LOG_DIRECTORY'] || "/var/log/openvnet"
 
+  class ManagerInitializationFailed < StandardError
+  end
+
+  class ParamError < ArgumentError
+  end
+
   class << self
     attr_accessor :logger
   end
@@ -35,11 +41,10 @@ module Vnet
   autoload :ItemDatapathUuidMode, 'vnet/item_base'
   autoload :Manager,              'vnet/manager'
   autoload :ManagerAssocs,        'vnet/manager_assocs'
-  autoload :LookupParams,         'vnet/manager_params'
+  autoload :ManagerList,          'vnet/manager_list'
   autoload :UpdateItemStates,     'vnet/manager_modules'
   autoload :UpdatePropertyStates, 'vnet/manager_modules'
-
-  autoload :ParamError, 'vnet/manager_params'
+  autoload :Params,               'vnet/params'
 
   module Configurations
     autoload :Base,   'vnet/configurations/base'
@@ -92,7 +97,7 @@ module Vnet
     autoload :DatapathManager, 'vnet/core/datapath_manager'
     autoload :FilterManager, 'vnet/core/filter_manager'
     autoload :Filter, 'vnet/core/items'
-    autoload :HostDatapath, 'vnet/core/host_datapath'
+    autoload :HostDatapath, 'vnet/core/items'
     autoload :HostDatapathManager, 'vnet/core/host_datapath_manager'
     autoload :Interface, 'vnet/core/interface'
     autoload :InterfaceManager, 'vnet/core/interface_manager'

@@ -6,13 +6,19 @@ module Vnet::Openflow
   # static information about this datapath.
   class DatapathInfo
 
+    attr_reader :dpid
+    attr_reader :dpid_2
+
     attr_reader :id
     attr_reader :uuid
     attr_reader :display_name
     attr_reader :node_id
     attr_reader :enable_ovs_learn_action
 
-    def initialize(datapath_map)
+    def initialize(dpid, dpid_s, datapath_map)
+      @dpid = dpid
+      @dpid_s = dpid_s
+
       @id = datapath_map[:id]
       @uuid = datapath_map[:uuid]
       @display_name = datapath_map[:display_name]
@@ -53,9 +59,17 @@ module Vnet::Openflow
       @ovs_ofctl = @dp_info.ovs_ofctl
     end
 
+    def bootstrap_init_timeout
+      Vnet::Configurations::Vna.conf.bootstrap_init_timeout
+    end
+
+    def main_init_timeout
+      Vnet::Configurations::Vna.conf.main_init_timeout
+    end
+
     def create_switch
       link_with_managers(@dp_info.bootstrap_managers)
-      link_with_managers(@dp_info.managers)
+      link_with_managers(@dp_info.main_managers)
 
       @switch = Switch.new(self)
       link(@switch)
@@ -67,27 +81,34 @@ module Vnet::Openflow
     end
 
     def run_normal
-      info log_format('starting normal vnet datapath')
+      info log_format('starting normal datapath initialization')
 
-      wait_for_load_of_host_datapath
+      begin
+        info log_format("waiting for bootstrap managers to finish initialization (timeout:#{bootstrap_init_timeout})")
+        @dp_info.initialize_bootstrap_managers(bootstrap_init_timeout)
 
-      info log_format_h('found datapath info',
-                        display_name: @datapath_info.display_name,
-                        node_id: @datapath_info.node_id,
-                        enable_ovs_learn_action: @datapath_info.enable_ovs_learn_action)
+        wait_for_load_of_host_datapath
 
-      initialize_managers
-      wait_for_unload_of_host_datapath
+        info log_format("waiting for main managers to finish initialization (timeout:#{main_init_timeout})")
+        @dp_info.initialize_main_managers(@datapath_info, main_init_timeout)
 
-      info log_format('resetting datapath info')
+        info log_format('completed normal datapath initialization')
 
-      @dp_info.managers.each { |manager|
-        manager.event_handler_drop_all
-      }
+        wait_for_unload_of_host_datapath
+        info log_format('resetting datapath info')
 
-      @controller.pass_task { @controller.reset_datapath(@dpid) }
+      rescue Vnet::ManagerInitializationFailed
+        warn log_format("failed to initialize some managers due to timeout")
+      end
 
       return nil
+
+    ensure
+      # TODO: Replace with proper terminate.
+      @dp_info.bootstrap_managers.each { |manager| manager.event_handler_drop_all }
+      @dp_info.main_managers.each { |manager| manager.event_handler_drop_all }
+
+      @controller.pass_task { @controller.reset_datapath(@dpid) }
     end
 
     #
@@ -113,27 +134,16 @@ module Vnet::Openflow
       counter = 0
 
       while host_datapath.nil?
-        info log_format('querying database for datapath with matching dpid', "seconds:#{counter * 30}")
+        info log_format('querying database for datapath with matching dpid', seconds: (counter * 30), dpid: @dpid_s)
 
         # TODO: Check for node id.
         host_datapath = @dp_info.host_datapath_manager.wait_for_loaded({dpid: @dpid}, 30, true)
         counter += 1
       end
 
-      @datapath_info = DatapathInfo.new(host_datapath)
+      info log_format_h("found datapath info for #{@dpid_s}", host_datapath.to_h)
 
-      # Make sure datapath manager has the host datapath.
-      #
-      # TODO: This should be done automatically by datapath manager
-      # when it is initialized.
-      #
-      # Since we load the host datapath here, we need to set
-      # queue-only now.
-      @dp_info.managers.each { |manager|
-        manager.event_handler_queue_only
-      }
-
-      @dp_info.datapath_manager.async.retrieve(dpid: @dpid)
+      @datapath_info = DatapathInfo.new(@dpid, @dpid_s, host_datapath)
     end
 
     def wait_for_unload_of_host_datapath
@@ -152,13 +162,15 @@ module Vnet::Openflow
       # We terminate the managers manually rather than relying on
       # actor's 'link' in order to ensure the managers are terminated
       # before Datapath's 'terminate' returns.
-      @dp_info.terminate_managers
+      @dp_info.terminate_main_managers
+      @dp_info.terminate_bootstrap_managers
       @dp_info.del_all_flows
 
       info log_format('cleaned up')
     end
 
     def link_with_managers(managers)
+      # TODO: Handle vnmgr node link differently.
       vnmgr_node = DCell::Node[:vnmgr]
 
       if vnmgr_node.nil?
@@ -180,24 +192,6 @@ module Vnet::Openflow
           raise e
         end
       }
-    end
-
-    def initialize_bootstrap_managers
-      managers = @dp_info.bootstrap_managers
-      managers.each { |manager| manager.set_datapath_info(@datapath_info) }
-      managers.each { |manager| manager.event_handler_queue_only }
-      managers.each { |manager| manager.async.start_initialize }
-      managers.each { |manager| manager.wait_for_initialized(nil) }
-      managers.each { |manager| manager.event_handler_active }
-    end
-
-    def initialize_managers
-      managers = @dp_info.managers
-      managers.each { |manager| manager.set_datapath_info(@datapath_info) }
-      managers.each { |manager| manager.event_handler_queue_only }
-      managers.each { |manager| manager.async.start_initialize }
-      managers.each { |manager| manager.wait_for_initialized(nil) }
-      managers.each { |manager| manager.event_handler_active }
     end
 
   end
