@@ -136,7 +136,7 @@ module Vnet::Event
 
     def subscribe_events
       self.class.event_definitions.keys.each do |event_name|
-        subscribe(event_name, :handle_event)
+        subscribe(event_name, :queue_event)
       end
     end
 
@@ -149,8 +149,7 @@ module Vnet::Event
     # Event handling:
     #
 
-    # TODO: Rename this to something more meaningful such as queue event.
-    def handle_event(event_name, params)
+    def queue_event(event_name, params)
       return if @event_handler_state == :drop_all
 
       #debug "handle event: #{event_name} params: #{params.inspect}}"
