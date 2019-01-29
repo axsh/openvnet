@@ -3,8 +3,6 @@
 module Vnet::Core
   class ActiveManager < Vnet::Core::Manager
 
-    event_handler_default_drop_all
-
     finalizer :do_cleanup
 
     #
