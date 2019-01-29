@@ -26,6 +26,23 @@ module Vnet::Core
       end
     end
 
+    def set_datapath_info(datapath_info)
+      if @datapath_info
+        raise("Manager.set_datapath_info called twice.")
+      end
+
+      if datapath_info.nil? || datapath_info.id.nil?
+        raise("Manager.set_datapath_info received invalid datapath info: #{datapath_info.inspect}")
+      end
+
+      @datapath_info = datapath_info
+
+      # We need to update remote interfaces in case they are now in
+      # our datapath.
+      initialized_datapath_info
+      nil
+    end
+
     #
     # Internal methods:
     #
