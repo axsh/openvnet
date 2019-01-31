@@ -4,7 +4,6 @@ module Vnet::Services
   class Vnmgr
     include Celluloid
     include Celluloid::Logger
-    include Celluloid::Notifications
 
     attr_reader :vnet_info
 
@@ -42,6 +41,11 @@ module Vnet::Services
       info log_format("cleanup of service managers")
 
       @vnet_info.service_managers.each { |manager| manager.event_handler_drop_all }
+    end
+
+    def dispatch_publish(event, options)
+      Celluloid::Notifications.notifier.publish(event, options)
+      nil
     end
 
     #

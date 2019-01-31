@@ -5,13 +5,15 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
 require 'rubygems'
 require 'bundler/setup'
-require 'dcell'
 require 'vnet/api_direct'
+require 'dcell'
+require 'ext/celluloid'
 
 # Vnet::Initializers::Logger.run("vnmgr.log")
 
 conf = Vnet::Configurations::Vnmgr.conf
 
+# TODO: Move to after celluloid/dcell is started?
 Vnet::Initializers::DB.run(conf.db_uri)
 
 params = {
@@ -27,7 +29,6 @@ params = {
 params.merge!(:public => conf.node.pub_addr_string) if conf.node.addr.public != ""
 
 DCell.start(params)
-
 Celluloid.start
 
 Vnet::NodeModules::Rpc.supervise_as :rpc
