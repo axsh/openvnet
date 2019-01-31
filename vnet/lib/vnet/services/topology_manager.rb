@@ -8,7 +8,6 @@ module Vnet::Services
     #
     # Events:
     #
-    event_handler_default_drop_all
 
     subscribe_event TOPOLOGY_INITIALIZED, :load_item
     subscribe_event TOPOLOGY_UNLOAD_ITEM, :unload_item

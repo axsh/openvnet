@@ -5,7 +5,7 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
 require 'rubygems'
 require 'bundler/setup'
-require 'vnet'
+require 'vnet/api_rpc'
 
 # Start the switch manager before any celluloid services in order to
 # avoid cloned file descriptors to e.g. zmq remaining open.
@@ -31,15 +31,7 @@ require 'dcell'
 
 conf = Vnet::Configurations::Vna.conf
 
-Vnet::NodeApi.set_proxy(conf.node_api_proxy)
 Vnet::NodeApi.raise_on_error = false # dont raise any errors
-
-case conf.node_api_proxy
-when :rpc
-  # do nothing
-when :direct
-  Vnet::Initializers::DB.run(conf.db_uri)
-end
 
 params = {
   :id => conf.node.id,

@@ -46,7 +46,7 @@ module Vnet::Event
       end
 
       def event_handler_default_state
-        @event_handler_default_state ||= :active
+        @event_handler_default_state ||= :drop_all
       end
 
       def event_handler_default_active
@@ -101,7 +101,13 @@ module Vnet::Event
     # Public methods:
     #
 
+    attr_reader :event_handler_state
+
     def event_handler_active
+      if @event_handler_state != :drop_all && @event_handler_state != :queue_only
+        raise "Attempted to activate an already active or invalid state event handler."
+      end
+
       @event_handler_state = :active
 
       @event_queues.keys.each { |queue_id|
@@ -118,6 +124,10 @@ module Vnet::Event
     end
 
     def event_handler_queue_only
+      if @event_handler_state != :drop_all && @event_handler_state != :queue_only
+        raise "Attempted to set queue-only an already active or invalid state event handler."
+      end
+
       @event_handler_state = :queue_only
 
       # Do nothing, however we need to check state each iteration in
@@ -126,7 +136,7 @@ module Vnet::Event
 
     def subscribe_events
       self.class.event_definitions.keys.each do |event_name|
-        subscribe(event_name, :handle_event)
+        subscribe(event_name, :queue_event)
       end
     end
 
@@ -139,8 +149,7 @@ module Vnet::Event
     # Event handling:
     #
 
-    # TODO: Rename this to something more meaningful such as queue event.
-    def handle_event(event_name, params)
+    def queue_event(event_name, params)
       return if @event_handler_state == :drop_all
 
       #debug "handle event: #{event_name} params: #{params.inspect}}"
