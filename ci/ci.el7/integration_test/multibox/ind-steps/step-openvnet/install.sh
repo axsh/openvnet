@@ -8,7 +8,7 @@ cat <<EOS > /etc/yum.repos.d/openvnet.repo
 [openvnet]
 name=OpenVNet
 failovermethod=priority
-baseurl=https://ci.openvnet.org/repos/${BRANCH}/packages/rhel/${BUILD_OS#*el}/vnet/${RELEASE_SUFFIX:-current}
+baseurl=https://ci.openvnet.org/repos/${BRANCH}/packages/rhel/7/vnet/${RELEASE_SUFFIX:-current}
 enabled=1
 gpgcheck=0
 EOS
