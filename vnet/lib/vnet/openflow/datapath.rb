@@ -7,7 +7,7 @@ module Vnet::Openflow
   class DatapathInfo
 
     attr_reader :dpid
-    attr_reader :dpid_2
+    attr_reader :dpid_s
 
     attr_reader :id
     attr_reader :uuid

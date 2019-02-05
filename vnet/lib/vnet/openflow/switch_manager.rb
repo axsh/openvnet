@@ -22,6 +22,10 @@ module Vnet::Openflow
     end
 
     def start
+      if defined?(::Celluloid)
+        raise "Celluloid module loaded before SwitchManager has started."
+      end
+
       bridge_sockets = self.list_bridge_sockets
       bridge_sockets.each { |path| FileUtils.remove_file(path, true) }
 

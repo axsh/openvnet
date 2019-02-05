@@ -28,6 +28,7 @@ params = {
 params[:public] = conf.node.pub_addr_string if conf.node.addr.public != ""
 
 DCell.start(params)
+Celluloid.start
 
 map '/api' do
   use Rack::Cors do
