@@ -5,7 +5,7 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
 require 'rubygems'
 require 'bundler/setup'
-require 'vnet'
+require 'vnet/api_rpc'
 
 # Start the switch manager before any celluloid services in order to
 # avoid cloned file descriptors to e.g. zmq remaining open.
@@ -16,39 +16,31 @@ Vnet::Openflow::SwitchManager.new.tap { |sm|
   sm.start
 }
 
+require 'dcell'
+require 'dcell/registries/redis_adapter'
+require 'ext/celluloid'
+
 controller = Vnet::Openflow::Controller.new.tap { |controller|
   controller.init_trema
   controller.open_trema_tasks
   controller.trema_thread = Thread.current
 }
 
-require 'celluloid/autostart'
-require 'dcell'
-require 'dcell/registries/redis_adapter'
-
 #Vnet::Initializers::Logger.run("vna.log")
 
 conf = Vnet::Configurations::Vna.conf
 
-Vnet::NodeApi.set_proxy(conf.node_api_proxy)
 Vnet::NodeApi.raise_on_error = false # dont raise any errors
 
-case conf.node_api_proxy
-when :rpc
-  # do nothing
-when :direct
-  Vnet::Initializers::DB.run(conf.db_uri)
-end
+DCell.start(Vnet::Configurations::Vna.dcell_params)
+Celluloid.start
 
 trap 'TTIN' do
   Celluloid.stack_dump
 end
 
-DCell.start(Vnet::Configurations::Vna.dcell_params)
-
 Vnet::NodeModules::ServiceOpenflow.supervise_as :service_openflow
+Celluloid::Actor[:service_openflow].set_controller(controller)
 
 Celluloid.logger.debug "starting trema controller on thread #{Thread.current.inspect}"
-
-Celluloid::Actor[:service_openflow].set_controller(controller)
 controller.run_no_init!

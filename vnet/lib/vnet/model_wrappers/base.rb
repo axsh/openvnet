@@ -24,7 +24,7 @@ module Vnet::ModelWrappers
   class Base < OpenStruct
     class << self
       def _proxy
-        Vnet::NodeApi.proxy
+        Thread.current.thread_variable_get(:api_proxy) || Thread.current.thread_variable_set(:api_proxy, Vnet::NodeApi.proxy)
       end
 
       def batch(&block)

@@ -119,6 +119,20 @@ module Vnspec
         end
       end
 
+      def has_log_string?(match, nodes = [:vnmgr, :webapi, :vna])
+        nodes.each { |node_name|
+          config[:nodes][node_name].each { |ip|
+            ssh(ip, fetch_log_output(node_name.to_s), debug: false).tap { |output|
+              output[:stdout].match(match).tap { |result|
+                return result if result
+              }
+            }
+          }
+        }
+
+        return nil
+      end
+
       def dump_logs(vna_index = nil)
         return unless config[:dump_flows]
 

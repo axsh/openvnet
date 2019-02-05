@@ -3,6 +3,8 @@
 require 'sequel/core'
 require 'sequel/sql'
 
+require 'vnet/manager_query'
+
 module Vnet
 
   class Manager
@@ -11,7 +13,8 @@ module Vnet
     include Vnet::Constants::Openflow
     include Vnet::Event::EventTasks
     include Vnet::Event::Notifications
-    include Vnet::LookupParams
+    include Vnet::Manager::Query
+    include Vnet::Params
 
     # Main events:
     #
@@ -50,9 +53,11 @@ module Vnet
       @items = {}
       @messages = {}
 
-      @load_queries = {}
+      init_query
     end
 
+    # TODO: Depricate, and create a method that ensures the item is
+    # fully loaded before returning.
     def retrieve(params)
       begin
         item_to_hash(internal_retrieve(params))
@@ -97,6 +102,10 @@ module Vnet
       end
     end
 
+    def load_first(params)
+      item_to_hash(internal_load_first(params))
+    end
+
     #
     # Polling methods:
     #
@@ -107,7 +116,11 @@ module Vnet
     end
 
     # Returns item if loaded, nil otherwise.
+    #
+    # If the item is created while waiting the created_item subscriber
+    # method is responsible for loading the item.
     def wait_for_loaded(params, max_wait = 10.0, try_load = false)
+      # TODO: Deprecate try_load, use load_detect.
       item_to_hash(internal_wait_for_loaded(params, max_wait, try_load))
     end
 
@@ -132,27 +145,9 @@ module Vnet
       nil
     end
 
-    # TODO: Move to core/manager.
-    def set_datapath_info(datapath_info)
-      if @datapath_info
-        raise("Manager.set_datapath_info called twice.")
-      end
-
-      if datapath_info.nil? || datapath_info.id.nil?
-        raise("Manager.set_datapath_info received invalid datapath info.")
-      end
-
-      @datapath_info = datapath_info
-
-      # We need to update remote interfaces in case they are now in
-      # our datapath.
-      initialized_datapath_info
-      nil
-    end
-
     def start_initialize
       if @state != :uninitialized
-        raise("Manager.start_initialized must be called on an uninitialized manager.")
+        raise "Manager.start_initialized must be called on an uninitialized manager."
       end
 
       do_initialize
@@ -225,87 +220,6 @@ module Vnet
     end
 
     #
-    # Filters:
-    #
-
-    # We explicity initialize each proc parts into the method's local
-    # context, and create the block by referencing those for
-    # optimization reasons.
-    #
-    # Properly verify the speed of any changes to the implementation.
-
-    def match_item_proc(params)
-      case params.size
-      when 1
-        part_1 = params.to_a.first
-        match_item_proc_part(part_1)
-      when 2
-        part_1, part_2 = params.to_a
-        part_1 = match_item_proc_part(part_1)
-        part_2 = match_item_proc_part(part_2)
-        part_1 && part_2 &&
-          proc { |id, item|
-          part_1.call(id, item) &&
-          part_2.call(id, item)
-        }
-      when 3
-        part_1, part_2, part_3 = params.to_a
-        part_1 = match_item_proc_part(part_1)
-        part_2 = match_item_proc_part(part_2)
-        part_3 = match_item_proc_part(part_3)
-        part_1 && part_2 && part_3 &&
-          proc { |id, item|
-          part_1.call(id, item) &&
-          part_2.call(id, item) &&
-          part_3.call(id, item)
-        }
-      when 4
-        part_1, part_2, part_3, part_4 = params.to_a
-        part_1 = match_item_proc_part(part_1)
-        part_2 = match_item_proc_part(part_2)
-        part_3 = match_item_proc_part(part_3)
-        part_4 = match_item_proc_part(part_4)
-        part_1 && part_2 && part_3 && part_4 &&
-          proc { |id, item|
-          part_1.call(id, item) &&
-          part_2.call(id, item) &&
-          part_3.call(id, item) &&
-          part_4.call(id, item)
-        }
-      when 0
-        proc { |id, item| true }
-      else
-        raise NotImplementedError, params.inspect
-      end
-    end
-
-    def match_item_proc_part(filter_part)
-      raise NotImplementedError, params.inspect
-    end
-
-    def select_filter_from_params(params)
-      return nil if params.has_key?(:uuid) && params[:uuid].nil?
-
-      create_batch(mw_class.batch, params[:uuid], query_filter_from_params(params))
-    end
-
-    # Creates a batch object for querying a set of item to load,
-    # excluding the 'uuid' parameter.
-    def query_filter_from_params(params)
-      # Must be implemented by subclass
-      raise NotImplementedError
-    end
-
-    def create_batch(batch, uuid, filters)
-      expression = (filters.size > 1) ? Sequel.&(*filters) : filters.first
-
-      return unless expression || uuid
-
-      dataset = uuid ? batch.dataset_where_uuid(uuid) : batch.dataset
-      dataset = expression ? dataset.where(expression) : dataset
-    end
-
-    #
     # Item-related methods:
     #
 
@@ -313,11 +227,13 @@ module Vnet
       item && item.to_hash
     end
 
+    # TODO: This should not return unloaded items!!!
+    # TODO: Look into :retrieved.
     def internal_retrieve(params)
       item = internal_detect(params)
       return item if item
 
-      if @load_queries.has_key?(params)
+      if has_query?(params)
         item = create_event_task_match_proc(:retrieved, params, nil)
 
         if item.nil?
@@ -334,46 +250,46 @@ module Vnet
     end
 
     def internal_retrieve_query_db(params)
-      @load_queries[params] = :querying
-
-      item = nil
-      select_filter = select_filter_from_params(params) || return
-      item_map = select_item(select_filter.first) || return
-
-      # TODO: Only allow one fiber at the time to make a request with
-      # the exact same select_filter. The remaining fibers should use
-      # internal_wait_for_loaded/initializing.
-
-      item = internal_new_item(item_map)
-
-      # TODO: Set querying to something else?
-
-      item
-
-    ensure
-      # TODO: Ensure should only include the fiber that does the query.
-
-      # We can assume that the load failed if item is nil, and such
-      # there will be no trigger of event tasks once the item is
-      # initialized.
-      #
-      # Therefor we use event task to pass a nil value to the waiting
-      # tasks that have the same query params.
-
-      @load_queries.delete(params)
-
-      # TODO: Should we make sure no event tasks are left with
-      # 'params' task_id?
-      resume_event_tasks(:retrieved, item)
-
-      if item.nil?
-        info log_format_h("internal_retrieve main fiber query FAILED", params && params.to_h)
+      if internal_detect(params)
+        raise "Manager.internal_retrieve_query_db internal_detect(params) must be nil."
       end
-    end
 
-    # The default select call with no fill options.
-    def select_item(batch)
-      batch.commit
+      # TODO: This overwrites load_queries, make this handle multiple queries.
+
+      # TODO: This should not start another query while loading is
+      # being done, only delete load_queries once loading is done.
+
+      begin
+        item = nil
+
+        start_query(params) { |item_map|
+          return if item_map.nil?
+
+          item = internal_new_item(item_map)
+
+          # TODO: Set querying to something else?
+          # TODO: Expand load_queries to handle :loading state.
+
+          return item
+        }
+      ensure
+        # TODO: Ensure should only include the fiber that does the query.
+
+        # We can assume that the load failed if item is nil, and such
+        # there will be no trigger of event tasks once the item is
+        # initialized.
+        #
+        # Therefor we use event task to pass a nil value to the waiting
+        # tasks that have the same query params.
+
+        # TODO: Should we make sure no event tasks are left with
+        # 'params' task_id?
+        resume_event_tasks(:retrieved, item)
+
+        if item.nil?
+          info log_format_h("internal_retrieve main fiber query FAILED", params && params.to_h)
+        end
+      end
     end
 
     #
@@ -571,12 +487,27 @@ module Vnet
     end
 
     #
+    # Internal load/unload methods::
+    #
+
+    def internal_load_first(params)
+      item = internal_detect(params)
+      return item if item && item.loaded?
+
+      if item.nil? && !has_query?(params)
+        internal_retrieve_query_db(params)
+      end
+
+      return
+    end
+
+    #
     # Internal polling methods:
     #
 
     def internal_wait_for_initialized(max_wait)
       if @state == :initialized
-        return
+        return true
       end
 
       # TODO: Check for invalid state, cleaned up, etc.
@@ -588,22 +519,38 @@ module Vnet
     # TODO: Wait_for_loaded needs to work correctly when create is
     # called and the manager doesn't know the item is wanted.
 
+    # TODO: wait_for_loaded doesn't work correctly if created_item
+    # does not load the item.
+
     def internal_wait_for_loaded(params, max_wait, try_load)
-      item = internal_detect_loaded(params)
-      return item if item
-
-      if try_load
-        # TODO: internal_retrieve does not have max_wait or immediate
-        # return if in retrieve queue.
-        self.async.retrieve(params)
-
+      task_init = proc {
         item = internal_detect_loaded(params)
         return item if item
 
-        # TODO: Check if the item is uninstalling, or other edge cases. (?)
-      end
+        if try_load
+          # TODO: If retrieve fails we're not retrying, it relies on
+          # created_item event being sent. Change this to instead be
+          # handled with task_init.
 
-      create_event_task_match_proc(:loaded, params, max_wait)
+          # - check load_queries for params.
+          # - check is loading
+
+          # If retrieve fails due to item not existing we rely on
+          # created_item event load item.
+          #
+          # TODO: Verify that created_item actually loads the item.
+
+          # TODO: Use internal methods for this.
+          self.async.load_first(params)
+
+          # TODO: Verify that we are loading. (?)
+          # TODO: Check if the item is uninstalling, or other edge cases. (?)
+          item = internal_detect_loaded(params)
+          return item if item
+        end
+      }
+
+      create_event_task_match_proc(:loaded, params, max_wait, task_init)
     end
 
     def internal_wait_for_unloaded(params, max_wait)

@@ -2,25 +2,18 @@
 
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
-require 'vnet'
+require 'vnet/api_rpc'
 require 'rack/cors'
-require 'celluloid/autostart'
 require 'dcell'
 require 'dcell/registries/redis_adapter'
 
 Vnet::Initializers::Logger.run("webapi.log")
-Vnet::NodeApi.set_proxy(Vnet::Configurations::Webapi.conf.node_api_proxy)
+
+conf = Vnet::Configurations::Webapi.conf
 
 if defined?(::Unicorn)
   require 'unicorn/oob_gc'
   use Unicorn::OobGC
-end
-
-case Vnet::Configurations::Webapi.conf.node_api_proxy
-when :rpc
-  # do nothing
-when :direct
-  Vnet::Initializers::DB.run(Vnet::Configurations::Webapi.conf.db_uri)
 end
 
 DCell.start(Vnet::Configurations::Webapi.dcell_params)

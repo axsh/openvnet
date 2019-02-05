@@ -7,10 +7,11 @@ Bundler.setup(:default)
 #Bundler.require(:default, :test)
 Bundler.require(:test)
 
+require 'vnet/api_direct'
 require 'dcell'
 require 'dcell/registries/redis_adapter'
+require 'ext/celluloid'
 require 'trema' # Needed for the to_trema_hash methods in mock_datapath
-require 'vnet'
 
 Dir['./spec/helpers/*.rb'].map {|f| require f }
 Dir['./spec/support/*.rb'].map {|f| require f }
@@ -23,6 +24,8 @@ require "database_cleaner"
 require 'webmock/rspec'
 
 require 'coveralls'
+
+ENV['RACK_ENV'] = 'test'
 
 Coveralls.wear!
 
@@ -53,7 +56,6 @@ RSpec.configure do |config|
   vnmgr_conf = Vnet::Configurations::Vnmgr.load
   webapi_conf = Vnet::Configurations::Webapi.load
 
-  Vnet::NodeApi.set_proxy(webapi_conf.node_api_proxy)
   Vnet::Initializers::DB.run(webapi_conf.db_uri)
   #Vnet::Initializers::DB.run(vnmgr_conf.db_uri, :debug_sql => true)
 

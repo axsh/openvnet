@@ -5,17 +5,20 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
 require 'rubygems'
 require 'bundler/setup'
-require 'vnet'
-require 'celluloid/autostart'
+require 'vnet/api_direct'
 require 'dcell'
 require 'dcell/registries/redis_adapter'
+require 'ext/celluloid'
+
+# Vnet::Initializers::Logger.run("vnmgr.log")
 
 conf = Vnet::Configurations::Vnmgr.conf
 
-Vnet::Initializers::Logger.run("vnmgr.log")
+# TODO: Move to after celluloid/dcell is started?
 Vnet::Initializers::DB.run(conf.db_uri)
 
 DCell.start(Vnet::Configurations::Vnmgr.dcell_params)
+Celluloid.start
 
 Vnet::NodeModules::Rpc.supervise_as :rpc
 Vnet::NodeModules::EventHandler.supervise_as :event_handler
@@ -37,7 +40,7 @@ Vnet::Configurations::Vnmgr.conf.datapath_mac_group.tap { |dp_mg_uuid|
   end
 }
 
-Celluloid::Actor[:vnmgr].do_initialize
+Celluloid::Actor[:vnmgr].run_services
 
 Celluloid::Logger.debug("#{MessagePack::DefaultFactory.registered_types.inspect}")
 

@@ -8,8 +8,8 @@
 # Datapath actor's messaging queue for every time we use a manager.
 
 module Vnet::Core
-
   class DpInfo
+    include Vnet::ManagerList
 
     BOOTSTRAP_MANAGER_NAMES = %w(
       host_datapath
@@ -24,7 +24,7 @@ module Vnet::Core
     #
     # TODO: Port manager should be moved to bootstrap.
 
-    MANAGER_NAMES = %w(
+    MAIN_MANAGER_NAMES = %w(
       active_interface
       active_network
       active_port
@@ -47,7 +47,7 @@ module Vnet::Core
       port
     ).freeze
 
-    MANAGER_NAMES.each do |name|
+    MAIN_MANAGER_NAMES.each do |name|
       attr_reader "#{name}_manager"
     end
 
@@ -67,7 +67,7 @@ module Vnet::Core
       @ovs_ofctl = params[:ovs_ofctl]
 
       internal_initialize_managers(BOOTSTRAP_MANAGER_NAMES)
-      internal_initialize_managers(MANAGER_NAMES)
+      internal_initialize_managers(MAIN_MANAGER_NAMES)
     end
 
     def inspect
@@ -180,20 +180,32 @@ module Vnet::Core
     # Managers:
     #
 
-    def managers
-      MANAGER_NAMES.map { |name| __send__("#{name}_manager") }
-    end
-
     def bootstrap_managers
       BOOTSTRAP_MANAGER_NAMES.map { |name| __send__("#{name}_manager") }
     end
 
-    def terminate_managers(timeout = 10.0)
-      internal_terminate_managers(managers, timeout)
+    def main_managers
+      MAIN_MANAGER_NAMES.map { |name| __send__("#{name}_manager") }
+    end
+
+    def initialize_bootstrap_managers(timeout, interval = 10.0)
+      initialize_manager_list(bootstrap_managers, timeout, interval)
+    end
+
+    def initialize_main_managers(datapath_info, timeout, interval = 10.0)
+      initialize_manager_list(main_managers, timeout, interval) { |manager|
+        manager.set_datapath_info(datapath_info)
+      }
+
+      datapath_manager.async.retrieve(dpid: datapath_info.dpid)
     end
 
     def terminate_bootstrap_managers(timeout = 10.0)
-      internal_terminate_managers(bootstrap_managers, timeout)
+      terminate_manager_list(bootstrap_managers, timeout)
+    end
+
+    def terminate_main_managers(timeout = 10.0)
+      terminate_manager_list(main_managers, timeout)
     end
 
     #
@@ -202,26 +214,13 @@ module Vnet::Core
 
     private
 
+    def log_format(message, values = nil)
+      "#{@dpid_s} dp_info: #{message}" + (values ? " (#{values})" : '')
+    end
+
     def internal_initialize_managers(name_list)
       name_list.each { |name|
         instance_variable_set("@#{name}_manager", Vnet::Core.const_get("#{name.to_s.camelize}Manager").new(self))
-      }
-    end
-
-    def internal_terminate_managers(manager_list, timeout)
-      manager_list.each { |manager|
-        begin
-          manager.terminate
-        rescue Celluloid::DeadActorError
-        end
-      }
-
-      start_time = Time.new
-
-      manager_list.each { |manager|
-        next_timeout = timeout - (Time.new - start_time)
-
-        Celluloid::Actor.join(manager, (next_timeout < 0.1) ? 0.1 : next_timeout)
       }
     end
 
