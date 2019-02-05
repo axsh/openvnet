@@ -42,6 +42,10 @@ trap 'TTIN' do
   Celluloid.stack_dump
 end
 
+Vnet::NodeModules::ServiceWatchdog.supervise_as :service_watchdog
 Vnet::NodeModules::ServiceOpenflow.supervise_as :service_openflow
+
+Celluloid::Actor[:service_watchdog].start_watchdog
+Celluloid::Actor[:service_openflow].start_openflow
 
 sleep

@@ -429,6 +429,7 @@ module Vnet
     autoload :Rpc, 'vnet/node_modules/rpc'
     autoload :EventHandler, 'vnet/node_modules/event_handler'
     autoload :ServiceOpenflow, 'vnet/node_modules/service_openflow'
+    autoload :ServiceWatchdog, 'vnet/node_modules/service_watchdog'
     autoload :SwitchManager, 'vnet/node_modules/service_openflow'
   end
 

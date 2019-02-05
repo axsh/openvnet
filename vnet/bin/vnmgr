@@ -30,6 +30,7 @@ DCell.start(params)
 
 Celluloid.start
 
+Vnet::NodeModules::ServiceWatchdog.supervise_as :service_watchdog
 Vnet::NodeModules::Rpc.supervise_as :rpc
 Vnet::NodeModules::EventHandler.supervise_as :event_handler
 Vnet::Services::Vnmgr.supervise_as :vnmgr
@@ -47,6 +48,7 @@ elsif Vnet::Models::MacRangeGroup[dp_mg_uuid].nil?
                      "OpenVNet will not be able to auto-assign MAC addresses."
 end
 
-Celluloid::Actor[:vnmgr].run_services
+Celluloid::Actor[:service_watchdog].start_watchdog
+Celluloid::Actor[:vnmgr].start_services
 
 sleep

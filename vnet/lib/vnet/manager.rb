@@ -3,16 +3,18 @@
 require 'sequel/core'
 require 'sequel/sql'
 
+require 'vnet/manager_logger'
 require 'vnet/manager_query'
 
 module Vnet
-
   class Manager
     include Celluloid
     include Celluloid::Logger
+
     include Vnet::Constants::Openflow
     include Vnet::Event::EventTasks
     include Vnet::Event::Notifications
+    include Vnet::Manager::Logger
     include Vnet::Manager::Query
     include Vnet::Params
 
@@ -168,6 +170,7 @@ module Vnet
         raise "Manager.start_initialized must be called on an uninitialized manager."
       end
 
+      do_watchdog
       do_initialize
 
       @state = :initialized
@@ -175,6 +178,9 @@ module Vnet
       # TODO: Catch errors and return nil when do_initialize fails.
       resume_event_tasks(:initialized, true)
       nil
+    end
+
+    def do_watchdog
     end
 
     def do_initialize
@@ -185,24 +191,6 @@ module Vnet
     #
 
     private
-
-    def log_format(message, values = nil)
-      (@log_prefix || "") + message + (values ? " (#{values})" : '')
-    end
-
-    def log_format_h(message, values)
-      values && values.map { |value|
-        value.join(':')
-      }.join(' ').tap { |str|
-        return log_format(message, str)
-      }
-    end
-
-    def log_format_a(message, values)
-      values && values.join(', ').tap { |str|
-        return log_format(message, str)
-      }
-    end
 
     #
     # Override these method to support additional parameters.

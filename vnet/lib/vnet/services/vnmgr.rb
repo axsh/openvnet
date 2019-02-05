@@ -20,7 +20,7 @@ module Vnet::Services
       Vnet::Configurations::Vnmgr.conf.service_init_timeout
     end
 
-    def run_services
+    def start_services
       begin
         info log_format('initializing service managers')
 
