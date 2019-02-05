@@ -16,16 +16,14 @@ Vnet::Openflow::SwitchManager.new.tap { |sm|
   sm.start
 }
 
-require 'celluloid'
+require 'dcell'
+require 'ext/celluloid'
 
 controller = Vnet::Openflow::Controller.new.tap { |controller|
   controller.init_trema
   controller.open_trema_tasks
   controller.trema_thread = Thread.current
 }
-
-require 'celluloid/autostart'
-require 'dcell'
 
 #Vnet::Initializers::Logger.run("vna.log")
 
@@ -45,11 +43,12 @@ params = {
 
 params.merge!(:public => conf.node.pub_addr_string) if conf.node.addr.public != ""
 
+DCell.start(params)
+Celluloid.start
+
 trap 'TTIN' do
   Celluloid.stack_dump
 end
-
-DCell.start(params)
 
 Vnet::NodeModules::ServiceOpenflow.supervise_as :service_openflow
 Celluloid::Actor[:service_openflow].set_controller(controller)

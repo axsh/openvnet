@@ -14,6 +14,10 @@ require 'json'
 require 'logger'
 require 'ostruct'
 
+if defined?(::Celluloid)
+  raise "Celluloid module loaded before Vnet."
+end
+
 module Vnet
 
   ROOT = ENV['VNET_ROOT'] || File.expand_path('../../', __FILE__)

@@ -7,9 +7,10 @@ Bundler.setup(:default)
 #Bundler.require(:default, :test)
 Bundler.require(:test)
 
-require 'dcell'
-require 'trema' # Needed for the to_trema_hash methods in mock_datapath
 require 'vnet/api_direct'
+require 'dcell'
+require 'ext/celluloid'
+require 'trema' # Needed for the to_trema_hash methods in mock_datapath
 
 Dir['./spec/helpers/*.rb'].map {|f| require f }
 Dir['./spec/support/*.rb'].map {|f| require f }

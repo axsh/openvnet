@@ -66,7 +66,7 @@ class MockDatapath < Vnet::Openflow::Datapath
 end
 
 def create_mock_datapath
-  MockDatapath.new(double, 1).tap do |datapath|
-    datapath.create_mock_datapath_map
-  end
+  dp = MockDatapath.new(double, 1)
+  dp.create_mock_datapath_map
+  dp
 end
