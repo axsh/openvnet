@@ -8,6 +8,7 @@ import groovy.transform.Field
   "LEAVE_CONTAINER": "0",
   "ALWAYS_PRINT_LOGS": "0",
   "REDIS_MONITOR_LOGS": "0",
+  "WATCHDOG_LOGS": "1",
   "SLEEP_SPEC_FAILURE": "0",
   "STRIP_VENDOR": "1",
 ]
@@ -22,11 +23,15 @@ def ask_build_parameter = { ->
       [$class: 'ChoiceParameterDefinition',
         choices: "0\n1", description: 'Print redis monitor logs', name: 'REDIS_MONITOR_LOGS'],
       [$class: 'ChoiceParameterDefinition',
+        choices: "1\n0", description: 'Print detailed watchdog logs', name: 'WATCHDOG_LOGS'],
+      [$class: 'ChoiceParameterDefinition',
         choices: "0\n1", description: 'Sleep on spec failure for debugging', name: 'SLEEP_SPEC_FAILURE'],
       [$class: 'ChoiceParameterDefinition',
         choices: "1\n0", description: 'Switch to make vendor/bundle/* compact', name: 'STRIP_VENDOR'],
       [$class: 'ChoiceParameterDefinition',
         choices: "false\ntrue", description: 'Rebuild cache image', name: 'REBUILD'],
+      [$class: 'ChoiceParameterDefinition',
+        choices: "1\n0", description: 'Print all ', name: 'SLEEP_SPEC_FAILURE'],
     ])
 }
 
