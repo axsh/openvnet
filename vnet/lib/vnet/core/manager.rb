@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
+require 'vnet/manager_watchdog'
+
 module Vnet::Core
   class Manager < Vnet::Manager
+    include Vnet::Manager::Watchdog
 
     attr_reader :datapath_info
 
@@ -9,6 +12,8 @@ module Vnet::Core
       @dp_info = info
       @datapath_info = nil
       @log_prefix = "#{@dp_info.try(:dpid_s)} #{self.class.name.to_s.demodulize.underscore}: "
+
+      init_watchdog("#{@dp_info.try(:dpid_s)}:#{self.class.name.to_s.demodulize.underscore}")
 
       # Call super last in order to ensure that the celluloid actor is
       # not activated before we have initialized the required
@@ -24,6 +29,19 @@ module Vnet::Core
         flush_messages(item.id,
                        item.public_method(:mac_address) && item.mac_address) if item
       end
+    end
+
+    def do_watchdog
+      debug log_format('adding to service_watchdog')
+
+      watchdog_register
+    end
+
+    def terminate
+      debug log_format('removing from service_watchdog')
+
+      watchdog_unregister
+      super
     end
 
     #
