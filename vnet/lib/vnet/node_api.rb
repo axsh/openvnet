@@ -63,7 +63,7 @@ module Vnet
         end
 
         def logger
-          Vnet.logger
+          Celluloid.logger
         end
       end
     end

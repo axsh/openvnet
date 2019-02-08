@@ -19,17 +19,12 @@ module Vnet::Services
       super
     end
 
-    def do_watchdog
-      debug log_format('adding to service_watchdog')
-
+    def do_register_watchdog
       watchdog_register
     end
 
-    def terminate
-      debug log_format('removing from service_watchdog')
-
+    def do_unregister_watchdog
       watchdog_unregister
-      super
     end
 
   end

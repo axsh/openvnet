@@ -157,6 +157,8 @@ module Vnet::Openflow
     end
 
     def do_cleanup
+      return if @dp_info.nil?
+
       info log_format('cleaning up')
 
       # We terminate the managers manually rather than relying on

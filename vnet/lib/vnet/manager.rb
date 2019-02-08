@@ -192,9 +192,15 @@ module Vnet
     end
 
     def start_cleanup
-      if @state != :initializing && @state != :initialized
-        # TODO: Either interrupt or wait for initialized.
-        raise "Manager.start_cleanup must be called on an initializing or initialized manager."
+      case @state
+      when :terminated, :uninitialized
+        return
+      when :cleanup
+        return
+      when :initializing
+      when :initialized
+      else
+        raise "Manager.start_cleanup has invalid state: #{@state}."
       end
 
       if @state == :initialized

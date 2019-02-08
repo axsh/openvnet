@@ -16,6 +16,7 @@ module Vnet::Openflow
     attr_accessor :trema_thread
 
     def initialize
+      @dpids = {}
       @datapaths = {}
     end
 
@@ -23,20 +24,24 @@ module Vnet::Openflow
       info "starting OpenFlow controller."
     end
 
-    def switch_ready(datapath_id)
-      info "switch_ready from %#x." % datapath_id
-      initialize_datapath(datapath_id)
+    def switch_ready(dpid)
+      info "switch_ready from %#x." % dpid
+
+      @dpids[dpid] = :ready
+      initialize_datapath(dpid)
     end
 
-    def switch_disconnected(datapath_id)
-      info "switch_disconnected from %#x." % datapath_id
-      terminate_datapath(datapath_id)
+    def switch_disconnected(dpid)
+      info "switch_disconnected from %#x." % dpid
+
+      @dpids.delete(dpid)
+      terminate_datapath(dpid)
     end
 
     def features_reply(dpid, message)
       info "features_reply from %#x." % dpid
 
-      datapath = datapath(dpid) || return
+      datapath = safe_datapath(dpid) || return
       switch = datapath.switch || return
       switch.async.features_reply(message)
     end
@@ -44,7 +49,7 @@ module Vnet::Openflow
     def port_desc_multipart_reply(dpid, message)
       info "port_desc_multipart_reply from %#x." % dpid
 
-      dp_info = dp_info(dpid)
+      dp_info = safe_dp_info(dpid)
       return unless dp_info
 
       message.parts.each { |port_descs|
@@ -57,13 +62,13 @@ module Vnet::Openflow
     def port_status(dpid, message)
       debug "port_status from %#x." % dpid
 
-      datapath = datapath(dpid) || return
+      datapath = safe_datapath(dpid) || return
       switch = datapath.switch || return
       switch.async.port_status(message)
     end
 
     def packet_in(dpid, message)
-      dp_info = dp_info(dpid)
+      dp_info = safe_dp_info(dpid)
       return unless dp_info
 
       case message.cookie >> COOKIE_PREFIX_SHIFT
@@ -106,12 +111,8 @@ module Vnet::Openflow
                       })
     end
 
-    def reset_datapath(dpid)
-      terminate_datapath(dpid)
-      initialize_datapath(dpid)
-    end
-
     def initialize_datapath(dpid)
+      # TODO: Need to wait after terminate.
       terminate_datapath(dpid)
 
       info "initialize datapath actor. dpid: 0x%016x" % dpid
@@ -146,11 +147,23 @@ module Vnet::Openflow
       info "terminated datapath actor. dpid: 0x%016x" % dpid
     end
 
-    def datapath(dpid)
+    def reset_datapath(dpid)
+      terminate_datapath(dpid)
+
+      # Datapath was recreated while we're terminating. (TODO: set dpids status while reseting)
+      return if @datapaths[dpid]
+
+      # TODO: Check that we're not shutting down.
+      if @dpids[dpid] == :ready
+        initialize_datapath(dpid)
+      end
+    end
+
+    def safe_datapath(dpid)
       @datapaths[dpid] && @datapaths[dpid][:datapath]
     end
 
-    def dp_info(dpid)
+    def safe_dp_info(dpid)
       @datapaths[dpid] && @datapaths[dpid][:dp_info]
     end
   end
