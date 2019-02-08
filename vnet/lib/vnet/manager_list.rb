@@ -19,12 +19,10 @@ module Vnet
       manager_list.each { |manager| manager.event_handler_active }
     end
 
-    def terminate_manager_list(manager_list, timeout)
+    def terminate_manager_list(manager_list, timeout, interval = 10.0)
       manager_list.each { |manager| safe_actor_call(manager, :event_handler_drop_all) }
       manager_list.each { |manager|
-        safe_actor_call(manager) { |manager|
-          manager.async.start_cleanup
-        }
+        safe_actor_call(manager, :async) { |a| a.start_cleanup }
       }
 
       internal_wait_for_state(manager_list, timeout, interval, :terminated).tap { |stuck_managers|
@@ -54,7 +52,7 @@ module Vnet
     def safe_actor_call(actor, method_name, *args, &block)
       begin
         actor.send(method_name, *args, &block)
-      rescue Celluloid::DeadActorError
+      rescue Celluloid::DeadActorError, Celluloid::Task::TerminatedError
         nil
       end
     end
@@ -74,9 +72,7 @@ module Vnet
             when :initialized
               manager.wait_for_initialized(interval - (Time.new - start_interval))
             when :terminated
-              safe_actor_call(manager) { |manager|
-                manager.wait_for_terminated(interval - (Time.new - start_interval))
-              }
+              safe_actor_call(manager, :wait_for_terminated, interval - (Time.new - start_interval))
             else
               raise "Invalid state."
             end
