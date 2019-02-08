@@ -18,6 +18,8 @@ module Vnet
     include Vnet::Manager::Query
     include Vnet::Params
 
+    finalizer :start_cleanup
+
     # Main events:
     #
     # Manager and model events are separate as the manager events are
@@ -112,9 +114,16 @@ module Vnet
     # Polling methods:
     #
 
-    # Returns true if initialized, nil otherwise.
+    # Returns true if initialized within 'max_wait' timeout, nil
+    # otherwise.
     def wait_for_initialized(max_wait = 10.0)
       internal_wait_for_initialized(max_wait)
+    end
+
+    # Returns true if terminated within 'max_wait' timeout, nil
+    # otherwise.
+    def wait_for_terminated(max_wait = 10.0)
+      internal_wait_for_terminated(max_wait)
     end
 
     # Returns item if loaded, nil otherwise.
@@ -170,7 +179,9 @@ module Vnet
         raise "Manager.start_initialized must be called on an uninitialized manager."
       end
 
-      do_watchdog
+      @state = :initializing
+
+      do_register_watchdog
       do_initialize
 
       @state = :initialized
@@ -180,10 +191,36 @@ module Vnet
       nil
     end
 
-    def do_watchdog
+    def start_cleanup
+      if @state != :initializing && @state != :initialized
+        # TODO: Either interrupt or wait for initialized.
+        raise "Manager.start_cleanup must be called on an initializing or initialized manager."
+      end
+
+      if @state == :initialized
+        @state = :cleanup
+        do_cleanup
+      end
+
+      # TODO: Protect watchdog from dead actor.
+      do_unregister_watchdog
+
+      @state = :terminated
+
+      resume_event_tasks(:terminated, true)
+      nil
+    end
+
+    def do_register_watchdog
+    end
+
+    def do_unregister_watchdog
     end
 
     def do_initialize
+    end
+
+    def do_cleanup
     end
 
     #
@@ -518,6 +555,17 @@ module Vnet
 
       # TODO: Check for invalid state, cleaned up, etc.
       create_event_task(:initialized, max_wait) { |result|
+        true
+      }
+    end
+
+    def internal_wait_for_terminated(max_wait)
+      if @state == :terminated
+        return true
+      end
+
+      # TODO: Check for invalid state, cleaned up, etc.
+      create_event_task(:terminated, max_wait) { |result|
         true
       }
     end

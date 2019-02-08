@@ -104,9 +104,9 @@ module Vnet::Openflow
       return nil
 
     ensure
-      # TODO: Replace with proper terminate.
-      @dp_info.bootstrap_managers.each { |manager| manager.event_handler_drop_all }
-      @dp_info.main_managers.each { |manager| manager.event_handler_drop_all }
+      # TODO: We don't need to clean up here, only drop all.
+      # @dp_info.bootstrap_managers.each { |manager| manager.event_handler_drop_all }
+      # @dp_info.main_managers.each { |manager| manager.event_handler_drop_all }
 
       @controller.pass_task { @controller.reset_datapath(@dpid) }
     end
@@ -162,8 +162,7 @@ module Vnet::Openflow
       # We terminate the managers manually rather than relying on
       # actor's 'link' in order to ensure the managers are terminated
       # before Datapath's 'terminate' returns.
-      @dp_info.terminate_main_managers
-      @dp_info.terminate_bootstrap_managers
+      @dp_info.terminate_all_managers
       @dp_info.del_all_flows
 
       info log_format('cleaned up')
@@ -180,6 +179,8 @@ module Vnet::Openflow
       # The DCell messenger should not close before we have had a
       # chance to clean up all managers, however it seems to not work
       # properly.
+
+      # TODO: Use trap_exit to kill datapath when a manager dies.
 
       # vnmgr_node && vnmgr_node.link(self)
 

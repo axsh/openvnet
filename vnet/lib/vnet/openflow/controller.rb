@@ -142,7 +142,7 @@ module Vnet::Openflow
       datapath = datapath_map[:datapath] || return
 
       info "terminating datapath actor. dpid: 0x%016x" % dpid
-      datapath.terminate
+      datapath.terminate if datapath.alive?
       info "terminated datapath actor. dpid: 0x%016x" % dpid
     end
 
