@@ -4,7 +4,6 @@ module Vnet::Services
   class Vnmgr
     include Celluloid
     include Celluloid::Logger
-    include Celluloid::Notifications
 
     attr_reader :vnet_info
 
@@ -20,7 +19,7 @@ module Vnet::Services
       Vnet::Configurations::Vnmgr.conf.service_init_timeout
     end
 
-    def run_services
+    def start_services
       begin
         info log_format('initializing service managers')
 
@@ -31,7 +30,7 @@ module Vnet::Services
 
       rescue Vnet::ManagerInitializationFailed => e
         # TODO: Replace with proper terminate.
-        @vnet_info.service_managers.each { |manager| manager.event_handler_drop_all }
+        # @vnet_info.service_managers.each { |manager| manager.event_handler_drop_all }
 
         warn log_format("failed to initialize some managers due to timeout")
         raise e
@@ -41,7 +40,12 @@ module Vnet::Services
     def do_cleanup
       info log_format("cleanup of service managers")
 
-      @vnet_info.service_managers.each { |manager| manager.event_handler_drop_all }
+      @vnet_info.terminate_all_managers
+    end
+
+    def dispatch_publish(event, options)
+      Celluloid::Notifications.notifier.publish(event, options)
+      nil
     end
 
     #

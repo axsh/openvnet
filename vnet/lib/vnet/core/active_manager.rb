@@ -3,8 +3,6 @@
 module Vnet::Core
   class ActiveManager < Vnet::Core::Manager
 
-    finalizer :do_cleanup
-
     #
     # Internal methods:
     #

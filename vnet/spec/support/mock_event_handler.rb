@@ -19,17 +19,17 @@ class MockEventHandler
   end
 
   def handle_event(event, params = {})
-    self.class.pass_events[event].tap { |target|
-      if target
-        #puts "pass event event:#{event} params:#{params}"
-        target.publish(event, params)
-      else
-        {event: event, :options => params}.tap { |ev|
-          self.handled_events << ev
-          self.class.handled_events << ev
-        }
-      end
-    }
+    target = self.class.pass_events[event]
+
+    if target
+      #puts "pass event event:#{event} params:#{params}"
+      target.publish(event, params)
+    else
+      {event: event, :options => params}.tap { |ev|
+        self.handled_events << ev
+        self.class.handled_events << ev
+      }
+    end
   end
 
   def async

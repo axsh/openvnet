@@ -40,7 +40,7 @@ module Vnet::Services
       initialize_manager_list(service_managers, timeout, interval)
     end
 
-    def terminate_service_managers(timeout = 10.0)
+    def terminate_all_managers(timeout = 10.0)
       terminate_manager_list(service_managers, timeout)
     end
 
