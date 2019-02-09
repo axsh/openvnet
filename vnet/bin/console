@@ -5,9 +5,10 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
 require 'rubygems'
 require 'bundler/setup'
-require 'dcell'
 require 'vnet/api_rpc'
 #require 'vnet/api_direct'
+require 'dcell'
+require 'ext/celluloid'
 require 'pry'
 
 # TODO: Add direct api proxy option, which makes sure vnmgr is not running.

@@ -106,9 +106,9 @@ describe Vnet::Event::Notifications do
 
   describe 'with an active manager' do
     let(:manager) do
-      MockEventManager.new.tap { |manager|
-        manager.event_handler_active
-      }
+      m = MockEventManager.new
+      m.event_handler_active
+      m
     end
 
     include_examples 'handle basic events', false
@@ -116,9 +116,9 @@ describe Vnet::Event::Notifications do
 
   describe 'with a queue-only manager' do
     let(:manager) do
-      MockEventManager.new.tap { |manager|
-        manager.event_handler_queue_only
-      }
+      m = MockEventManager.new
+      m.event_handler_queue_only
+      m
     end
 
     include_examples 'handle basic events', true
@@ -154,9 +154,9 @@ describe Vnet::Event::Notifications do
 
   describe 'database changes' do
     let(:manager) do
-      MockEventManager.new.tap { |manager|
-        manager.event_handler_active
-      }
+      m = MockEventManager.new
+      m.event_handler_active
+      m
     end
 
     it 'handle events correctly' do

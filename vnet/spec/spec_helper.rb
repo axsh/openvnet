@@ -7,9 +7,10 @@ Bundler.setup(:default)
 #Bundler.require(:default, :test)
 Bundler.require(:test)
 
-require 'dcell'
-require 'trema' # Needed for the to_trema_hash methods in mock_datapath
 require 'vnet/api_direct'
+require 'dcell'
+require 'ext/celluloid'
+require 'trema' # Needed for the to_trema_hash methods in mock_datapath
 
 Dir['./spec/helpers/*.rb'].map {|f| require f }
 Dir['./spec/support/*.rb'].map {|f| require f }
@@ -32,6 +33,17 @@ DCell.setup
 # When a datapath is initialized, it'll have flow.
 # The one that accepts ARP in the INTERFACE_INGRESS_FILTER table
 DATAPATH_IDLE_FLOWCOUNT = 0
+
+# Disable watchdog registration.
+module Vnet::Manager::Watchdog
+  module InstanceMethods
+    def watchdog_register
+    end
+
+    def watchdog_unregister
+    end
+  end
+end
 
 RSpec.configure do |config|
   config.include Rack::Test::Methods

@@ -3,18 +3,22 @@
 require 'sequel/core'
 require 'sequel/sql'
 
+require 'vnet/manager_logger'
 require 'vnet/manager_query'
 
 module Vnet
-
   class Manager
     include Celluloid
     include Celluloid::Logger
+
     include Vnet::Constants::Openflow
     include Vnet::Event::EventTasks
     include Vnet::Event::Notifications
+    include Vnet::Manager::Logger
     include Vnet::Manager::Query
     include Vnet::Params
+
+    finalizer :start_cleanup
 
     # Main events:
     #
@@ -110,9 +114,16 @@ module Vnet
     # Polling methods:
     #
 
-    # Returns true if initialized, nil otherwise.
+    # Returns true if initialized within 'max_wait' timeout, nil
+    # otherwise.
     def wait_for_initialized(max_wait = 10.0)
       internal_wait_for_initialized(max_wait)
+    end
+
+    # Returns true if terminated within 'max_wait' timeout, nil
+    # otherwise.
+    def wait_for_terminated(max_wait = 10.0)
+      internal_wait_for_terminated(max_wait)
     end
 
     # Returns item if loaded, nil otherwise.
@@ -168,6 +179,9 @@ module Vnet
         raise "Manager.start_initialized must be called on an uninitialized manager."
       end
 
+      @state = :initializing
+
+      do_register_watchdog
       do_initialize
 
       @state = :initialized
@@ -177,7 +191,42 @@ module Vnet
       nil
     end
 
+    def start_cleanup
+      case @state
+      when :terminated, :uninitialized
+        return
+      when :cleanup
+        return
+      when :initializing
+      when :initialized
+      else
+        raise "Manager.start_cleanup has invalid state: #{@state}."
+      end
+
+      if @state == :initialized
+        @state = :cleanup
+        do_cleanup
+      end
+
+      # TODO: Protect watchdog from dead actor.
+      do_unregister_watchdog
+
+      @state = :terminated
+
+      resume_event_tasks(:terminated, true)
+      nil
+    end
+
+    def do_register_watchdog
+    end
+
+    def do_unregister_watchdog
+    end
+
     def do_initialize
+    end
+
+    def do_cleanup
     end
 
     #
@@ -185,24 +234,6 @@ module Vnet
     #
 
     private
-
-    def log_format(message, values = nil)
-      (@log_prefix || "") + message + (values ? " (#{values})" : '')
-    end
-
-    def log_format_h(message, values)
-      values && values.map { |value|
-        value.join(':')
-      }.join(' ').tap { |str|
-        return log_format(message, str)
-      }
-    end
-
-    def log_format_a(message, values)
-      values && values.join(', ').tap { |str|
-        return log_format(message, str)
-      }
-    end
 
     #
     # Override these method to support additional parameters.
@@ -530,6 +561,17 @@ module Vnet
 
       # TODO: Check for invalid state, cleaned up, etc.
       create_event_task(:initialized, max_wait) { |result|
+        true
+      }
+    end
+
+    def internal_wait_for_terminated(max_wait)
+      if @state == :terminated
+        return true
+      end
+
+      # TODO: Check for invalid state, cleaned up, etc.
+      create_event_task(:terminated, max_wait) { |result|
         true
       }
     end

@@ -6,9 +6,8 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'rubygems'
 require 'bundler/setup'
 require 'vnet/api_rpc'
-require 'celluloid'
-require 'celluloid/autostart'
 require 'dcell'
+require 'ext/celluloid'
 
 #Vnet::Initializers::Logger.run("vna.log")
 
@@ -37,11 +36,16 @@ params = {
 params.merge!(:public => conf.node.pub_addr_string) if conf.node.addr.public != ""
 
 DCell.start(params)
+Celluloid.start
 
 trap 'TTIN' do
   Celluloid.stack_dump
 end
 
+Vnet::NodeModules::ServiceWatchdog.supervise_as :service_watchdog
 Vnet::NodeModules::ServiceOpenflow.supervise_as :service_openflow
+
+Celluloid::Actor[:service_watchdog].start_watchdog
+Celluloid::Actor[:service_openflow].start_openflow
 
 sleep

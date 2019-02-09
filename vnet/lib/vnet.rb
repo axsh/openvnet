@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-#require 'active_support/all'
-#require 'active_support/core_ext'
 require 'active_support/core_ext/class/attribute_accessors'
 require 'active_support/core_ext/module/attribute_accessors'
 require 'active_support/core_ext/object'
@@ -11,8 +9,11 @@ require 'active_support/inflector'
 require 'ext/kernel'
 require 'fuguta'
 require 'json'
-require 'logger'
 require 'ostruct'
+
+if defined?(::Celluloid)
+  raise "Celluloid module loaded before Vnet."
+end
 
 module Vnet
 
@@ -27,7 +28,6 @@ module Vnet
   end
 
   class << self
-    attr_accessor :logger
     attr_reader :use_api_proxy
   end
 
@@ -429,6 +429,7 @@ module Vnet
     autoload :Rpc, 'vnet/node_modules/rpc'
     autoload :EventHandler, 'vnet/node_modules/event_handler'
     autoload :ServiceOpenflow, 'vnet/node_modules/service_openflow'
+    autoload :ServiceWatchdog, 'vnet/node_modules/service_watchdog'
     autoload :SwitchManager, 'vnet/node_modules/service_openflow'
   end
 
@@ -475,5 +476,3 @@ module Vnet
   end
 
 end
-
-Vnet.logger = ::Logger.new(STDOUT)

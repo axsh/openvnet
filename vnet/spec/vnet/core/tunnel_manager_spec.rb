@@ -64,17 +64,17 @@ describe Vnet::Core::TunnelManager do
     end
 
     let(:datapath) do
-      MockDatapath.new(double, ("0x#{'a' * 16}").to_i(16)).tap do |dp|
-        dp.create_mock_datapath_map
+      dp = MockDatapath.new(double, ("0x#{'a' * 16}").to_i(16))
+      dp.create_mock_datapath_map
 
-        if2_id = dp.dp_info.active_interface_manager.retrieve(interface_id: send("interface_#{2}").id)[:interface_id]
-        if3_id = dp.dp_info.active_interface_manager.retrieve(interface_id: send("interface_#{3}").id)[:interface_id]
-        if1_id = dp.dp_info.interface_manager.load_local_interface(send("interface_#{1}").id).id
+      if2_id = dp.dp_info.active_interface_manager.retrieve(interface_id: send("interface_#{2}").id)[:interface_id]
+      if3_id = dp.dp_info.active_interface_manager.retrieve(interface_id: send("interface_#{3}").id)[:interface_id]
+      if1_id = dp.dp_info.interface_manager.load_local_interface(send("interface_#{1}").id).id
 
-        sleep(0.3)
+      sleep(0.3)
 
-        dp.dp_info.added_flows.clear
-      end
+      dp.dp_info.added_flows.clear
+      dp
     end
 
     let(:dp_info) do
@@ -143,8 +143,7 @@ describe Vnet::Core::TunnelManager do
     end
 
     let(:tunnel_manager) do
-      datapath.dp_info.tunnel_manager.tap do |tunnel_manager|
-      end
+      datapath.dp_info.tunnel_manager
     end
 
     it "should add flood flow network 1" do
@@ -247,15 +246,15 @@ describe Vnet::Core::TunnelManager do
 
     let(:ofctl) { double(:ofctl) }
     let(:datapath) {
-      MockDatapath.new(double, ("0x#{'a' * 16}").to_i(16), ofctl).tap { |dp|
-        dp_info = dp.dp_info
+      dp = MockDatapath.new(double, ("0x#{'a' * 16}").to_i(16), ofctl)
+      dp_info = dp.dp_info
 
-        dp.create_mock_datapath_map
+      dp.create_mock_datapath_map
 
-        dp_info.active_interface_manager.retrieve(interface_id: send("interface_#{2}").id)[:interface_id]
-        dp_info.active_interface_manager.retrieve(interface_id: send("interface_#{3}").id)[:interface_id]
-        dp_info.interface_manager.load_local_interface(send("interface_#{1}").id).id
-      }
+      dp_info.active_interface_manager.retrieve(interface_id: send("interface_#{2}").id)[:interface_id]
+      dp_info.active_interface_manager.retrieve(interface_id: send("interface_#{3}").id)[:interface_id]
+      dp_info.interface_manager.load_local_interface(send("interface_#{1}").id).id
+      dp
     }
 
     let(:dp_info) do
@@ -263,40 +262,41 @@ describe Vnet::Core::TunnelManager do
     end
 
     subject do
-      datapath.dp_info.tunnel_manager.tap do |tm|
-        dp_info = datapath.dp_info
+      tm = datapath.dp_info.tunnel_manager
+      dp_info = datapath.dp_info
 
-        if_dp1eth0 = dp_info.interface_manager.detect(uuid: 'if-dp1eth0')
-        expect(if_dp1eth0)
+      if_dp1eth0 = dp_info.interface_manager.detect(uuid: 'if-dp1eth0')
+      expect(if_dp1eth0)
 
-        dp_info.tunnel_manager.update(event: :updated_interface,
-                                      interface_event: :set_host_port_number,
-                                      interface_id: if_dp1eth0.id,
-                                      port_number: 1)
+      dp_info.tunnel_manager.update(event: :updated_interface,
+                                    interface_event: :set_host_port_number,
+                                    interface_id: if_dp1eth0.id,
+                                    port_number: 1)
 
-        [[1, 1, 1, 1, 1, 'added_host_datapath_network'],
-         [2, 2, 1, 2, 2, 'removed_remote_datapath_network'],
-         [3, 2, 1, 2, 2, 'added_remote_datapath_network'],
-         #[4, 2, 2, 2, 'added_remote_datapath_network'],
-         [5, 3, 1, 3, 3, 'added_remote_datapath_network'],
-        ].each { |index, datapath_id, nw_index, if_index, il_index, event|
-          dp_obj = {
-            id: index,
-            datapath_id: datapath_id,
-            network_id: public_networks[nw_index].id,
-            interface_id: send("interface_#{if_index}").id,
-            ip_lease_id: send("ip_lease_#{il_index}").id,
-            mac_address: index,
-            active: true
-          }
-
-          dp_info.tunnel_manager.publish(event, id: :datapath_network, dp_obj: dp_obj)
+      [[1, 1, 1, 1, 1, 'added_host_datapath_network'],
+       [2, 2, 1, 2, 2, 'removed_remote_datapath_network'],
+       [3, 2, 1, 2, 2, 'added_remote_datapath_network'],
+       #[4, 2, 2, 2, 'added_remote_datapath_network'],
+       [5, 3, 1, 3, 3, 'added_remote_datapath_network'],
+      ].each { |index, datapath_id, nw_index, if_index, il_index, event|
+        dp_obj = {
+          id: index,
+          datapath_id: datapath_id,
+          network_id: public_networks[nw_index].id,
+          interface_id: send("interface_#{if_index}").id,
+          ip_lease_id: send("ip_lease_#{il_index}").id,
+          mac_address: index,
+          active: true
         }
 
-        sleep(0.3)
-        dp_info.added_flows.clear
-        dp_info.deleted_flows.clear
-      end
+        dp_info.tunnel_manager.publish(event, id: :datapath_network, dp_obj: dp_obj)
+      }
+
+      sleep(0.3)
+      dp_info.added_flows.clear
+      dp_info.deleted_flows.clear
+
+      tm
     end
 
     it "should delete tunnel when the network is deleted on the local datapath" do

@@ -19,3 +19,18 @@ EOF
 ) ; prev_cmd_failed
 
 install_package "openvnet"
+
+(
+    $starting_step "Configure openvnet watchdog"
+    [ "${WATCHDOG_LOGS}" = "1" ]
+    $skip_step_if_already_done; set -ex
+    run_cmd <<EOF
+cat <<EOS >> /etc/openvnet/common.conf
+
+watchdog_interval 5
+watchdog_timeout 15
+watchdog_logging "debug"
+EOS
+EOF
+
+) ; prev_cmd_failed
