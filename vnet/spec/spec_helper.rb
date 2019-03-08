@@ -33,6 +33,17 @@ DCell.setup
 # The one that accepts ARP in the INTERFACE_INGRESS_FILTER table
 DATAPATH_IDLE_FLOWCOUNT = 0
 
+# Disable watchdog registration.
+module Vnet::Manager::Watchdog
+  module InstanceMethods
+    def watchdog_register
+    end
+
+    def watchdog_unregister
+    end
+  end
+end
+
 RSpec.configure do |config|
   config.include Rack::Test::Methods
   config.filter_run :focus => true

@@ -200,12 +200,8 @@ module Vnet::Core
       datapath_manager.async.retrieve(dpid: datapath_info.dpid)
     end
 
-    def terminate_bootstrap_managers(timeout = 10.0)
-      terminate_manager_list(bootstrap_managers, timeout)
-    end
-
-    def terminate_main_managers(timeout = 10.0)
-      terminate_manager_list(main_managers, timeout)
+    def terminate_all_managers(timeout = 10.0)
+      terminate_manager_list(main_managers + bootstrap_managers, timeout)
     end
 
     #

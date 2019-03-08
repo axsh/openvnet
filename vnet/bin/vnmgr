@@ -30,6 +30,7 @@ DCell.start(params)
 
 Celluloid.start
 
+Vnet::NodeModules::ServiceWatchdog.supervise_as :service_watchdog
 Vnet::NodeModules::Rpc.supervise_as :rpc
 Vnet::NodeModules::EventHandler.supervise_as :event_handler
 Vnet::Services::Vnmgr.supervise_as :vnmgr
@@ -39,14 +40,15 @@ DCell::Global[:event_handler] = Celluloid::Actor[:event_handler]
 
 dp_mg_uuid = conf.datapath_mac_group
 if dp_mg_uuid.nil?
-    Vnet.logger.warn "datapath_mac_group is not set in /etc/openvnet/common.conf. " +
-                     "OpenVNet will not be able to auto-assign MAC addresses."
+  Celluloid.logger.warn "datapath_mac_group is not set in /etc/openvnet/common.conf. " +
+                        "OpenVNet will not be able to auto-assign MAC addresses."
 elsif Vnet::Models::MacRangeGroup[dp_mg_uuid].nil?
-    Vnet.logger.warn "The datapath_mac_group UUID set in /etc/openvnet/common.conf " +
-                     "was not found in the database. " +
-                     "OpenVNet will not be able to auto-assign MAC addresses."
+  Celluloid.logger.warn "The datapath_mac_group UUID set in /etc/openvnet/common.conf " +
+                        "was not found in the database. " +
+                        "OpenVNet will not be able to auto-assign MAC addresses."
 end
 
-Celluloid::Actor[:vnmgr].run_services
+Celluloid::Actor[:service_watchdog].start_watchdog
+Celluloid::Actor[:vnmgr].start_services
 
 sleep

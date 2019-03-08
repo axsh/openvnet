@@ -30,8 +30,6 @@ module Vnet::Core
     subscribe_event REMOVED_HOST_DATAPATH_SEGMENT, :removed_host_datapath_segment
     subscribe_event REMOVED_REMOTE_DATAPATH_SEGMENT, :removed_remote_datapath_segment
 
-    finalizer :do_cleanup
-
     def initialize(*args)
       super
       @interfaces = {}
