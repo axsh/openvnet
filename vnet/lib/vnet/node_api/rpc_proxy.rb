@@ -7,6 +7,8 @@ module Vnet
       class RpcCall < Call
         def initialize(class_name)
           super
+
+          # Call 'redis-cli FLUSHALL' if this fails with 'node_id not found'.
           @actor = DCell::Global[:rpc] or raise "rpc not found in DCell::Global"
         end
 
