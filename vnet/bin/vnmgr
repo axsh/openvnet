@@ -5,7 +5,8 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
 require 'rubygems'
 require 'bundler/setup'
-require 'vnet'
+require 'dcell'
+require 'vnet/api_direct'
 
 Vnet::Initializers::Logger.run("vnmgr.log")
 Vnet::Initializers::DB.run(Vnet::Configurations::Vnmgr.conf.db_uri)
@@ -13,6 +14,7 @@ Vnet::Initializers::DB.run(Vnet::Configurations::Vnmgr.conf.db_uri)
 DCell.start(Vnet::Configurations::Vnmgr.dcell_params)
 Celluloid.start
 
+Vnet::NodeModules::ServiceWatchdog.supervise_as :service_watchdog
 Vnet::NodeModules::Rpc.supervise_as :rpc
 Vnet::NodeModules::EventHandler.supervise_as :event_handler
 Vnet::Services::Vnmgr.supervise_as :vnmgr
@@ -22,19 +24,17 @@ Vnet::Configurations::Vnmgr.conf.node.id.to_sym.tap { |node_id|
   DCell::Global[:event_handler_node_id] = node_id
 }
 
-Vnet::Configurations::Vnmgr.conf.datapath_mac_group.tap { |dp_mg_uuid|
-  if dp_mg_uuid.nil?
-    Vnet.logger.warn "datapath_mac_group is not set in /etc/openvnet/common.conf. " +
-      "OpenVNet will not be able to auto-assign MAC addresses."
-  elsif Vnet::Models::MacRangeGroup[dp_mg_uuid].nil?
-    Vnet.logger.warn "The datapath_mac_group UUID set in /etc/openvnet/common.conf " +
-      "was not found in the database. " +
-      "OpenVNet will not be able to auto-assign MAC addresses."
-  end
-}
+dp_mg_uuid = Vnet::Configurations::Vnmgr.conf.datapath_mac_group
+if dp_mg_uuid.nil?
+  Celluloid.logger.warn "datapath_mac_group is not set in /etc/openvnet/common.conf. " +
+                        "OpenVNet will not be able to auto-assign MAC addresses."
+elsif Vnet::Models::MacRangeGroup[dp_mg_uuid].nil?
+  Celluloid.logger.warn "The datapath_mac_group UUID set in /etc/openvnet/common.conf " +
+                        "was not found in the database. " +
+                        "OpenVNet will not be able to auto-assign MAC addresses."
+end
 
-Celluloid::Actor[:vnmgr].do_initialize
-
-Celluloid::Logger.debug("#{MessagePack::DefaultFactory.registered_types.inspect}")
+Celluloid::Actor[:service_watchdog].start_watchdog
+Celluloid::Actor[:vnmgr].start_services
 
 sleep

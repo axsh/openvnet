@@ -5,13 +5,14 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
 require 'rubygems'
 require 'bundler/setup'
-require 'vnet'
+require 'dcell'
+require 'vnet/api_rpc'
+#require 'vnet/api_direct'
 require 'pry'
 
-conf = Vnet::Configurations::Vna.conf
+# TODO: Add direct api proxy option, which makes sure vnmgr is not running.
 
-Vnet::NodeApi.set_proxy(conf.node_api_proxy)
-Vnet::Initializers::DB.run(conf.db_uri)
+conf = Vnet::Configurations::Vna.conf
 
 DCell.start(registry: Vnet::Configurations::Common.dcell_params[:registry])
 

@@ -43,6 +43,10 @@ module Vnet::Event
       # The task_init call should always return the same object as we
       # would receive from the block call, or nil if we should just
       # wait.
+      #
+      # Use task_init to ensure the state didn't change between
+      # checking the state and calling create_event_task. Only needed
+      # when blocking calls have been made.
       result = task_init && task_init.call
       return result if result
 
@@ -61,13 +65,13 @@ module Vnet::Event
         # Suspend returns the value passed to resume by the other
         # task. We do not allow nil to be passed.
         passed_value = Celluloid::Task.suspend(:event_task)
-
-        next if passed_value.nil?
-        next if state[:status] != :valid
+        next if passed_value.nil? || state[:status] != :valid
 
         result = block.call(passed_value)
         return result if result
       end
+
+      return nil
 
     ensure
       state[:status] = :invalid

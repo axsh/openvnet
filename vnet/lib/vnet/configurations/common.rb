@@ -23,6 +23,7 @@ module Vnet::Configurations
             files << File.join(path, name)
           end
         end
+
         super(*files)
       end
 
@@ -86,5 +87,10 @@ module Vnet::Configurations
     end
 
     param :datapath_mac_group, :default => nil
+
+    param :watchdog_interval, :default => 10
+    param :watchdog_timeout, :default => 30
+    param :watchdog_logging, :default => 'error'
+
   end
 end

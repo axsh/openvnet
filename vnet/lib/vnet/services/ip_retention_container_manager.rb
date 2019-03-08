@@ -11,7 +11,6 @@ module Vnet::Services
     #
     # Events:
     #
-    event_handler_default_drop_all
 
     subscribe_event IP_RETENTION_CONTAINER_INITIALIZED, :load_item
     subscribe_event IP_RETENTION_CONTAINER_UNLOAD_ITEM, :unload_item

@@ -83,16 +83,20 @@ module Vnspec
       end
 
       VM.stop_network
-      Vnet.stop
+      Vnet.stop(:vna)
+      Vnet.stop(:vnmgr)
+      Vnet.stop(:webapi)
+      ENV['REDIS_MONITOR_LOGS'].to_s == '1' && Vnet.stop(:redis_monitor)
       Vnet.delete_tunnels
 
       Vnet.reset_db
 
       Vnet.aggregate_logs(job_id, name) do
         begin
+          ENV['REDIS_MONITOR_LOGS'].to_s == '1' && Vnet.start(:redis_monitor)
           Vnet.start(:vnmgr)
           Vnet.start(:webapi)
-
+          
           if vna_start_time == :before
             Vnet.start(:vna)
             Dataset.setup(name)
@@ -111,12 +115,19 @@ module Vnspec
           result = false
         end
 
-        if !result
+        if Vnet.has_log_string?('failed to initialize some managers due to timeout')
+          logger.info("a manager failed to initialize triggering timeout")
+          result = false
+        end
+
+        if !result || ENV['ALWAYS_PRINT_LOGS'].to_s == '1'
           Vnet.dump_logs
           Vnet.dump_flows
           Vnet.dump_database
+        end
 
-          #sleep 1000000
+        if !result && ENV['SLEEP_SPEC_FAILURE'].to_s == '1'
+          sleep 12 * 60 * 60
         end
 
         result

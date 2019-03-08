@@ -26,5 +26,8 @@ module Vnet::Configurations
         @config[:node] = Node.new.tap {|node| node.parse_dsl(&block) if block }
       end
     end
+
+    param :service_init_timeout, :default => 120
+
   end
 end

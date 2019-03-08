@@ -10,7 +10,7 @@ Bundler.require(:test)
 require 'dcell'
 require 'dcell/registries/redis_adapter'
 require 'trema' # Needed for the to_trema_hash methods in mock_datapath
-require 'vnet'
+require 'vnet/api_direct'
 
 Dir['./spec/helpers/*.rb'].map {|f| require f }
 Dir['./spec/support/*.rb'].map {|f| require f }
@@ -24,6 +24,8 @@ require 'webmock/rspec'
 
 require 'coveralls'
 
+ENV['RACK_ENV'] = 'test'
+
 Coveralls.wear!
 
 params = {
@@ -36,6 +38,17 @@ DCell.setup(params)
 # When a datapath is initialized, it'll have flow.
 # The one that accepts ARP in the INTERFACE_INGRESS_FILTER table
 DATAPATH_IDLE_FLOWCOUNT = 0
+
+# Disable watchdog registration.
+module Vnet::Manager::Watchdog
+  module InstanceMethods
+    def watchdog_register
+    end
+
+    def watchdog_unregister
+    end
+  end
+end
 
 RSpec.configure do |config|
   config.include Rack::Test::Methods
@@ -53,7 +66,6 @@ RSpec.configure do |config|
   vnmgr_conf = Vnet::Configurations::Vnmgr.load
   webapi_conf = Vnet::Configurations::Webapi.load
 
-  Vnet::NodeApi.set_proxy(webapi_conf.node_api_proxy)
   Vnet::Initializers::DB.run(webapi_conf.db_uri)
   #Vnet::Initializers::DB.run(vnmgr_conf.db_uri, :debug_sql => true)
 

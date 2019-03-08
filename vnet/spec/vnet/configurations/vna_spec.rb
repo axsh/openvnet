@@ -16,8 +16,6 @@ describe Vnet::Configurations::Vna do
     it { expect(subject.node.addr.port).to eq 19103 }
     it { expect(subject.node.addr_string).to eq "tcp://127.0.0.1:19103" }
 
-    it { expect(subject.node_api_proxy).to eq :rpc }
-
     # trema
     it { expect(subject.trema_home).to eq Gem::Specification.find_by_name('trema').gem_dir }
     it { expect(subject.trema_tmp).to eq "/var/run/openvnet" }

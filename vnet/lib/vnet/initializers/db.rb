@@ -16,6 +16,7 @@ module Vnet::Initializers
         require 'logger'
         db.loggers << ::Logger.new(STDERR)
       end
+
       case db.adapter_scheme
       when :mysql, :mysql2
         Sequel::MySQL.default_charset = 'utf8'
@@ -32,7 +33,11 @@ module Vnet::Initializers
             Sequel::MySQL::MYSQL_TYPES.delete(v)
           }
         end
+
+      else
+        raise "Unsupported database adapter schema '#{dp.adapter_scheme}', use mysql or mysql2."
       end
+
       Vnet::Models::Base.default_row_lock_mode = nil
 
       # Set timezone to UTC

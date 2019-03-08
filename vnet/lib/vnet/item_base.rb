@@ -4,7 +4,7 @@ module Vnet
 
   class ItemBase
     include Celluloid::Logger
-    include Vnet::LookupParams
+    include Vnet::Params
 
     MW = Vnet::ModelWrappers
 
@@ -49,6 +49,7 @@ module Vnet
       (was_installed == true) && uninstall
     end
 
+    # TODO: Add unloaded state.
     def set_loaded
       @loaded = true
     end

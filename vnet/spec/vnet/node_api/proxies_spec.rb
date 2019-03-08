@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
+
 require 'spec_helper'
+require 'vnet/node_api/direct_proxy'
+require 'vnet/node_api/rpc_proxy'
 
 describe Vnet::NodeApi do
   describe Vnet::NodeApi::RpcProxy do

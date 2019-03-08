@@ -9,7 +9,6 @@ module Vnet::Core
     #
     # Events:
     #
-    event_handler_default_drop_all
 
     subscribe_event REMOVED_TUNNEL, :unload
     subscribe_event INITIALIZED_TUNNEL, :install_item
@@ -30,8 +29,6 @@ module Vnet::Core
     subscribe_event ADDED_REMOTE_DATAPATH_SEGMENT, :added_remote_datapath_segment
     subscribe_event REMOVED_HOST_DATAPATH_SEGMENT, :removed_host_datapath_segment
     subscribe_event REMOVED_REMOTE_DATAPATH_SEGMENT, :removed_remote_datapath_segment
-
-    finalizer :do_cleanup
 
     def initialize(*args)
       super
@@ -385,6 +382,11 @@ module Vnet::Core
 
       # Only do create_tunnel and return...
       item = item || create_tunnel(options, tunnel_mode)
+
+      if item.nil?
+        warn log_format_h("could not create #{obj_type} tunnel FAILED UNEXPECTEDLY", options)
+        return
+      end
 
       # Verify tunnel mode here... Rather update tunnel mode as needed.
       if tunnel_mode != item.mode
