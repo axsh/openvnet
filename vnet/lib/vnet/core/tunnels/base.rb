@@ -108,7 +108,10 @@ module Vnet::Core::Tunnels
     def delete_tunnel
     end
 
-    def actions_append_flood(network_id, tunnel_actions, mac2mac_actions)
+    def actions_append_flood_network(network_id, tunnel_actions, mac2mac_actions)
+    end
+
+    def actions_append_flood_segment(segment_id, tunnel_actions, mac2mac_actions)
     end
 
     #

@@ -4,7 +4,7 @@
 set -ex -o pipefail
 
 CID=
-SCL_RUBY="rh-ruby22"
+SCL_RUBY="rh-ruby23"
 
 BUILD_ENV_PATH=${1:?"ERROR: env file is not given."}
 

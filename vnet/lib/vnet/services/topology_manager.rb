@@ -8,7 +8,6 @@ module Vnet::Services
     #
     # Events:
     #
-    event_handler_default_drop_all
 
     subscribe_event TOPOLOGY_INITIALIZED, :load_item
     subscribe_event TOPOLOGY_UNLOAD_ITEM, :unload_item
@@ -37,6 +36,8 @@ module Vnet::Services
       mw_class.batch.dataset.all.commit.each { |item_map|
         publish(TOPOLOGY_CREATED_ITEM, item_map)
       }
+
+      info log_format('finished loading topologies')
     end
 
     #

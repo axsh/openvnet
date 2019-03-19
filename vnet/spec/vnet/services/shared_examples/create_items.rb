@@ -17,7 +17,7 @@ shared_examples 'create items on service manager' do
         expect(manager).to be_manager_with_no_events
         expect(manager).to be_manager_with_item_count(0)
 
-        vnet_info.start_managers([manager])
+        vnet_info.initialize_manager_list([manager], 10, 5)
 
         item_models.each { |item_model|
           expect(manager).to be_manager_with_loaded(item_model)

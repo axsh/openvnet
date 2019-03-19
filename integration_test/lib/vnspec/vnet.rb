@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 module Vnspec
   class Vnet
     class << self
@@ -11,42 +12,25 @@ module Vnspec
       end
 
       def manage_node(ip, operation, node_name)
-            service_cmd = case config[:release_version]
-                          when "el7"     then "systemctl"
-                          when "el6",nil then "initctl"
-                          end
-            ssh(ip, "#{service_cmd} #{operation} vnet-#{node_name}", use_sudo: true)
+        service_cmd = case config[:release_version]
+                      when "el7"     then "systemctl"
+                      when "el6",nil then "initctl"
+                      end
+        ssh(ip, "#{service_cmd} #{operation} vnet-#{node_name.to_s.tr('_', '-')}", use_sudo: true)
       end
 
-      def start(node_name = nil)
-        if node_name
-          Parallel.each(config[:nodes][node_name.to_sym]) do |ip|
-            manage_node(ip, "start", node_name)
-            send(:wait_for, node_name)
-          end
-        else
-          %w(vnmgr vna webapi).each do |n|
-            start(n)
-          end
+      def start(node_name)
+        Parallel.each(config[:nodes][node_name.to_sym]) do |ip|
+          manage_node(ip, "start", node_name)
+          send(:wait_for, node_name)
         end
       end
 
-      def stop(node_name = nil)
-        if node_name
-          Parallel.each(config[:nodes][node_name.to_sym]) do |ip|
-            manage_node(ip, "stop", node_name)
-          end
-          rotate_log(node_name)
-        else
-          %w(webapi vna vnmgr).each do |n|
-            stop(n)
-          end
+      def stop(node_name)
+        Parallel.each(config[:nodes][node_name.to_sym]) do |ip|
+          manage_node(ip, "stop", node_name)
         end
-      end
-
-      def restart(node_name = nil)
-        stop(node_name)
-        start(node_name)
+        rotate_log(node_name)
       end
 
       def update(branch = nil)
@@ -118,36 +102,42 @@ module Vnspec
         multi_ssh(config[:nodes][:vnmgr], "cd #{config[:vnet_path]}/vnet; [ -f /etc/openvnet/vnctl-ruby ] && . /etc/openvnet/vnctl-ruby; bundle exec rake db:reset")
       end
 
+      # TODO: Move logging stuff to module.
+      def fetch_log_output(service)
+        "cat /var/log/openvnet/#{service.to_s.tr('_', '-')}.log"
+      end
+
       def dump_flows(vna_index = nil)
         return unless config[:dump_flows]
 
         config[:nodes][:vna].each_with_index do |ip, i|
           next if vna_index && vna_index.to_i != i + 1
-          logger.info "#" * 50
-          logger.info "# dump_flows: vna#{i + 1}"
-          logger.info "#" * 50
+          dump_header("dump_flows: vna#{i + 1}")
           output = ssh(ip, "cd #{config[:vnet_path]}/vnet; [ -f /etc/openvnet/vnctl-ruby ] && . /etc/openvnet/vnctl-ruby; bundle exec bin/vnflows-monitor", debug: false)
           logger.info output[:stdout]
-          logger.info
+          dump_footer
         end
       end
 
-      def fetch_log_output(service)
-        # vnmgr still outputs to the original logfile
-        (config[:release_version] != "el7" || service == "vnmgr" ? "cat /var/log/openvnet/%s.log" : "journalctl -u vnet-%s") % service
+      def has_log_string?(match, nodes = [:vnmgr, :webapi, :vna])
+        nodes.each { |node_name|
+          config[:nodes][node_name].each { |ip|
+            ssh(ip, fetch_log_output(node_name.to_s), debug: false).tap { |output|
+              output[:stdout].match(match).tap { |result|
+                return result if result
+              }
+            }
+          }
+        }
+
+        return nil
       end
 
       def dump_logs(vna_index = nil)
         return unless config[:dump_flows]
-        dump_header("dump_logs: vnmgr")
-        output = ssh(config[:nodes][:vnmgr].first, fetch_log_output("vnmgr"), debug: false)
-        logger.info output[:stdout]
-        dump_footer
 
-        dump_header("dump_logs: webapi")
-        output = ssh(config[:nodes][:vnmgr].first, fetch_log_output("webapi"), debug: false)
-        logger.info output[:stdout]
-        dump_footer
+        dump_single_node(:vnmgr)
+        dump_single_node(:webapi)
 
         config[:nodes][:vna].each_with_index { |ip, i|
           next if vna_index && vna_index.to_i != i + 1
@@ -171,6 +161,15 @@ module Vnspec
         Vnspec::VM.each { |vm|
           vm.use_vm && vm.dump_vm_status
         }
+
+        ENV['REDIS_MONITOR_LOGS'].to_s == '1' && dump_single_node(:redis_monitor)
+      end
+
+      def dump_single_node(node_name)
+        dump_header("dump_logs: #{node_name}")
+        output = ssh(config[:nodes][node_name.to_sym].first, fetch_log_output(node_name), debug: false)
+        logger.info output[:stdout]
+        dump_footer
       end
 
       def dump_database
@@ -196,6 +195,13 @@ module Vnspec
           :topology_route_links,
 
           :tunnels,
+
+          :active_interfaces,
+          :active_ports,
+          :active_networks,
+          :active_segments,
+          :active_route_links,
+
         ].each { |table_name|
           ssh(config[:nodes][:vnmgr].first, "mysql -te select\\ *\\ from\\ #{table_name}\\; vnet", debug: false).tap { |output|
             logger.info output[:stdout]
@@ -229,11 +235,15 @@ module Vnspec
       def wait_for_webapi
         retry_count = 20
         health_check_url = "http://#{config[:webapi][:host]}:#{config[:webapi][:port]}/api/datapaths"
+
         retry_count.times do
           system("curl -fsSkL #{health_check_url}")
           return true if $? == 0
           sleep 1
         end
+
+        dump_single_node(:webapi)
+
         return false
       end
 
@@ -243,22 +253,29 @@ module Vnspec
 
       def aggregate_logs(job_id, name)
         return unless config[:aggregate_logs]
+
         @job_id = job_id
 
         yield.tap do
-          env_dir = "#{Vnspec::ROOT}/log/#{config[:env]}"
-          job_dir = "#{env_dir}/#{@job_id}"
-          dst_dir = "#{job_dir}/#{name}"
+          env_dir, job_dir, dst_dir = log_dirs(job_id, name)
+
           FileUtils.mkdir_p(dst_dir)
-          config[:nodes].each do |node_name, ips|
-            ips.each_with_index do |ip, i|
+
+          config[:nodes].each { |node_name, ips|
+            node_name == :redis_monitor && ENV['REDIS_MONITOR_LOGS'].to_s != '1' && next
+
+            ips.each_with_index { |ip, i|
               src = logfile_for(node_name)
-              dst = "#{dst_dir}/#{node_name}"
+              dst = "#{dst_dir}/#{node_name.to_s.tr('_', '-')}"
               dst += (i + 1).to_s if node_name == :vna
               dst += ".log"
+
+              logger.info "aggregating log: node_name:#{node_name} ip:#{ip} src:#{src.to_s} dst:#{dst.to_s}"
+
               scp(:download, ip, dst, src)
-            end
-          end
+            }
+          }
+
           FileUtils.rm_f("#{env_dir}/current")
           File.symlink(job_dir, "#{env_dir}/current")
         end
@@ -267,35 +284,30 @@ module Vnspec
       private
 
       def rotate_log(node_name)
-        return unless config[:aggregate_logs]
-        return unless @job_id
-
         Parallel.each(config[:nodes][node_name.to_sym]) do |ip|
           logfile = logfile_for(node_name)
-          timestamp = "#{Time.now.strftime("%Y%m%d%H%M%S%L")}"
-          rotated_logfile = "#{logfile}.#{timestamp}"
 
-          ssh(ip, "cp #{logfile} #{rotated_logfile}", use_sudo: true)
-          ssh(ip, "gzip #{rotated_logfile}", use_sudo: true)
+          if config[:aggregate_logs] && @job_id
+            timestamp = "#{Time.now.strftime("%Y%m%d%H%M%S%L")}"
+            rotated_logfile = "#{logfile}.#{timestamp}"
+
+            ssh(ip, "cp #{logfile} #{rotated_logfile}", use_sudo: true)
+            ssh(ip, "gzip #{rotated_logfile}", use_sudo: true)
+          end
 
           ssh(ip, "truncate --size 0 #{logfile}", use_sudo: true)
         end
       end
 
+      def log_dirs(job_id, name)
+        env_dir = "#{Vnspec::ROOT}/log/#{config[:env]}"
+        job_dir = "#{env_dir}/#{@job_id}"
+        dst_dir = "#{job_dir}/#{name}"
+        return env_dir, job_dir, dst_dir
+      end
+
       def logfile_for(node_name)
-        File.join(config[:vnet_log_directory], "#{node_name}.log")
-      end
-
-      # Move logging stuff to a module.
-      def dump_header(msg)
-        logger.info "#" * 50
-        logger.info "# #{msg}"
-        logger.info "#" * 50
-      end
-
-      def dump_footer(msg = "")
-        logger.info
-        logger.info
+        File.join(config[:vnet_log_directory], "#{node_name.to_s.tr('_', '-')}.log")
       end
 
     end

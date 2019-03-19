@@ -66,15 +66,19 @@ module Vnspec
       end
 
       def ready?(name = :all, timeout = 600)
-        parallel_all? { |vm|
-          vm.ready?(timeout)
-        }.tap { |success|
-          if success
-            logger.info("all vms are ready")
-          else
-            logger.info("one or more vms are down")
-          end
-        }
+        begin
+          parallel_all? { |vm|
+            vm.ready?(timeout)
+          }.tap { |success|
+            if success
+              logger.info("all vms are ready")
+            else
+              logger.info("one or more vms are down")
+            end
+          }
+        rescue Net::SSH::ConnectionTimeout => e
+          throw e
+        end
       end
 
       def install_package(name)
@@ -323,7 +327,15 @@ module Vnspec
       end
 
       def close_all_listening_ports
-        ssh_on_guest("killall nc", use_sudo: true)
+        cmds = [
+          "rm -f #{UDP_OUTPUT_DIR}/*",
+          "killall nc"
+        ]
+
+        @open_tcp_ports.clear
+        @open_udp_ports.clear
+
+        ssh_on_guest(cmds.join(";"), use_sudo: true)
       end
 
       def hostname_for(address, options = {})

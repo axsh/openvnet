@@ -1,4 +1,17 @@
 GIT
+  remote: git://github.com/axsh/dcell.git
+  revision: 2cbae90683be1a7f6c5c4fb4def54f6f528e9f06
+  branch: v0.16.1-updated-gems
+  specs:
+    dcell (0.16.1)
+      celluloid (~> 0.16.0)
+      celluloid-redis
+      celluloid-zmq (~> 0.16.0)
+      http (~> 3.0.0)
+      redis-namespace
+      reel (~> 0.6.1)
+
+GIT
   remote: https://github.com/axsh/racket.git
   revision: c8ae65fa5dc2ca5c31be3cc3d55b848967cd6af4
   specs:
@@ -202,7 +215,7 @@ DEPENDENCIES
   celluloid-io (= 0.16.2)
   coveralls
   database_cleaner
-  dcell
+  dcell!
   fabrication (= 2.9.8)
   ffi-rzmq
   fuguta

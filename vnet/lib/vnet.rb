@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-#require 'active_support/all'
-#require 'active_support/core_ext'
 require 'active_support/core_ext/class/attribute_accessors'
 require 'active_support/core_ext/module/attribute_accessors'
 require 'active_support/core_ext/object'
@@ -11,7 +9,6 @@ require 'active_support/inflector'
 require 'ext/kernel'
 require 'fuguta'
 require 'json'
-require 'logger'
 require 'ostruct'
 
 module Vnet
@@ -20,8 +17,14 @@ module Vnet
   CONFIG_PATH = ["/etc/openvnet", "/etc/wakame-vnet"].unshift(ENV['CONFIG_PATH']).compact
   LOG_DIRECTORY = ENV['LOG_DIRECTORY'] || "/var/log/openvnet"
 
+  class ManagerInitializationFailed < StandardError
+  end
+
+  class ParamError < ArgumentError
+  end
+
   class << self
-    attr_accessor :logger
+    attr_reader :use_api_proxy
   end
 
   autoload :Event,                'vnet/event'
@@ -35,11 +38,10 @@ module Vnet
   autoload :ItemDatapathUuidMode, 'vnet/item_base'
   autoload :Manager,              'vnet/manager'
   autoload :ManagerAssocs,        'vnet/manager_assocs'
-  autoload :LookupParams,         'vnet/manager_params'
+  autoload :ManagerList,          'vnet/manager_list'
   autoload :UpdateItemStates,     'vnet/manager_modules'
   autoload :UpdatePropertyStates, 'vnet/manager_modules'
-
-  autoload :ParamError, 'vnet/manager_params'
+  autoload :Params,               'vnet/params'
 
   module Configurations
     autoload :Base,   'vnet/configurations/base'
@@ -92,7 +94,7 @@ module Vnet
     autoload :DatapathManager, 'vnet/core/datapath_manager'
     autoload :FilterManager, 'vnet/core/filter_manager'
     autoload :Filter, 'vnet/core/items'
-    autoload :HostDatapath, 'vnet/core/host_datapath'
+    autoload :HostDatapath, 'vnet/core/items'
     autoload :HostDatapathManager, 'vnet/core/host_datapath_manager'
     autoload :Interface, 'vnet/core/interface'
     autoload :InterfaceManager, 'vnet/core/interface_manager'
@@ -356,62 +358,6 @@ module Vnet
 
   module Models
     class InvalidUUIDError < StandardError; end
-
-    autoload :Base, 'vnet/models/base'
-    autoload :BaseMode, 'vnet/models/base_mode'
-    autoload :BaseTaggable, 'vnet/models/base_taggable'
-
-    autoload :ActiveInterface, 'vnet/models/active_interface'
-    autoload :ActiveNetwork, 'vnet/models/active_network'
-    autoload :ActivePort, 'vnet/models/active_port'
-    autoload :ActiveRouteLink, 'vnet/models/active_route_link'
-    autoload :ActiveSegment, 'vnet/models/active_segment'
-    autoload :Datapath, 'vnet/models/datapath'
-    autoload :DatapathNetwork, 'vnet/models/datapath_network'
-    autoload :DatapathSegment, 'vnet/models/datapath_segment'
-    autoload :DatapathRouteLink, 'vnet/models/datapath_route_link'
-    autoload :DnsService, 'vnet/models/dns_service'
-    autoload :DnsRecord, 'vnet/models/dns_record'
-    autoload :Interface, 'vnet/models/interface'
-    autoload :InterfacePort, 'vnet/models/interface_port'
-    autoload :InterfaceNetwork, 'vnet/models/interface_network'
-    autoload :InterfaceSegment, 'vnet/models/interface_segment'
-    autoload :InterfaceRouteLink, 'vnet/models/interface_route_link'
-    autoload :IpAddress, 'vnet/models/ip_address'
-    autoload :IpLease, 'vnet/models/ip_lease'
-    autoload :IpLeaseContainer, 'vnet/models/ip_lease_container'
-    autoload :IpLeaseContainerIpLease, 'vnet/models/ip_lease_container_ip_lease'
-    autoload :IpRange, 'vnet/models/ip_range'
-    autoload :IpRangeGroup, 'vnet/models/ip_range_group'
-    autoload :IpRetention, 'vnet/models/ip_retention'
-    autoload :IpRetentionContainer, 'vnet/models/ip_retention_container'
-    autoload :Filter, 'vnet/models/filter'
-    autoload :FilterStatic, 'vnet/models/filter_static'
-    autoload :LeasePolicy, 'vnet/models/lease_policy'
-    autoload :LeasePolicyBaseNetwork, 'vnet/models/lease_policy_base_network'
-    autoload :LeasePolicyBaseInterface, 'vnet/models/lease_policy_base_interface'
-    autoload :LeasePolicyIpLeaseContainer, 'vnet/models/lease_policy_ip_lease_container'
-    autoload :LeasePolicyIpRetentionContainer, 'vnet/models/lease_policy_ip_retention_container'
-    autoload :MacAddress, 'vnet/models/mac_address'
-    autoload :MacLease, 'vnet/models/mac_lease'
-    autoload :MacRange, 'vnet/models/mac_range'
-    autoload :MacRangeGroup, 'vnet/models/mac_range_group'
-    autoload :Network, 'vnet/models/network'
-    autoload :NetworkService, 'vnet/models/network_service'
-    autoload :Route, 'vnet/models/route'
-    autoload :RouteLink, 'vnet/models/route_link'
-    autoload :Segment, 'vnet/models/segment'
-    autoload :Taggable, 'vnet/models/base'
-    autoload :Topology, 'vnet/models/topology'
-    autoload :TopologyDatapath, 'vnet/models/topology_datapath'
-    autoload :TopologyLayer, 'vnet/models/topology_layer'
-    autoload :TopologyMacRangeGroup, 'vnet/models/topology_mac_range_group'
-    autoload :TopologyNetwork, 'vnet/models/topology_network'
-    autoload :TopologySegment, 'vnet/models/topology_segment'
-    autoload :TopologyRouteLink, 'vnet/models/topology_route_link'
-    autoload :Translation, 'vnet/models/translation'
-    autoload :TranslationStaticAddress, 'vnet/models/translation_static_address'
-    autoload :Tunnel, 'vnet/models/tunnel'
   end
 
   module ModelWrappers
@@ -472,70 +418,14 @@ module Vnet
   autoload :NodeApi, 'vnet/node_api'
 
   module NodeApi
-    autoload :RpcProxy, 'vnet/node_api/proxies'
-    autoload :DirectProxy, 'vnet/node_api/proxies'
-
-    autoload :Base, 'vnet/node_api/base'
-    autoload :BaseValidateUpdateFields, 'vnet/node_api/base_valid_update_fields'
-    autoload :AssocBase, 'vnet/node_api/assoc_base'
-    autoload :EventBase, 'vnet/node_api/event_base'
-    autoload :LegacyBase, 'vnet/node_api/models'
-
-    autoload :ActiveInterface, 'vnet/node_api/active_interface'
-    autoload :ActiveNetwork, 'vnet/node_api/active_network'
-    autoload :ActivePort, 'vnet/node_api/active_port'
-    autoload :ActiveRouteLink, 'vnet/node_api/active_route_link'
-    autoload :ActiveSegment, 'vnet/node_api/active_segment'
-    autoload :Datapath, 'vnet/node_api/datapath'
-    autoload :DatapathGeneric, 'vnet/node_api/datapath_generic'
-    autoload :DatapathNetwork, 'vnet/node_api/datapath_generic'
-    autoload :DatapathSegment, 'vnet/node_api/datapath_generic'
-    autoload :DatapathRouteLink, 'vnet/node_api/datapath_generic'
-    autoload :DnsService, 'vnet/node_api/dns_service'
-    autoload :DnsRecord, 'vnet/node_api/dns_record'
-    autoload :Interface, 'vnet/node_api/interface'
-    autoload :InterfacePort, 'vnet/node_api/interface_port'
-    autoload :InterfaceNetwork, 'vnet/node_api/interface_assoc'
-    autoload :InterfaceSegment, 'vnet/node_api/interface_assoc'
-    autoload :InterfaceRouteLink, 'vnet/node_api/interface_assoc'
-    autoload :IpAddress, 'vnet/node_api/models'
-    autoload :IpLease, 'vnet/node_api/ip_lease'
-    autoload :IpLeaseContainer, 'vnet/node_api/ip_lease_container'
-    autoload :IpRange, 'vnet/node_api/models'
-    autoload :IpRangeGroup, 'vnet/node_api/models'
-    autoload :IpRetention, 'vnet/node_api/ip_retention'
-    autoload :Filter, 'vnet/node_api/filter'
-    autoload :FilterStatic, 'vnet/node_api/filter_static'
-    autoload :IpRetentionContainer, 'vnet/node_api/ip_retention_container'
-    autoload :LeasePolicy, 'vnet/node_api/lease_policy'
-    autoload :LeasePolicyBaseInterface, 'vnet/node_api/models'
-    autoload :LeasePolicyBaseNetwork, 'vnet/node_api/models'
-    autoload :MacAddress, 'vnet/node_api/models'
-    autoload :MacLease, 'vnet/node_api/mac_lease'
-    autoload :MacRange, 'vnet/node_api/mac_range'
-    autoload :MacRangeGroup, 'vnet/node_api/mac_range'
-    autoload :Network, 'vnet/node_api/network'
-    autoload :NetworkService, 'vnet/node_api/network_service'
-    autoload :Route, 'vnet/node_api/route'
-    autoload :RouteLink, 'vnet/node_api/route_link'
-    autoload :Segment, 'vnet/node_api/segment'
-    autoload :Topology, 'vnet/node_api/topology'
-    autoload :TopologyAssocBase, 'vnet/node_api/topology'
-    autoload :TopologyDatapath, 'vnet/node_api/topology'
-    autoload :TopologyLayer, 'vnet/node_api/topology'
-    autoload :TopologyMacRangeGroup, 'vnet/node_api/topology'
-    autoload :TopologyNetwork, 'vnet/node_api/topology'
-    autoload :TopologySegment, 'vnet/node_api/topology'
-    autoload :TopologyRouteLink, 'vnet/node_api/topology'
-    autoload :Translation, 'vnet/node_api/translation'
-    autoload :TranslationStaticAddress, 'vnet/node_api/translation_static_address'
-    autoload :Tunnel, 'vnet/node_api/tunnel'
+    autoload :Proxy, 'vnet/node_api'
   end
 
   module NodeModules
     autoload :Rpc, 'vnet/node_modules/rpc'
     autoload :EventHandler, 'vnet/node_modules/event_handler'
     autoload :ServiceOpenflow, 'vnet/node_modules/service_openflow'
+    autoload :ServiceWatchdog, 'vnet/node_modules/service_watchdog'
     autoload :SwitchManager, 'vnet/node_modules/service_openflow'
   end
 
@@ -582,5 +472,3 @@ module Vnet
   end
 
 end
-
-Vnet.logger = ::Logger.new(STDOUT)

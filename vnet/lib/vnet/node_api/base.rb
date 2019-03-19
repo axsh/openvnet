@@ -8,7 +8,7 @@ module Vnet::NodeApi
     M = Vnet::Models
 
     def self.logger
-      Vnet.logger
+      Celluloid.logger
     end
 
     class << self
