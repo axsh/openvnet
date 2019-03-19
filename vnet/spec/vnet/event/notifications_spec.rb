@@ -1,215 +1,217 @@
 # -*- coding: utf-8 -*-
 require 'spec_helper'
 
-describe Vnet::Event::Notifications do
-  describe "handle_event" do
-    let(:notifier) { Celluloid::Notifications.notifier }
+shared_examples 'handle basic events' do |activate_after_publish|
+  context "handle basic events #{activate_after_publish ? 'and activate event handler after publish' : 'with no state change'}" do
+    it 'create an item' do
+      manager.db_items.push({ id: 1, name: :foo })
+      notifier.publish('item_created', id: 1)
 
-    let(:manager_class) do
-      Class.new do
-        include Celluloid
-        include Vnet::Event::Notifications
-
-        attr_accessor :db_items
-        attr_reader :items, :executed_methods
-
-        subscribe_event "item_created", :create_item
-        subscribe_event "item_updated", :update_item
-        subscribe_event "item_deleted", :delete_item
-
-        def initialize(options = {})
-          @items = {}
-          @executed_methods = []
-          @db_items = []
-          @sleep = options.has_key?(:sleep) ? options[:sleep] : true
-        end
-
-        def handle_event(event, params)
-          super
-        end
-
-        def wait_for_events_done
-          sleep 0.01 while @event_queues.present? || @queue_statuses.present?
-        end
-
-        def find_db_item(id, sleep = false)
-          sleep rand / 10 if sleep
-          @db_items.find{|i| i[:id] == id}
-        end
-
-        def create_item(params)
-          #debug "create_item #{params.inspect}"
-          db_item = find_db_item(params[:id], @sleep)
-          return unless db_item
-          return if @items[params[:id]]
-          @items[params[:id]] = db_item.dup
-          @executed_methods << { method: :create_item, params: params }
-          debug "item_created #{params.inspect}"
-        end
-
-        def update_item(params)
-          #debug "update_item #{params.inspect}"
-          db_item = find_db_item(params[:id], @sleep)
-          return unless db_item
-          return unless @items[params[:id]]
-          return if @items[params[:id]][:name] == db_item[:name]
-          @items[params[:id]][:name] = db_item[:name]
-          @executed_methods << { method: :update_item, params: params }
-          debug "item_updated #{params.inspect}"
-        end
-
-        def delete_item(params)
-          #debug "delete_item #{params.inspect}"
-          db_item = find_db_item(params[:id], @sleep)
-          return if db_item
-          return unless @items[params[:id]]
-          @items.delete(params[:id])
-          @executed_methods << { method: :delete_item, params: params }
-          debug "item_deleted #{params.inspect}"
-        end
+      if activate_after_publish
+        expect(manager.items).to be_empty
+        manager.event_handler_active
       end
+
+      manager.wait_for_events_done
+
+      expect(manager.items.size).to eq 1
+      expect(manager.items[1][:id]).to eq 1
+      expect(manager.items[1][:name]).to eq :foo
+      expect(manager.executed_methods.size).to eq 1
     end
 
-    it "create an item" do
-      item_manager = manager_class.new
+    it 'execute create_item only once' do
+      manager.db_items.push({ id: 1, name: :foo })
+      notifier.publish('item_created', id: 1)
+      notifier.publish('item_created', id: 1)
+      notifier.publish('item_created', id: 1)
 
-      item_manager.db_items.push({ id: 1, name: :foo })
-      notifier.publish("item_created", id: 1)
+      if activate_after_publish
+        expect(manager.items).to be_empty
+        manager.event_handler_active
+      end
 
-      item_manager.wait_for_events_done
+      manager.wait_for_events_done
 
-      expect(item_manager.items.size).to eq 1
-      expect(item_manager.items[1][:id]).to eq 1
-      expect(item_manager.items[1][:name]).to eq :foo
-      expect(item_manager.executed_methods.size).to eq 1
+      expect(manager.items.size).to eq 1
+      expect(manager.executed_methods.size).to eq 1
     end
 
-    it "execute create_item only once" do
-      item_manager = manager_class.new
+    it 'updated an item' do
+      manager.db_items.push({ id: 1, name: :foo })
+      notifier.publish('item_created', id: 1)
 
-      item_manager.db_items.push({ id: 1, name: :foo })
-      notifier.publish("item_created", id: 1)
-      notifier.publish("item_created", id: 1)
-      notifier.publish("item_created", id: 1)
+      if activate_after_publish
+        expect(manager.items).to be_empty
+        manager.event_handler_active
+      end
 
-      item_manager.wait_for_events_done
+      manager.wait_for_events_done
 
-      expect(item_manager.items.size).to eq 1
-      expect(item_manager.executed_methods.size).to eq 1
+      manager.find_db_item(1)[:name] = :bar
+      notifier.publish('item_updated', id: 1)
+
+      manager.wait_for_events_done
+
+      expect(manager.items.size).to eq 1
+      expect(manager.items[1][:id]).to eq 1
+      expect(manager.items[1][:name]).to eq :bar
+      expect(manager.executed_methods.size).to eq 2
     end
 
-    it "updated an item" do
-      item_manager = manager_class.new
+    it 'delete an item' do
+      manager.db_items.push({ id: 1, name: :foo })
+      notifier.publish('item_created', id: 1)
 
-      item_manager.db_items.push({ id: 1, name: :foo })
-      notifier.publish("item_created", id: 1)
+      if activate_after_publish
+        expect(manager.items).to be_empty
+        manager.event_handler_active
+      end
 
-      item_manager.wait_for_events_done
+      manager.wait_for_events_done
 
-      item_manager.find_db_item(1)[:name] = :bar
-      notifier.publish("item_updated", id: 1)
+      manager.db_items.delete_if{|i| i[:id] == 1}
+      notifier.publish('item_deleted', id: 1)
 
-      item_manager.wait_for_events_done
+      manager.wait_for_events_done
 
-      expect(item_manager.items.size).to eq 1
-      expect(item_manager.items[1][:id]).to eq 1
-      expect(item_manager.items[1][:name]).to eq :bar
-      expect(item_manager.executed_methods.size).to eq 2
+      expect(manager.items).to be_empty
+      expect(manager.executed_methods.size).to eq 2
     end
 
-    it "delete an item" do
-      item_manager = manager_class.new
+    it 'create an item and delete it' do
+      manager.db_items.push({ id: 1, name: :foo })
+      notifier.publish('item_created', id: 1)
 
-      item_manager.db_items.push({ id: 1, name: :foo })
-      notifier.publish("item_created", id: 1)
+      if activate_after_publish
+        expect(manager.items).to be_empty
+        manager.event_handler_active
+      end
 
-      item_manager.wait_for_events_done
+      manager.wait_for_events_done
 
-      item_manager.db_items.delete_if{|i| i[:id] == 1}
-      notifier.publish("item_deleted", id: 1)
+      manager.db_items.delete_if{|i| i[:id] == 1}
+      notifier.publish('item_deleted', id: 1)
 
-      item_manager.wait_for_events_done
+      manager.wait_for_events_done
 
-      expect(item_manager.items.size).to eq 0
-      expect(item_manager.executed_methods.size).to eq 2
+      expect(manager.items).to be_empty
+      expect(manager.executed_methods.size).to eq 2
+    end
+  end
+end
+
+describe Vnet::Event::Notifications do
+  let(:notifier) { Celluloid::Notifications.notifier }
+
+  describe 'with an active manager' do
+    let(:manager) do
+      MockEventManager.new.tap { |manager|
+        manager.event_handler_active
+      }
     end
 
-    it "create an item and delete it" do
-      item_manager = manager_class.new
+    include_examples 'handle basic events', false
+  end
 
-      item_manager.db_items.push({ id: 1, name: :foo })
-      notifier.publish("item_created", id: 1)
-
-      item_manager.wait_for_events_done
-
-      item_manager.db_items.delete_if{|i| i[:id] == 1}
-      notifier.publish("item_deleted", id: 1)
-
-      item_manager.wait_for_events_done
-
-      expect(item_manager.items.size).to eq 0
-      expect(item_manager.executed_methods.size).to eq 2
+  describe 'with a queue-only manager' do
+    let(:manager) do
+      MockEventManager.new.tap { |manager|
+        manager.event_handler_queue_only
+      }
     end
 
-    it "handle events correctly" do
-      item_manager = manager_class.new(sleep: false)
+    include_examples 'handle basic events', true
+
+    it 'create an item should do nothing' do
+      expect(manager.event_handler_state).to eq :queue_only
+
+      manager.db_items.push({ id: 1, name: :foo })
+      notifier.publish('item_created', id: 1)
+
+      sleep 0.1
+
+      expect(manager.items).to be_empty
+    end
+  end
+
+  describe 'with a drop-all manager' do
+    let(:manager) do
+      MockEventManager.new
+    end
+
+    it 'create an item should do nothing' do
+      expect(manager.event_handler_state).to eq :drop_all
+
+      manager.db_items.push({ id: 1, name: :foo })
+      notifier.publish('item_created', id: 1)
+
+      sleep 0.1
+
+      expect(manager.items).to be_empty
+    end
+  end
+
+  describe 'database changes' do
+    let(:manager) do
+      MockEventManager.new.tap { |manager|
+        manager.event_handler_active
+      }
+    end
+
+    it 'handle events correctly' do
+      manager.disable_sleep
 
       t = Thread.new do
         loop do
           ev = %w(created updated deleted).shuffle.first
           id = rand(3).to_i + 1
-          notifier.publish("item_#{ev}", id: id)
+          notifier.publish('item_#{ev}', id: id)
         end
       end
 
-      item_manager.db_items.push({ id: 1, name: :foo })
-      notifier.publish("item_created", id: 1)
+      manager.db_items.push({ id: 1, name: :foo })
+      notifier.publish('item_created', id: 1)
       sleep 0.01
-      item_manager.db_items.push({ id: 2, name: :bar })
-      notifier.publish("item_created", id: 2)
+      manager.db_items.push({ id: 2, name: :bar })
+      notifier.publish('item_created', id: 2)
       sleep 0.01
-      item_manager.db_items.push({ id: 3, name: :baz })
-      notifier.publish("item_created", id: 3)
+      manager.db_items.push({ id: 3, name: :baz })
+      notifier.publish('item_created', id: 3)
       sleep 0.01
-      item_manager.db_items.find{|i| i[:id] == 2}[:name] = :boo
-      notifier.publish("item_updated", id: 2)
+      manager.db_items.find{|i| i[:id] == 2}[:name] = :boo
+      notifier.publish('item_updated', id: 2)
       sleep 0.01
-      item_manager.db_items.delete_if{|i| i[:id] == 3}
-      notifier.publish("item_deleted", id: 3)
+      manager.db_items.delete_if{|i| i[:id] == 3}
+      notifier.publish('item_deleted', id: 3)
 
       t.exit
 
-      item_manager.wait_for_events_done
+      manager.wait_for_events_done
 
-      expect(item_manager.items.size).to eq 2
-      expect(item_manager.items[1]).to eq({ id: 1, name: :foo })
-      expect(item_manager.items[2]).to eq({ id: 2, name: :boo })
-      expect(item_manager.executed_methods.size).to eq 5
+      expect(manager.items.size).to eq 2
+      expect(manager.items[1]).to eq({ id: 1, name: :foo })
+      expect(manager.items[2]).to eq({ id: 2, name: :boo })
+      expect(manager.executed_methods.size).to eq 5
     end
 
-    it "enqueue event to a list identified by params[:id]" do
-      manager_class.class_eval do
-        def event_handler_process_queue(id)
-          "do nothing"
-        end
-      end
-
-      item_manager = manager_class.new
+    it 'enqueue event to a list identified by params[:id]' do
+      manager.disable_process_queue
 
       item_map_1 = { id: 1, name: :foo }
       item_map_2 = { id: 2, name: :bar }
 
-      item_manager.db_items.push(item_map_1)
-      notifier.publish("item_created", id: 1, item_map: item_map_1)
+      manager.db_items.push(item_map_1)
+      notifier.publish('item_created', id: 1, item_map: item_map_1)
       sleep 0.01
-      item_manager.db_items.push(item_map_2)
-      notifier.publish("item_created", id: 2, item_map: item_map_2)
+      manager.db_items.push(item_map_2)
+      notifier.publish('item_created', id: 2, item_map: item_map_2)
       sleep 0.01
-      item_manager.db_items.find{|i| i[:id] == 2}[:name] = :baz
-      notifier.publish("item_updated", id: 2)
+      manager.db_items.find{|i| i[:id] == 2}[:name] = :baz
+      notifier.publish('item_updated', id: 2)
       sleep 0.01
 
-      event_queues = item_manager.instance_variable_get(:@event_queues)
+      event_queues = manager.instance_variable_get(:@event_queues)
 
       expect(event_queues[1].size).to eq 1
       expect(event_queues[2].size).to eq 2

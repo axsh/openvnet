@@ -15,7 +15,5 @@ describe Vnet::Configurations::Webapi do
     it { expect(subject.node.addr.host).to eq "127.0.0.1" }
     it { expect(subject.node.addr.port).to eq 19101 }
     it { expect(subject.node.addr_string).to eq "tcp://127.0.0.1:19101" }
-
-    it { expect(subject.node_api_proxy).to eq :direct }
   end
 end

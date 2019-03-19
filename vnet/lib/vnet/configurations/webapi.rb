@@ -28,7 +28,6 @@ module Vnet::Configurations
       end
     end
 
-    param :node_api_proxy, :default => :direct
     param :pagination_limit, :default => 30
   end
 end

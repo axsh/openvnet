@@ -10,7 +10,6 @@ module Vnet::Core
     #
     # Events:
     #
-    event_handler_default_drop_all
 
     subscribe_event FILTER_INITIALIZED, :load_item
     subscribe_event FILTER_UNLOAD_ITEM, :unload_item

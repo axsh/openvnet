@@ -60,5 +60,18 @@ module Vnspec
       logger.info("# #{log_string} #")
       logger.info("#=" + ("=" * log_string.length) + "=#\n")
     end
+
+    # Move logging stuff to a module.
+    def dump_header(msg)
+      logger.info("#" * 50)
+      logger.info("# #{msg}")
+      logger.info("#" * 50)
+    end
+
+    def dump_footer(msg = "")
+      logger.info
+      logger.info
+    end
+
   end
 end
