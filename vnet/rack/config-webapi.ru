@@ -14,6 +14,7 @@ if defined?(::Unicorn)
   use Unicorn::OobGC
 end
 
+Celluloid.start
 DCell.start(Vnet::Configurations::Webapi.dcell_params)
 
 map '/api' do

@@ -11,8 +11,8 @@ require 'vnet/api_direct'
 Vnet::Initializers::Logger.run("vnmgr.log")
 Vnet::Initializers::DB.run(Vnet::Configurations::Vnmgr.conf.db_uri)
 
-DCell.start(Vnet::Configurations::Vnmgr.dcell_params)
 Celluloid.start
+DCell.start(Vnet::Configurations::Vnmgr.dcell_params)
 
 Vnet::NodeModules::ServiceWatchdog.supervise_as :service_watchdog
 Vnet::NodeModules::Rpc.supervise_as :rpc
