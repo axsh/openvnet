@@ -34,7 +34,8 @@ module Vnet::Event
 
       state = {
         status: :init,
-        id: task_id
+        id: task_id,
+        created_at: Time.now.to_i,
       }
 
       tasks = (@event_tasks[task_name] ||= {})
@@ -77,6 +78,8 @@ module Vnet::Event
       state[:status] = :invalid
 
       tasks.delete(current_task)
+      @event_tasks.delete(task_name) if @event_tasks[task_name].empty?
+
       current_timer && current_timer.cancel
     end
 

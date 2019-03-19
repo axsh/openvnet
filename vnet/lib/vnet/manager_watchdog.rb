@@ -9,10 +9,11 @@ module Vnet
 
       module InstanceMethods
 
-        def watchdog_check
+        def watchdog_check(event_task_timeout = 10)
           return {
             id: @watchdog_id,
             event_task_count: @event_tasks && @event_tasks.size,
+            event_task_stuck: watchdog_stuck_event_tasks(event_task_timeout),
           }
         end
 
@@ -49,6 +50,23 @@ module Vnet
           debug log_format_h('unregistering watchdog', id: @watchdog_id)
 
           watchdog.unregister_actor(@watchdog_id, @watchdog_registered)
+        end
+
+        def watchdog_stuck_event_tasks(event_task_timeout)
+          results = []
+          return results if @event_tasks.nil?
+
+          timeout_at = Time.now.to_i - event_task_timeout
+
+          @event_tasks.each { |task_name, tasks|
+            tasks.select { |task, state|
+              state[:created_at] <= timeout_at
+            }.each { |task, state|
+              results << {task_name: task_name, chain_id: task.chain_id}.merge(state)
+            }
+          }
+
+          return results
         end
 
       end
