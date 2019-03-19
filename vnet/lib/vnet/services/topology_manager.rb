@@ -8,7 +8,6 @@ module Vnet::Services
     #
     # Events:
     #
-    event_handler_default_drop_all
 
     subscribe_event TOPOLOGY_INITIALIZED, :load_item
     subscribe_event TOPOLOGY_UNLOAD_ITEM, :unload_item
@@ -27,16 +26,6 @@ module Vnet::Services
     subscribe_item_event 'topology_underlay_removed_datapath', :underlay_removed_datapath
     subscribe_item_event 'topology_underlay_added_mac_range_group', :underlay_added_mac_range_group
     subscribe_item_event 'topology_underlay_removed_mac_range_group', :underlay_removed_mac_range_group
-
-    def initialize(*args)
-      begin
-        info log_format("initalizing on node '#{DCell.me.id}'")
-      rescue Celluloid::DeadActorError => e
-        warn log_format("initalizing with dead actor")
-      end
-
-      super
-    end
 
     def do_initialize
       info log_format('loading all topologies')

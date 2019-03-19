@@ -6,17 +6,32 @@ import groovy.transform.Field
 @Field buildParams = [
   "REBUILD": "false",
   "LEAVE_CONTAINER": "0",
+  "ALWAYS_PRINT_LOGS": "0",
+  "REDIS_MONITOR_LOGS": "0",
+  "WATCHDOG_LOGS": "1",
+  "SLEEP_SPEC_FAILURE": "0",
   "STRIP_VENDOR": "1",
 ]
+
 def ask_build_parameter = { ->
   return input(message: "Build Parameters", id: "build_params",
     parameters:[
       [$class: 'ChoiceParameterDefinition',
-        choices: "0\n1", description: 'Leave container after build for debugging.', name: 'LEAVE_CONTAINER'],
+        choices: "0\n1", description: 'Leave container after build for debugging', name: 'LEAVE_CONTAINER'],
+      [$class: 'ChoiceParameterDefinition',
+        choices: "0\n1", description: 'Print all logs even on success', name: 'ALWAYS_PRINT_LOGS'],
+      [$class: 'ChoiceParameterDefinition',
+        choices: "0\n1", description: 'Print redis monitor logs', name: 'REDIS_MONITOR_LOGS'],
+      [$class: 'ChoiceParameterDefinition',
+        choices: "1\n0", description: 'Print detailed watchdog logs', name: 'WATCHDOG_LOGS'],
+      [$class: 'ChoiceParameterDefinition',
+        choices: "0\n1", description: 'Sleep on spec failure for debugging', name: 'SLEEP_SPEC_FAILURE'],
       [$class: 'ChoiceParameterDefinition',
         choices: "1\n0", description: 'Switch to make vendor/bundle/* compact', name: 'STRIP_VENDOR'],
       [$class: 'ChoiceParameterDefinition',
         choices: "false\ntrue", description: 'Rebuild cache image', name: 'REBUILD'],
+      [$class: 'ChoiceParameterDefinition',
+        choices: "1\n0", description: 'Print all ', name: 'SLEEP_SPEC_FAILURE'],
     ])
 }
 
@@ -24,7 +39,11 @@ def write_build_env(label) {
   def build_env="""# These parameters are read from bash and docker --env-file.
 # So do not use single or double quote for the value part.
 LEAVE_CONTAINER=${buildParams.LEAVE_CONTAINER}
+ALWAYS_PRINT_LOGS=${buildParams.ALWAYS_PRINT_LOGS}
+REDIS_MONITOR_LOGS=${buildParams.REDIS_MONITOR_LOGS}
+SLEEP_SPEC_FAILURE=${buildParams.SLEEP_SPEC_FAILURE}
 STRIP_VENDOR=${buildParams.STRIP_VENDOR}
+
 REBUILD=${buildParams.REBUILD}
 REPO_BASE_DIR=${env.REPO_BASE_DIR ?: ''}
 BUILD_CACHE_DIR=${env.BUILD_CACHE_DIR ?: ''}

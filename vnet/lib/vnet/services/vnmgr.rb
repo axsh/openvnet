@@ -8,20 +8,40 @@ module Vnet::Services
 
     attr_reader :vnet_info
 
+    finalizer :do_cleanup
+
     def initialize
       info log_format("initalizing on node '#{DCell.me.id}'")
 
       @vnet_info = VnetInfo.new
     end
 
-    def do_initialize
-      info log_format('initializing managers')
+    def service_init_timeout
+      Vnet::Configurations::Vnmgr.conf.service_init_timeout
+    end
 
-      # Do linking here?...
+    def start_services
+      begin
+        info log_format('initializing service managers')
 
-      @vnet_info.start_managers
+        info log_format("waiting for service managers to finish initialization (timeout:#{service_init_timeout})")
+        @vnet_info.initialize_service_managers(service_init_timeout)
 
-      info log_format('initialized managers')
+        info log_format('initialized service managers')
+
+      rescue Vnet::ManagerInitializationFailed => e
+        # TODO: Replace with proper terminate.
+        # @vnet_info.service_managers.each { |manager| manager.event_handler_drop_all }
+
+        warn log_format("failed to initialize some managers due to timeout")
+        raise e
+      end
+    end
+
+    def do_cleanup
+      info log_format("cleanup of service managers")
+
+      @vnet_info.terminate_all_managers
     end
 
     #

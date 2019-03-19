@@ -5,7 +5,7 @@ $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
 require 'rubygems'
 require 'bundler/setup'
-require 'vnet'
+require 'vnet/api_rpc'
 require 'celluloid'
 require 'celluloid/autostart'
 require 'dcell'
@@ -22,15 +22,7 @@ switch_manager_new.cleanup_current_session
 switch_manager_new.kill_old_switches
 switch_manager_new.start
 
-Vnet::NodeApi.set_proxy(conf.node_api_proxy)
 Vnet::NodeApi.raise_on_error = false # dont raise any errors
-
-case conf.node_api_proxy
-when :rpc
-  # do nothing
-when :direct
-  Vnet::Initializers::DB.run(conf.db_uri)
-end
 
 params = {
   :id => conf.node.id,
@@ -46,11 +38,14 @@ params.merge!(:public => conf.node.pub_addr_string) if conf.node.addr.public != 
 
 DCell.start(params)
 
-
 trap 'TTIN' do
   Celluloid.stack_dump
 end
 
+Vnet::NodeModules::ServiceWatchdog.supervise_as :service_watchdog
 Vnet::NodeModules::ServiceOpenflow.supervise_as :service_openflow
+
+Celluloid::Actor[:service_watchdog].start_watchdog
+Celluloid::Actor[:service_openflow].start_openflow
 
 sleep
