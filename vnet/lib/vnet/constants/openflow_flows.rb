@@ -29,7 +29,7 @@ module Vnet
 
       # Handle ingress packets to host interfaces from unmanaged
       # sources.
-      TABLE_INTERFACE_INGRESS_CLASSIFIER = 10
+      TABLE_INTERFACE_INGRESS_CLASSIFIER_IF_NIL = 10
       TABLE_INTERFACE_INGRESS_MAC        = 11
       TABLE_INTERFACE_INGRESS_SEG_IF     = 12
       TABLE_INTERFACE_INGRESS_SEG_DPSEG  = 13
@@ -245,6 +245,10 @@ module Vnet
       METADATA_VALUE_PAIR_FLAG        = (0x1 << 31)
       METADATA_VALUE_PAIR_FIRST_MASK  = (0x7fffffff << 32)
       METADATA_VALUE_PAIR_SECOND_MASK = 0x7fffffff
+
+      # flag: (1)remote, (0)local
+      FLAG_LOCAL = 0
+      FLAG_REMOTE = 1
 
       #
       # Tunnel constants:

@@ -107,19 +107,20 @@ module Vnet::Core::Datapaths
     def flows_for_dp_network(flows, dpg_map)
       flow_cookie = dpg_map[:id] | COOKIE_TYPE_DP_NETWORK
 
-      flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER_IF_NIL,
                            goto_table: TABLE_INTERFACE_INGRESS_NW_DPNW,
                            priority: 30,
 
                            match: {
                              :eth_dst => dpg_map[:mac_address]
                            },
-                           match_interface: dpg_map[:interface_id],
+                           match_value_pair_flag: FLAG_REMOTE,
+                           match_value_pair_first: dpg_map[:interface_id],
 
                            actions: {
                              :eth_dst => MAC_BROADCAST
                            },
-                           write_value_pair_flag: true,
+                           write_value_pair_flag: FLAG_REMOTE,
                            write_value_pair_first: dpg_map[:network_id],
                            write_value_pair_second: dpg_map[:id],
 
@@ -177,19 +178,20 @@ module Vnet::Core::Datapaths
     def flows_for_dp_segment(flows, dpg_map)
       flow_cookie = dpg_map[:id] | COOKIE_TYPE_DP_SEGMENT
 
-      flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER_IF_NIL,
                            goto_table: TABLE_INTERFACE_INGRESS_SEG_DPSEG,
                            priority: 30,
 
                            match: {
                              :eth_dst => dpg_map[:mac_address]
                            },
-                           match_interface: dpg_map[:interface_id],
+                           match_value_pair_flag: FLAG_REMOTE,
+                           match_value_pair_first: dpg_map[:interface_id],
 
                            actions: {
                              :eth_dst => MAC_BROADCAST
                            },
-                           write_value_pair_flag: true,
+                           write_value_pair_flag: FLAG_REMOTE,
                            write_value_pair_first: dpg_map[:segment_id],
                            write_value_pair_second: dpg_map[:id],
 
@@ -297,13 +299,16 @@ module Vnet::Core::Datapaths
       # and remote datapaths, which have either tunnel or MAC2MAC
       # flows usable for output to the proper port.
 
-      flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER_IF_NIL,
                            goto_table: TABLE_INTERFACE_INGRESS_ROUTE_LINK,
                            priority: 30,
+
                            match: {
                              :eth_dst => dpg_map[:mac_address]
                            },
-                           match_interface: dpg_map[:interface_id],
+                           match_value_pair_flag: FLAG_REMOTE,
+                           match_value_pair_first: dpg_map[:interface_id],
+
                            write_route_link: dpg_map[:route_link_id],
 
                            cookie: flow_cookie)

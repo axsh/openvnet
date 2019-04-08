@@ -72,34 +72,43 @@ module Vnet::Core::Interfaces
     def flows_for_ipv4(flows, mac_info, ipv4_info)
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
 
-      flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER_IF_NIL,
                            goto_table: TABLE_INTERFACE_INGRESS_MAC,
                            priority: 10,
-                           match_interface: @id,
+
+                           match_value_pair_flag: FLAG_REMOTE,
+                           match_value_pair_first: @id,
+
                            cookie: cookie)
 
-      flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER_IF_NIL,
                            goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
                            priority: 20,
 
                            match: {
                              :eth_dst => mac_info[:mac_address],
                            },
-                           match_interface: @id,
-                           write_value_pair_flag: true,
+                           match_value_pair_flag: FLAG_REMOTE,
+                           match_value_pair_first: @id,
+
+                           write_value_pair_flag: FLAG_REMOTE,
                            write_value_pair_first: ipv4_info[:network_id],
+                           write_value_pair_second: @id,
 
                            cookie: cookie)
-      flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER,
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER_IF_NIL,
                            goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
                            priority: 20,
 
                            match: {
                              :eth_dst => MAC_BROADCAST
                            },
-                           match_interface: @id,
-                           write_value_pair_flag: true,
+                           match_value_pair_flag: FLAG_REMOTE,
+                           match_value_pair_first: @id,
+
+                           write_value_pair_flag: FLAG_REMOTE,
                            write_value_pair_first: ipv4_info[:network_id],
+                           write_value_pair_second: @id,
 
                            cookie: cookie)
     end
