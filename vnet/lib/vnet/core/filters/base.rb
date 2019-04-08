@@ -89,11 +89,11 @@ module Vnet::Core::Filters
 
     def flows_for_egress_filtering(flows)
       flow = {
-        table: TABLE_INTERFACE_EGRESS_FILTER,
+        table: TABLE_INTERFACE_EGRESS_FILTER_IF_NIL,
         priority: 10,
-        match_interface: @interface_id
+        match_value_pair_first: @interface_id,
       }
-      flow[:goto_table] = TABLE_INTERFACE_EGRESS_VALIDATE if @egress_passthrough
+      flow[:goto_table] = TABLE_INTERFACE_EGRESS_VALIDATE_IF_NIL if @egress_passthrough
 
       flows << flow_create(flow)
     end

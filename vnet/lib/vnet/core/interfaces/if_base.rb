@@ -25,10 +25,12 @@ module Vnet::Core::Interfaces
     private
 
     def flows_for_classifiers(flows = [])
-      flows << flow_create(table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
-                           goto_table: @enabled_filtering ? TABLE_INTERFACE_EGRESS_STATEFUL : TABLE_INTERFACE_EGRESS_VALIDATE,
+      flows << flow_create(table: TABLE_INTERFACE_EGRESS_CLASSIFIER_IF_NIL,
+                           goto_table: @enabled_filtering ? TABLE_INTERFACE_EGRESS_STATEFUL_IF_NIL : TABLE_INTERFACE_EGRESS_VALIDATE_IF_NIL,
                            priority: 30,
-                           match_interface: @id,
+
+                           match_value_pair_first: @id,
+
                            cookie: cookie
                           )
     end
@@ -67,12 +69,17 @@ module Vnet::Core::Interfaces
       }
 
       if segment_id
-        flows << flow_create(table: TABLE_INTERFACE_EGRESS_VALIDATE,
+        flows << flow_create(table: TABLE_INTERFACE_EGRESS_VALIDATE_IF_NIL,
                              goto_table: TABLE_SEGMENT_SRC_CLASSIFIER,
                              priority: 30,
+
                              match: { :eth_src => mac_address },
-                             match_interface: @id,
+                             match_value_pair_first: @id,
+
+                             clear_all: true,
+                             write_local: true,
                              write_segment: segment_id,
+                             
                              cookie: cookie)
         flows << flow_create(table: TABLE_SEGMENT_DST_MAC_LOOKUP,
                              goto_table: TABLE_INTERFACE_INGRESS_FILTER,
@@ -110,20 +117,30 @@ module Vnet::Core::Interfaces
          :arp_spa => ipv4_address
        }].each { |match|
         if segment_id
-          flows << flow_create(table: TABLE_INTERFACE_EGRESS_VALIDATE,
+          flows << flow_create(table: TABLE_INTERFACE_EGRESS_VALIDATE_IF_NIL,
                                goto_table: TABLE_SEGMENT_SRC_CLASSIFIER,
                                priority: 40,
+
                                match: match,
-                               match_interface: @id,
+                               match_value_pair_first: @id,
+
+                               clear_all: true,
+                               write_local: true,
                                write_segment: segment_id,
+
                                cookie: cookie)
         else
-          flows << flow_create(table: TABLE_INTERFACE_EGRESS_VALIDATE,
+          flows << flow_create(table: TABLE_INTERFACE_EGRESS_VALIDATE_IF_NIL,
                                goto_table: TABLE_NETWORK_CONNECTION,
                                priority: 40,
+
                                match: match,
-                               match_interface: @id,
+                               match_value_pair_first: @id,
+
+                               clear_all: true,
+                               write_local: true,
                                write_network: network_id,
+
                                cookie: cookie)
         end
       }
@@ -254,14 +271,16 @@ module Vnet::Core::Interfaces
     def flows_for_router_egress_mac(flows, mac_info)
       cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
 
-      flows << flow_create(table: TABLE_INTERFACE_EGRESS_VALIDATE,
+      flows << flow_create(table: TABLE_INTERFACE_EGRESS_VALIDATE_IF_NIL,
+                           goto_table: TABLE_INTERFACE_EGRESS_ROUTES_IF_NIL,
                            priority: 20,
+
                            match: {
                              :eth_src => mac_info[:mac_address]
                            },
-                           match_interface: @id,
-                           cookie: cookie,
-                           goto_table: TABLE_INTERFACE_EGRESS_ROUTES)
+                           match_value_pair_first: @id,
+                           
+                           cookie: cookie)
     end
 
     def flows_for_router_egress_ipv4(flows, mac_info, ipv4_info)
@@ -272,13 +291,19 @@ module Vnet::Core::Interfaces
       #
 
       # TODO: Currently only one mac address / network is supported.
-      flows << flow_create(table: TABLE_INTERFACE_EGRESS_MAC,
+      flows << flow_create(table: TABLE_INTERFACE_EGRESS_ROUTES_IF_NW,
                            goto_table: TABLE_ARP_TABLE,
                            priority: 20,
+
                            match: {
                              :eth_src => mac_info[:mac_address]
                            },
-                           match_network: ipv4_info[:network_id],
+                           match_value_pair_first: @id,
+                           match_value_pair_second: ipv4_info[:network_id],
+
+                           clear_all: true,
+                           write_network: ipv4_info[:network_id],
+
                            cookie: cookie)
       flows << flow_create(table: TABLE_ROUTE_EGRESS_LOOKUP,
                            goto_table: TABLE_ROUTE_EGRESS_TRANSLATION,

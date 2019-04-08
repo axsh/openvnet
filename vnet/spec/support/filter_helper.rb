@@ -5,9 +5,11 @@ def flow(params)
     table: params[:table],
     goto_table: params[:goto_table],
     priority: params[:priority],
-    match_interface: params[:interface_id],
+
+    match_value_pair_first: params[:interface_id],
+    match: params[:match],
+
     cookie: params[:id] | COOKIE_TYPE_FILTER,
-    match: params[:match]
   )
 end
 
@@ -29,8 +31,8 @@ end
 
 def egress_tables(pass)
   {
-    table: TABLE_INTERFACE_EGRESS_FILTER,
-    goto_table: pass ? TABLE_INTERFACE_EGRESS_VALIDATE : nil,
+    table: TABLE_INTERFACE_EGRESS_FILTER_IF_NIL,
+    goto_table: pass ? TABLE_INTERFACE_EGRESS_VALIDATE_IF_NIL : nil,
   }
 end
 

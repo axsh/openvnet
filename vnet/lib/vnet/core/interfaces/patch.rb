@@ -116,14 +116,16 @@ module Vnet::Core::Interfaces
     def flows_for_router_egress_mac(flows, mac_info)
       cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
 
-      flows << flow_create(table: TABLE_INTERFACE_EGRESS_VALIDATE,
+      flows << flow_create(table: TABLE_INTERFACE_EGRESS_VALIDATE_IF_NIL,
+                           goto_table: TABLE_INTERFACE_EGRESS_ROUTES_IF_NIL,
                            priority: 20,
+
                            match: {
                              :eth_src => mac_info[:mac_address]
                            },
-                           match_interface: @id,
-                           cookie: cookie,
-                           goto_table: TABLE_INTERFACE_EGRESS_ROUTES)
+                           match_value_pair_first: @id,
+
+                           cookie: cookie)
 
       # FOOO
       flows << flow_create(table: TABLE_ROUTE_EGRESS_INTERFACE,

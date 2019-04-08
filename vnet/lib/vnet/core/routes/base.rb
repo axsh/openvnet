@@ -85,13 +85,16 @@ module Vnet::Core::Routes
       # Currently create these two flows even if the interface isn't
       # on this datapath. Should not cause any issues as the interface
       # id will never be matched.
-      flows << flow_create(table: TABLE_INTERFACE_EGRESS_ROUTES,
-                           goto_table: TABLE_INTERFACE_EGRESS_MAC,
+      flows << flow_create(table: TABLE_INTERFACE_EGRESS_ROUTES_IF_NIL,
+                           goto_table: TABLE_INTERFACE_EGRESS_ROUTES_IF_NW,
                            priority: flow_priority,
 
                            match: subnet_dst,
-                           match_interface: @interface_id,
-                           write_network: @network_id)
+                           match_value_pair_first: @interface_id,
+
+                           write_value_pair_first: @interface_id,
+                           write_value_pair_second: @network_id,
+                          )
 
       if @ingress == true
         flows << flow_create(table: TABLE_ROUTER_INGRESS_LOOKUP,

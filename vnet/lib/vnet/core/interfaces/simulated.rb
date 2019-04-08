@@ -203,13 +203,17 @@ module Vnet::Core::Interfaces
       # Classifiers:
       #
       flows << flow_create(table: TABLE_CONTROLLER_PORT,
-                           goto_table: TABLE_INTERFACE_EGRESS_CLASSIFIER,
+                           goto_table: TABLE_INTERFACE_EGRESS_CLASSIFIER_IF_NIL,
                            priority: 30,
 
                            match: {
                              :eth_src => mac_info[:mac_address],
                            },
-                           write_interface: @id,
+
+                           write_value_pair_flag: FLAG_LOCAL,
+                           write_value_pair_first: @id,
+                           write_value_pair_second: 0,
+
                            cookie: cookie)
     end
 

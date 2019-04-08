@@ -64,7 +64,7 @@ module Vnet::Core::Filters
 
         # TODO: Need to include priority when deleting.
         rules(static[:match], static[:protocol]).tap { |egress_rule, ingress_rule|
-          @dp_info.del_flows(table_id: TABLE_INTERFACE_EGRESS_FILTER,
+          @dp_info.del_flows(table_id: TABLE_INTERFACE_EGRESS_FILTER_IF_NIL,
                              cookie: self.cookie,
                              cookie_mask: Vnet::Constants::OpenflowFlows::COOKIE_MASK,
                              match: egress_rule)
@@ -85,12 +85,14 @@ module Vnet::Core::Filters
 
       flows = []
 
-      flows << flow_create(table: TABLE_INTERFACE_EGRESS_STATEFUL,
-                           goto_table: TABLE_INTERFACE_EGRESS_VALIDATE,
+      flows << flow_create(table: TABLE_INTERFACE_EGRESS_STATEFUL_IF_NIL,
+                           goto_table: TABLE_INTERFACE_EGRESS_VALIDATE_IF_NIL,
                            priority: PRIORITY_FILTER_STATEFUL,
                            idle_timeout: EGRESS_IDLE_TIMEOUT,
-                           match_interface: @interface_id,
-                           match: egress_match)
+                           
+                           match: egress_match,
+                           match_value_pair_first: @interface_id,
+                          )
 
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_FILTER,
                            goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
@@ -228,26 +230,26 @@ module Vnet::Core::Filters
       rules(filter, protocol).tap { |egress_rule, ingress_rule|
         flow_base = {
           priority: priority_for_static(filter),
-          match_interface: @interface_id
+          match_value_pair_first: @interface_id,
         }
 
         case action
         when 'conn'
-          flows << flow_create(flow_base.merge(table: TABLE_INTERFACE_EGRESS_FILTER,
+          flows << flow_create(flow_base.merge(table: TABLE_INTERFACE_EGRESS_FILTER_IF_NIL,
                                                match: egress_rule,
                                                actions: { output: Vnet::Openflow::Controller::OFPP_CONTROLLER }))
         when 'pass'
           flows << flow_create(flow_base.merge(table: TABLE_INTERFACE_INGRESS_FILTER,
                                                goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                                                match: ingress_rule))
-          flows << flow_create(flow_base.merge(table: TABLE_INTERFACE_EGRESS_FILTER,
-                                               goto_table: TABLE_INTERFACE_EGRESS_VALIDATE,
+          flows << flow_create(flow_base.merge(table: TABLE_INTERFACE_EGRESS_FILTER_IF_NIL,
+                                               goto_table: TABLE_INTERFACE_EGRESS_VALIDATE_IF_NIL,
                                                match: egress_rule))
         when 'drop'
           flows << flow_create(flow_base.merge(table: TABLE_INTERFACE_INGRESS_FILTER,
                                                goto_table: nil,
                                                match: ingress_rule))
-          flows << flow_create(flow_base.merge(table: TABLE_INTERFACE_EGRESS_FILTER,
+          flows << flow_create(flow_base.merge(table: TABLE_INTERFACE_EGRESS_FILTER_IF_NIL,
                                                goto_table: nil,
                                                match: egress_rule))
         end

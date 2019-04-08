@@ -38,12 +38,12 @@ module Vnet
       TABLE_INTERFACE_INGRESS_RL_DPRL           = 16
 
       # Handle egress packets from managed interfaces.
-      TABLE_INTERFACE_EGRESS_CLASSIFIER  = 17
-      TABLE_INTERFACE_EGRESS_STATEFUL    = 18
-      TABLE_INTERFACE_EGRESS_FILTER      = 19
-      TABLE_INTERFACE_EGRESS_VALIDATE    = 20
-      TABLE_INTERFACE_EGRESS_ROUTES      = 21
-      TABLE_INTERFACE_EGRESS_MAC         = 22
+      TABLE_INTERFACE_EGRESS_CLASSIFIER_IF_NIL  = 17
+      TABLE_INTERFACE_EGRESS_STATEFUL_IF_NIL    = 18
+      TABLE_INTERFACE_EGRESS_FILTER_IF_NIL      = 19
+      TABLE_INTERFACE_EGRESS_VALIDATE_IF_NIL    = 20
+      TABLE_INTERFACE_EGRESS_ROUTES_IF_NIL      = 21
+      TABLE_INTERFACE_EGRESS_ROUTES_IF_NW       = 22
 
       # Initial verification of network/segment id and application of
       # global filtering rules. 

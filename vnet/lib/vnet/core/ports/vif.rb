@@ -21,13 +21,17 @@ module Vnet::Core::Ports
     def install
       flows = []
       flows << flow_create(table: TABLE_CLASSIFIER,
+                           goto_table: TABLE_INTERFACE_EGRESS_CLASSIFIER_IF_NIL,
                            priority: 2,
+                           
                            match: {
                              :in_port => self.port_number,
                            },
-                           write_interface: @interface_id,
-                           write_local: true,
-                           goto_table: TABLE_INTERFACE_EGRESS_CLASSIFIER)
+                           
+                           write_value_pair_flag: FLAG_LOCAL,
+                           write_value_pair_first: @interface_id,
+                           write_value_pair_second: 0,
+                           )
       flows << flow_create(table: TABLE_OUT_PORT_INTERFACE_INGRESS,
                            priority: 10,
                            match_interface: @interface_id,
