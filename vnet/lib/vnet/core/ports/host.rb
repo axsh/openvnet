@@ -23,7 +23,7 @@ module Vnet::Core::Ports
       if @interface_id
         flows << flow_create(table: TABLE_CLASSIFIER,
                              goto_table: TABLE_INTERFACE_INGRESS_CLASSIFIER_IF_NIL,
-                             priority: 2,
+                             priority: 11,
 
                              match: {
                                :in_port => self.port_number

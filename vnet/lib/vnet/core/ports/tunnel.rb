@@ -5,7 +5,7 @@ module Vnet::Core::Ports
   module Tunnel
     include Vnet::Openflow::FlowHelpers
 
-    attr_accessor :underlay_port_number
+    attr_accessor :underlay_interface_id
 
     def log_type
       'port/tunnel'
@@ -16,23 +16,25 @@ module Vnet::Core::Ports
     end
 
     def install
-      @underlay_port_number = @dp_info.tunnel_manager.update(event: :set_tunnel_port_number,
-                                                             port_name: self.port_name,
-                                                             port_number: self.port_number)
+      @underlay_interface_id = @dp_info.tunnel_manager.update(event: :set_tunnel_port_number,
+                                                              port_name: self.port_name,
+                                                              port_number: self.port_number)
 
       flows = []
 
-      if @underlay_port_number && @underlay_port_number > 0
-        flows << flow_create(table: TABLE_TUNNEL_PORTS,
-                             goto_table: TABLE_TUNNEL_IDS,
+      if @underlay_interface_id && @underlay_interface_id > 0
+        flows << flow_create(table: TABLE_CLASSIFIER,
+                             goto_table: TABLE_TUNNEL_IF_NIL,
                              priority: 30,
 
                              match: {
                                :in_port => self.port_number
                              },
 
-                             clear_all: 0,
-                             write_value_pair_second: @underlay_port_number)
+                             write_value_pair_flag: FLAG_REMOTE,
+                             write_value_pair_first: @underlay_interface_id,
+                             write_value_pair_second: 0,
+                            )
       end
 
       if @tunnel_id && @tunnel_id > 0

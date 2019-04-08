@@ -283,7 +283,7 @@ module Vnet::Core::Datapaths
       # address, so we create the flow here.
       #
       # TODO: Add verification of the ingress host interface.
-      flows << flow_create(table: TABLE_TUNNEL_IDS,
+      flows << flow_create(table: TABLE_TUNNEL_IF_NIL,
                            goto_table: TABLE_ROUTER_CLASSIFIER,
                            priority: 30,
 
@@ -291,6 +291,9 @@ module Vnet::Core::Datapaths
                              :tunnel_id => TUNNEL_ROUTE_LINK,
                              :eth_dst => dpg_map[:mac_address]
                            },
+
+                           clear_all: true,
+                           write_remote: true,
                            write_route_link: dpg_map[:route_link_id],
 
                            cookie: flow_cookie)

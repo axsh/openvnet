@@ -45,7 +45,7 @@ module Vnet::Core::Routers
                            },
                            write_route_link: @id)
 
-      flows << flow_create(table: TABLE_TUNNEL_IDS,
+      flows << flow_create(table: TABLE_TUNNEL_IF_NIL,
                            goto_table: TABLE_ROUTER_CLASSIFIER,
                            priority: 30,
 
@@ -53,7 +53,11 @@ module Vnet::Core::Routers
                              :tunnel_id => TUNNEL_ROUTE_LINK,
                              :eth_dst => @mac_address
                            },
-                           write_route_link: @id)
+                           
+                           clear_all: true,
+                           write_remote: true,
+                           write_route_link: @id
+                          )
 
       flows_for_filtering_mac_address(flows, @mac_address)
     end

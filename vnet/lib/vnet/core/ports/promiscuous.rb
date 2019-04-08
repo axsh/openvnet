@@ -22,7 +22,7 @@ module Vnet::Core::Ports
 
       flows << flow_create(table: TABLE_CLASSIFIER,
                            goto_table: TABLE_PROMISCUOUS_PORT,
-                           priority: 2,
+                           priority: 11,
                            match: flow_match,
                            write_interface: @interface_id,
                            write_local: true)

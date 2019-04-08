@@ -14,8 +14,7 @@ module Vnet
       # Straight-forward routing of packets to the port tied to the
       # destination mac address, which includes all non-virtual
       # networks.
-      TABLE_TUNNEL_PORTS = 3
-      TABLE_TUNNEL_IDS   = 4
+      TABLE_TUNNEL_IF_NIL = 1
 
       # For packets explicitly marked as being from the controller.
       #

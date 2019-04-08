@@ -31,7 +31,7 @@ describe Vnet::Core::Networks::Virtual do
       subject.install
 
       expect(flows).to include Vnet::Openflow::Flow.create(
-        TABLE_TUNNEL_IDS,
+        TABLE_TUNNEL_IF_NIL,
         20,
         {:tunnel_id => (vnet_map.id & TUNNEL_ID_MASK) | TUNNEL_NETWORK},
         nil,

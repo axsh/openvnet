@@ -37,8 +37,7 @@ module Vnet::Openflow
       # Default drop flows:
       #
 
-      [TABLE_TUNNEL_PORTS,
-       TABLE_TUNNEL_IDS,
+      [TABLE_TUNNEL_IF_NIL,
        TABLE_LOCAL_PORT,
        TABLE_CONTROLLER_PORT,
        TABLE_PROMISCUOUS_PORT,
@@ -106,7 +105,7 @@ module Vnet::Openflow
         flows << flow_create(table: table, priority: 0)
       }
 
-      [[TABLE_CLASSIFIER, 1, nil, { :tunnel_id => 0 }],
+      [[TABLE_CLASSIFIER, 10, nil, { :tunnel_id => 0 }],
        [TABLE_FLOOD_TUNNELS, 10, :match_remote, nil],
        [TABLE_OUTPUT_DP_NETWORK_DST_IF, 2, nil, { :eth_dst => MAC_BROADCAST }],
        [TABLE_OUTPUT_DP_OVER_MAC2MAC, 1, nil, { :tunnel_id => 0 }],
@@ -135,8 +134,7 @@ module Vnet::Openflow
                              priority: 0)
       }
 
-      [[TABLE_CLASSIFIER, TABLE_TUNNEL_PORTS, 0, :write_remote, nil],
-       [TABLE_NETWORK_DST_MAC_LOOKUP, TABLE_FLOOD_SIMULATED, 30, nil, {
+      [[TABLE_NETWORK_DST_MAC_LOOKUP, TABLE_FLOOD_SIMULATED, 30, nil, {
           :eth_dst => MAC_BROADCAST
         }],
        [TABLE_SEGMENT_DST_MAC_LOOKUP, TABLE_FLOOD_SIMULATED, 30, nil, {
@@ -156,14 +154,14 @@ module Vnet::Openflow
       #
       flows << flow_create(table: TABLE_CLASSIFIER,
                            goto_table: TABLE_LOCAL_PORT,
-                           priority: 2,
+                           priority: 11,
                            match: {
                              :in_port => OFPP_LOCAL
                            },
                            write_local: true)
       flows << flow_create(table: TABLE_CLASSIFIER,
                            goto_table: TABLE_CONTROLLER_PORT,
-                           priority: 2,
+                           priority: 11,
                            match: {
                              :in_port => OFPP_CONTROLLER
                            },

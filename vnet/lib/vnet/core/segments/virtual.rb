@@ -22,7 +22,7 @@ module Vnet::Core::Segments
 
     def install
       flows = []
-      flows << flow_create(table: TABLE_TUNNEL_IDS,
+      flows << flow_create(table: TABLE_TUNNEL_IF_NIL,
                            goto_table: TABLE_INTERFACE_INGRESS_IF_SEG,
                            priority: 20,
 
