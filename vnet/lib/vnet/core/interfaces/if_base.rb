@@ -58,7 +58,7 @@ module Vnet::Core::Interfaces
       ].each { |match|
         # Currently add to ingress_nw_if table since we do not
         # yet support segments.
-        flows << flow_create(table: TABLE_INTERFACE_INGRESS_MAC,
+        flows << flow_create(table: TABLE_INTERFACE_INGRESS_LOOKUP_IF_NIL,
                              priority: 50,
                              match: match,
                              #match_segment: mac_info[:segment_id],
@@ -221,16 +221,15 @@ module Vnet::Core::Interfaces
     def flows_for_router_ingress_mac2mac_ipv4(flows, mac_info, ipv4_info)
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
 
-      flows << flow_create(table: TABLE_INTERFACE_INGRESS_MAC,
-                           goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_LOOKUP_IF_NIL,
+                           goto_table: TABLE_INTERFACE_INGRESS_IF_NW,
                            priority: 20,
 
                            match: {
                              :eth_dst => mac_info[:mac_address]
                            },
 
-                           write_value_pair_flag: true,
-                           write_value_pair_first: ipv4_info[:network_id],
+                           write_value_pair_second: ipv4_info[:network_id],
 
                            cookie: cookie)
 
@@ -239,16 +238,15 @@ module Vnet::Core::Interfaces
       #
       # Should be improved to use unique mac addresses in the case of
       # mac2mac.
-      flows << flow_create(table: TABLE_INTERFACE_INGRESS_MAC,
-                           goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_LOOKUP_IF_NIL,
+                           goto_table: TABLE_INTERFACE_INGRESS_IF_NW,
                            priority: 60,
 
                            match: {
                              :eth_src => mac_info[:mac_address]
                            },
 
-                           write_value_pair_flag: true,
-                           write_value_pair_first: ipv4_info[:network_id],
+                           write_value_pair_second: ipv4_info[:network_id],
 
                            cookie: cookie)
     end
@@ -327,14 +325,13 @@ module Vnet::Core::Interfaces
          :eth_type => 0x0806,
          :eth_dst => mac_info[:mac_address]
        }].each { |match|
-        flows << flow_create(table: TABLE_INTERFACE_INGRESS_MAC,
-                             goto_table: TABLE_INTERFACE_INGRESS_SEG_IF,
+        flows << flow_create(table: TABLE_INTERFACE_INGRESS_LOOKUP_IF_NIL,
+                             goto_table: TABLE_INTERFACE_INGRESS_IF_SEG,
                              priority: 30,
 
                              match: match,
-                             write_value_pair_flag: true,
-                             write_value_pair_first: mac_info[:segment_id],
-                             # write_value_pair_second: <- host interface id, already set.
+
+                             write_value_pair_second: mac_info[:segment_id],
 
                              cookie: cookie)
       }
@@ -351,14 +348,13 @@ module Vnet::Core::Interfaces
          :eth_dst => mac_info[:mac_address],
          :arp_tpa => ipv4_info[:ipv4_address]
        }].each { |match|
-        flows << flow_create(table: TABLE_INTERFACE_INGRESS_MAC,
-                             goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
+        flows << flow_create(table: TABLE_INTERFACE_INGRESS_LOOKUP_IF_NIL,
+                             goto_table: TABLE_INTERFACE_INGRESS_IF_NW,
                              priority: 40,
 
                              match: match,
-                             write_value_pair_flag: true,
-                             write_value_pair_first: ipv4_info[:network_id],
-                             # write_value_pair_second: <- host interface id, already set.
+                             
+                             write_value_pair_second: ipv4_info[:network_id],
 
                              cookie: cookie)
       }

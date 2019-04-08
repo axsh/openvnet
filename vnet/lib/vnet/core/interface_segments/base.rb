@@ -81,14 +81,15 @@ module Vnet::Core::InterfaceSegments
       host_interface_id = get_host_interface_id || return
 
       match_md = md_create(interface: @interface_id)
-      learn_md = md_create(interface: host_interface_id, remote: nil)
       write_md = md_create(segment: @segment_id)
+
+      learn_md = md_create(match_value_pair_first: host_interface_id, match_value_pair_flag: FLAG_LOCAL)
 
       flow_learn_arp = "table=#{TABLE_PROMISCUOUS_PORT},priority=20,cookie=0x%x,arp,metadata=0x%x/0x%x,actions=" %
         [cookie, match_md[:metadata], match_md[:metadata_mask]]
       flow_learn_arp << "load:#{prom_port_number}->NXM_NX_REG1[],"
       flow_learn_arp << "learn(table=%d,cookie=0x%x,idle_timeout=36000,priority=29,metadata:0x%x,NXM_OF_ETH_DST[]=NXM_OF_ETH_SRC[]," %
-        [TABLE_INTERFACE_INGRESS_MAC, cookie, learn_md[:metadata]]
+        [TABLE_INTERFACE_INGRESS_LOOKUP_IF_NIL, cookie, learn_md[:metadata]]
       flow_learn_arp << "output:NXM_NX_REG1[]),"
       flow_learn_arp << "write_metadata=0x%x/0x%x,goto_table:%d" % 
         [write_md[:metadata], write_md[:metadata_mask], TABLE_SEGMENT_SRC_CLASSIFIER]

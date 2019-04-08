@@ -77,7 +77,7 @@ module Vnet::Openflow
           metadata_mask = metadata_mask | METADATA_FLAG_REFLECTION
 
         when :match_value_pair_flag, :write_value_pair_flag
-          metadata = metadata | METADATA_VALUE_PAIR_FLAG | METADATA_VALUE_PAIR_TYPE if value == true
+          metadata = metadata | (value ? METADATA_VALUE_PAIR_FLAG : 0) | METADATA_VALUE_PAIR_TYPE
           metadata_mask = metadata_mask | METADATA_VALUE_PAIR_FLAG | METADATA_VALUE_PAIR_TYPE
         when :match_value_pair_first, :write_value_pair_first
           metadata = metadata | ((value << 32) & METADATA_VALUE_PAIR_FIRST_MASK) | METADATA_VALUE_PAIR_TYPE

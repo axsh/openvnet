@@ -182,14 +182,20 @@ module Vnet::Core::Datapaths
 
       # The source mac address of route link packets is required to
       # match a remote dpg_map mac address.
-      flows << flow_create(table: TABLE_INTERFACE_INGRESS_ROUTE_LINK,
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_RL_DPRL,
                            goto_table: TABLE_ROUTER_CLASSIFIER,
                            priority: 1,
 
                            match: {
                              :eth_src => dpg_map[:mac_address]
                            },
-                           match_route_link: flow_gen_id,
+                           match_value_pair_flag: FLAG_REMOTE,
+                           match_value_pair_first: flow_gen_id,
+                           match_value_pair_second: flow_id,
+
+                           clear_all: true,
+                           write_remote: true,
+                           write_route_link: flow_gen_id,
 
                            cookie: flow_cookie)
 

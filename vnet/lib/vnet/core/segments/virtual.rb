@@ -23,13 +23,15 @@ module Vnet::Core::Segments
     def install
       flows = []
       flows << flow_create(table: TABLE_TUNNEL_IDS,
-                           goto_table: TABLE_INTERFACE_INGRESS_SEG_IF,
+                           goto_table: TABLE_INTERFACE_INGRESS_IF_SEG,
+                           priority: 20,
+
                            match: {
                              :tunnel_id => flow_tunnel_id
                            },
-                           priority: 20,
-                           write_value_pair_flag: true,
-                           write_value_pair_first: @id)
+
+                           write_value_pair_second: @id,
+                          )
       flows << flow_create(table: TABLE_SEGMENT_SRC_CLASSIFIER,
                            goto_table: TABLE_SEGMENT_DST_CLASSIFIER,
                            priority: 30,
@@ -91,12 +93,18 @@ module Vnet::Core::Segments
                            priority: 60,
                            idle_timeout: 60,
                            hard_timeout: 600,
+
                            match: {
                              :in_port => message.in_port,
                              :eth_type => 0x0806,
                              :eth_src => message.eth_src
                            },
-                           match_segment: @id)
+                           match_value_pair_flag: FLAG_REMOTE,
+                           match_value_pair_first: @id,
+
+                           clear_all: true,
+                           write_segment: @id,
+                          )
 
       @dp_info.add_flows(flows)
 

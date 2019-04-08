@@ -30,12 +30,12 @@ module Vnet
       # Handle ingress packets to host interfaces from unmanaged
       # sources.
       TABLE_INTERFACE_INGRESS_CLASSIFIER_IF_NIL = 10
-      TABLE_INTERFACE_INGRESS_MAC        = 11
-      TABLE_INTERFACE_INGRESS_SEG_IF     = 12
-      TABLE_INTERFACE_INGRESS_SEG_DPSEG  = 13
-      TABLE_INTERFACE_INGRESS_NW_IF      = 14
-      TABLE_INTERFACE_INGRESS_NW_DPNW    = 15
-      TABLE_INTERFACE_INGRESS_ROUTE_LINK = 16
+      TABLE_INTERFACE_INGRESS_LOOKUP_IF_NIL     = 11
+      TABLE_INTERFACE_INGRESS_IF_SEG            = 12
+      TABLE_INTERFACE_INGRESS_SEG_DPSEG         = 13
+      TABLE_INTERFACE_INGRESS_IF_NW             = 14
+      TABLE_INTERFACE_INGRESS_NW_DPNW           = 15
+      TABLE_INTERFACE_INGRESS_RL_DPRL           = 16
 
       # Handle egress packets from managed interfaces.
       TABLE_INTERFACE_EGRESS_CLASSIFIER  = 17
@@ -246,9 +246,8 @@ module Vnet
       METADATA_VALUE_PAIR_FIRST_MASK  = (0x7fffffff << 32)
       METADATA_VALUE_PAIR_SECOND_MASK = 0x7fffffff
 
-      # flag: (1)remote, (0)local
-      FLAG_LOCAL = 0
-      FLAG_REMOTE = 1
+      FLAG_LOCAL = false
+      FLAG_REMOTE = true
 
       #
       # Tunnel constants:

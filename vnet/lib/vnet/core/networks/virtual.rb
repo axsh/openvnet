@@ -23,13 +23,16 @@ module Vnet::Core::Networks
     def install
       flows = []
       flows << flow_create(table: TABLE_TUNNEL_IDS,
-                           goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
+                           goto_table: TABLE_INTERFACE_INGRESS_IF_NW,
+                           priority: 20,
+
                            match: {
                              :tunnel_id => flow_tunnel_id
                            },
-                           priority: 20,
-                           write_value_pair_flag: true,
-                           write_value_pair_first: @id)
+
+                           write_value_pair_flag: FLAG_REMOTE,
+                           write_value_pair_second: @id,
+                          )
       flows << flow_create(table: TABLE_NETWORK_SRC_CLASSIFIER,
                            goto_table: TABLE_ROUTE_INGRESS_INTERFACE,
                            priority: 30,

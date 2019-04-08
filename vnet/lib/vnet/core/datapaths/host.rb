@@ -125,13 +125,14 @@ module Vnet::Core::Datapaths
                            write_value_pair_second: dpg_map[:id],
 
                            cookie: flow_cookie)
-      flows << flow_create(table: TABLE_INTERFACE_INGRESS_NW_IF,
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_IF_NW,
                            goto_table: TABLE_INTERFACE_INGRESS_NW_DPNW,
                            priority: 1,
 
-                           match_value_pair_first: dpg_map[:network_id],
-                           match_value_pair_second: dpg_map[:interface_id],
+                           match_value_pair_first: dpg_map[:interface_id],
+                           match_value_pair_second: dpg_map[:network_id],
 
+                           write_value_pair_first: dpg_map[:network_id],
                            write_value_pair_second: dpg_map[:id],
 
                            cookie: flow_cookie)
@@ -196,13 +197,16 @@ module Vnet::Core::Datapaths
                            write_value_pair_second: dpg_map[:id],
 
                            cookie: flow_cookie)
-      flows << flow_create(table: TABLE_INTERFACE_INGRESS_SEG_IF,
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_IF_SEG,
                            goto_table: TABLE_INTERFACE_INGRESS_SEG_DPSEG,
                            priority: 1,
 
-                           match_value_pair_first: dpg_map[:segment_id],
-                           match_value_pair_second: dpg_map[:interface_id],
+                           match_value_pair_flag: FLAG_REMOTE,
+                           match_value_pair_first: dpg_map[:interface_id],
+                           match_value_pair_second: dpg_map[:segment_id],
 
+                           write_value_pair_flag: FLAG_REMOTE,
+                           write_value_pair_first: dpg_map[:segment_id],
                            write_value_pair_second: dpg_map[:id],
 
                            cookie: flow_cookie)
@@ -210,6 +214,7 @@ module Vnet::Core::Datapaths
                            goto_table: TABLE_SEGMENT_SRC_CLASSIFIER,
                            priority: 1,
 
+                           match_value_pair_flag: FLAG_REMOTE,
                            match_value_pair_first: dpg_map[:segment_id],
                            match_value_pair_second: dpg_map[:id],
 
@@ -300,7 +305,7 @@ module Vnet::Core::Datapaths
       # flows usable for output to the proper port.
 
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER_IF_NIL,
-                           goto_table: TABLE_INTERFACE_INGRESS_ROUTE_LINK,
+                           goto_table: TABLE_INTERFACE_INGRESS_RL_DPRL,
                            priority: 30,
 
                            match: {
@@ -309,7 +314,9 @@ module Vnet::Core::Datapaths
                            match_value_pair_flag: FLAG_REMOTE,
                            match_value_pair_first: dpg_map[:interface_id],
 
-                           write_route_link: dpg_map[:route_link_id],
+                           write_value_pair_flag: FLAG_REMOTE,
+                           write_value_pair_first: dpg_map[:route_link_id],
+                           write_value_pair_second: dpg_map[:id],
 
                            cookie: flow_cookie)
 
@@ -336,7 +343,9 @@ module Vnet::Core::Datapaths
       #
       # Work around the current limitations of trema / openflow 1.3 using ovs-ofctl directly.
       #
-      match_dpg_md = md_create(match_value_pair_flag: true, match_value_pair_first: dpg_map[:segment_id], match_value_pair_second: dpg_map[:id])
+      match_dpg_md = md_create(match_value_pair_flag: FLAG_REMOTE,
+                               match_value_pair_first: dpg_map[:segment_id],
+                               match_value_pair_second: dpg_map[:id])
       write_md = md_create(clear_all: true, write_remote: true, write_segment: dpg_map[:segment_id])
 
       flow_cookie = dpg_map[:id] | COOKIE_TYPE_DP_SEGMENT
@@ -361,7 +370,9 @@ module Vnet::Core::Datapaths
       #
       # Work around the current limitations of trema / openflow 1.3 using ovs-ofctl directly.
       #
-      match_dpg_md = md_create(match_value_pair_flag: true, match_value_pair_first: dpg_map[:network_id], match_value_pair_second: dpg_map[:id])
+      match_dpg_md = md_create(match_value_pair_flag: FLAG_REMOTE,
+                               match_value_pair_first: dpg_map[:network_id],
+                               match_value_pair_second: dpg_map[:id])
       write_md = md_create(clear_all: true, write_remote: true, write_network: dpg_map[:network_id])
 
       flow_cookie = dpg_map[:id] | COOKIE_TYPE_DP_NETWORK

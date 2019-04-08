@@ -73,7 +73,7 @@ module Vnet::Core::Interfaces
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
 
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER_IF_NIL,
-                           goto_table: TABLE_INTERFACE_INGRESS_MAC,
+                           goto_table: TABLE_INTERFACE_INGRESS_LOOKUP_IF_NIL,
                            priority: 10,
 
                            match_value_pair_flag: FLAG_REMOTE,
@@ -82,7 +82,7 @@ module Vnet::Core::Interfaces
                            cookie: cookie)
 
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER_IF_NIL,
-                           goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
+                           goto_table: TABLE_INTERFACE_INGRESS_IF_NW,
                            priority: 20,
 
                            match: {
@@ -92,12 +92,12 @@ module Vnet::Core::Interfaces
                            match_value_pair_first: @id,
 
                            write_value_pair_flag: FLAG_REMOTE,
-                           write_value_pair_first: ipv4_info[:network_id],
-                           write_value_pair_second: @id,
+                           write_value_pair_first: @id,
+                           write_value_pair_second: ipv4_info[:network_id],
 
                            cookie: cookie)
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER_IF_NIL,
-                           goto_table: TABLE_INTERFACE_INGRESS_NW_IF,
+                           goto_table: TABLE_INTERFACE_INGRESS_IF_NW,
                            priority: 20,
 
                            match: {
@@ -107,8 +107,8 @@ module Vnet::Core::Interfaces
                            match_value_pair_first: @id,
 
                            write_value_pair_flag: FLAG_REMOTE,
-                           write_value_pair_first: ipv4_info[:network_id],
-                           write_value_pair_second: @id,
+                           write_value_pair_first: @id,
+                           write_value_pair_second: ipv4_info[:network_id],
 
                            cookie: cookie)
     end
