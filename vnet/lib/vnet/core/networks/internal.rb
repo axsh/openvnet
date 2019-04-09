@@ -14,14 +14,16 @@ module Vnet::Core::Networks
 
     def install
       flows = []
-      flows << flow_create(table: TABLE_NETWORK_SRC_CLASSIFIER,
-                           goto_table: TABLE_ROUTE_INGRESS_INTERFACE,
+      flows << flow_create(table: TABLE_NETWORK_SRC_CLASSIFIER_NW_NIL,
+                           goto_table: TABLE_ROUTE_INGRESS_INTERFACE_NW_NIL,
                            priority: 30,
-                           match_network: @id)
-      flows << flow_create(table: TABLE_NETWORK_DST_CLASSIFIER,
-                           goto_table: TABLE_NETWORK_DST_MAC_LOOKUP,
+                           match_value_pair_first: @id,
+                          )
+      flows << flow_create(table: TABLE_NETWORK_DST_CLASSIFIER_NW_NIL,
+                           goto_table: TABLE_NETWORK_DST_MAC_LOOKUP_NW_NIL,
                            priority: 30,
-                           match_network: @id)
+                           match_value_pair_first: @id,
+                          )
 
       @dp_info.add_flows(flows)
     end
@@ -35,7 +37,7 @@ module Vnet::Core::Networks
       # ports.
       local_actions << { :output => OFPP_LOCAL }
 
-      # TODO: Require matching IPv4? Probably do it in TABLE_NETWORK_DST_MAC_LOOKUP.
+      # TODO: Require matching IPv4? Probably do it in TABLE_NETWORK_DST_MAC_LOOKUP_NW_NIL.
 
       flows = []
       flows << flow_create(table: TABLE_FLOOD_LOCAL,

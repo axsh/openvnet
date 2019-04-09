@@ -37,11 +37,10 @@ module Vnet::Openflow
       # Default drop flows:
       #
 
-      [TABLE_TUNNEL_IF_NIL,
-       TABLE_LOCAL_PORT,
+      [TABLE_LOCAL_PORT,
        TABLE_CONTROLLER_PORT,
-       TABLE_PROMISCUOUS_PORT,
-
+       TABLE_TUNNEL_IF_NIL,
+       
        TABLE_INTERFACE_INGRESS_CLASSIFIER_IF_NIL,
        TABLE_INTERFACE_INGRESS_LOOKUP_IF_NIL,
        TABLE_INTERFACE_INGRESS_IF_SEG,
@@ -58,23 +57,23 @@ module Vnet::Openflow
        TABLE_INTERFACE_EGRESS_ROUTES_IF_NIL,
        TABLE_INTERFACE_EGRESS_ROUTES_IF_NW,
 
-       TABLE_SEGMENT_SRC_CLASSIFIER,
-       TABLE_NETWORK_SRC_CLASSIFIER,
+       TABLE_SEGMENT_SRC_CLASSIFIER_SEG_NIL,
+       TABLE_NETWORK_SRC_CLASSIFIER_NW_NIL,
 
-       TABLE_ROUTE_INGRESS_INTERFACE,
-       TABLE_ROUTE_INGRESS_TRANSLATION,
-       TABLE_ROUTER_INGRESS_LOOKUP,
-       TABLE_ROUTER_CLASSIFIER,
+       TABLE_ROUTE_INGRESS_INTERFACE_NW_NIL,
+       TABLE_ROUTE_INGRESS_TRANSLATION_IF_NIL,
+       TABLE_ROUTER_INGRESS_LOOKUP_IF_NIL,
+       TABLE_ROUTER_CLASSIFIER_RL_NIL,
        TABLE_ROUTER_EGRESS_LOOKUP,
        TABLE_ROUTE_EGRESS_LOOKUP,
        TABLE_ROUTE_EGRESS_TRANSLATION,
        TABLE_ROUTE_EGRESS_INTERFACE,
-       TABLE_ARP_LOOKUP,
+       TABLE_ARP_LOOKUP_NW_NIL,
 
-       TABLE_NETWORK_DST_CLASSIFIER,
-       TABLE_NETWORK_DST_MAC_LOOKUP,
-       TABLE_SEGMENT_DST_CLASSIFIER,
-       TABLE_SEGMENT_DST_MAC_LOOKUP,
+       TABLE_NETWORK_DST_CLASSIFIER_NW_NIL,
+       TABLE_NETWORK_DST_MAC_LOOKUP_NW_NIL,
+       TABLE_SEGMENT_DST_CLASSIFIER_SEG_NIL,
+       TABLE_SEGMENT_DST_MAC_LOOKUP_SEG_NIL,
 
        TABLE_FLOOD_LOCAL,
        TABLE_FLOOD_SEGMENT,
@@ -121,9 +120,8 @@ module Vnet::Openflow
       # Default goto_table flows:
       #
       [[TABLE_INTERFACE_EGRESS_STATEFUL_IF_NIL, TABLE_INTERFACE_EGRESS_FILTER_IF_NIL],
-       [TABLE_NETWORK_CONNECTION, TABLE_NETWORK_SRC_CLASSIFIER],
-       [TABLE_ROUTE_INGRESS_INTERFACE, TABLE_NETWORK_DST_CLASSIFIER],
-       [TABLE_ARP_TABLE, TABLE_ARP_LOOKUP],
+       [TABLE_ROUTE_INGRESS_INTERFACE_NW_NIL, TABLE_NETWORK_DST_CLASSIFIER_NW_NIL],
+       [TABLE_ARP_TABLE_NW_NIL, TABLE_ARP_LOOKUP_NW_NIL],
        [TABLE_FLOOD_SIMULATED, TABLE_FLOOD_LOCAL],
        [TABLE_FLOOD_TUNNELS, TABLE_FLOOD_SEGMENT],
        [TABLE_INTERFACE_INGRESS_FILTER, TABLE_INTERFACE_INGRESS_FILTER_LOOKUP],
@@ -134,10 +132,10 @@ module Vnet::Openflow
                              priority: 0)
       }
 
-      [[TABLE_NETWORK_DST_MAC_LOOKUP, TABLE_FLOOD_SIMULATED, 30, nil, {
+      [[TABLE_NETWORK_DST_MAC_LOOKUP_NW_NIL, TABLE_FLOOD_SIMULATED, 30, nil, {
           :eth_dst => MAC_BROADCAST
         }],
-       [TABLE_SEGMENT_DST_MAC_LOOKUP, TABLE_FLOOD_SIMULATED, 30, nil, {
+       [TABLE_SEGMENT_DST_MAC_LOOKUP_SEG_NIL, TABLE_FLOOD_SIMULATED, 30, nil, {
           :eth_dst => MAC_BROADCAST
         }],
       ].each { |from_table, to_table, priority, flag, match|
@@ -154,24 +152,21 @@ module Vnet::Openflow
       #
       flows << flow_create(table: TABLE_CLASSIFIER,
                            goto_table: TABLE_LOCAL_PORT,
-                           priority: 11,
+                           priority: 12,
                            match: {
                              :in_port => OFPP_LOCAL
-                           },
-                           write_local: true)
+                           })
       flows << flow_create(table: TABLE_CLASSIFIER,
                            goto_table: TABLE_CONTROLLER_PORT,
-                           priority: 11,
+                           priority: 12,
                            match: {
                              :in_port => OFPP_CONTROLLER
-                           },
-                           write_local: true,
-                           write_no_controller: true)
+                           })
 
       #
       # Default dynamic load flows:
       #
-      [#[TABLE_ROUTER_CLASSIFIER, COOKIE_TYPE_ROUTE_LINK]
+      [#[TABLE_ROUTER_CLASSIFIER_RL_NIL, COOKIE_TYPE_ROUTE_LINK]
       ].each { |table, cookie_type|
         flows << flow_create(table: table,
                              priority: 1,

@@ -32,14 +32,16 @@ module Vnet::Core::Segments
 
                            write_value_pair_second: @id,
                           )
-      flows << flow_create(table: TABLE_SEGMENT_SRC_CLASSIFIER,
-                           goto_table: TABLE_SEGMENT_DST_CLASSIFIER,
+      flows << flow_create(table: TABLE_SEGMENT_SRC_CLASSIFIER_SEG_NIL,
+                           goto_table: TABLE_SEGMENT_DST_CLASSIFIER_SEG_NIL,
                            priority: 30,
-                           match_segment: @id)
-      flows << flow_create(table: TABLE_SEGMENT_DST_CLASSIFIER,
-                           goto_table: TABLE_SEGMENT_DST_MAC_LOOKUP,
+                           match_value_pair_first: @id,
+                          )
+      flows << flow_create(table: TABLE_SEGMENT_DST_CLASSIFIER_SEG_NIL,
+                           goto_table: TABLE_SEGMENT_DST_MAC_LOOKUP_SEG_NIL,
                            priority: 30,
-                           match_segment: @id)
+                           match_value_pair_first: @id,
+                          )
 
       @dp_info.add_flows(flows)
     end
@@ -72,24 +74,27 @@ module Vnet::Core::Segments
       # TODO: Check if match contains tunnel.
 
       flows = []
-      flows << flow_create(table: TABLE_SEGMENT_DST_MAC_LOOKUP,
+      flows << flow_create(table: TABLE_SEGMENT_DST_MAC_LOOKUP_SEG_NIL,
                            priority: 35,
                            idle_timeout: 36000,
+
                            match: {
                              :eth_dst => message.eth_src
                            },
+                           match_value_pair_flag: FLAG_LOCAL,
+                           match_value_pair_first: @id,
+
                            actions: {
                              :output => message.in_port
                            },
-                           match_segment: @id,
-                           match_local: nil)
+                          )
       
       # TODO: Should be possible to also have an idle_timeout if we
       # match in_port(?). The hard_timeout would still be required in
       # the case that the dst_mac_lookup flow times out.
 
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_SEG_DPSEG,
-                           goto_table: TABLE_SEGMENT_DST_CLASSIFIER,
+                           goto_table: TABLE_SEGMENT_DST_CLASSIFIER_SEG_NIL,
                            priority: 60,
                            idle_timeout: 60,
                            hard_timeout: 600,
@@ -102,8 +107,7 @@ module Vnet::Core::Segments
                            match_value_pair_flag: FLAG_REMOTE,
                            match_value_pair_first: @id,
 
-                           clear_all: true,
-                           write_segment: @id,
+                           write_value_pair_second: 0,
                           )
 
       @dp_info.add_flows(flows)

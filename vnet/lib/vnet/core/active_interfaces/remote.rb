@@ -30,7 +30,7 @@ module Vnet::Core::ActiveInterfaces
       @dp_info.del_cookie(self.cookie)
 
       # Delete interface_id also until we fix arp lookup flows.
-      @dp_info.del_flows(table_id: TABLE_ARP_LOOKUP,
+      @dp_info.del_flows(table_id: TABLE_ARP_LOOKUP_NW_NIL,
                          priority: 35,
                          cookie: @interface_id | COOKIE_TYPE_INTERFACE,
                          cookie_mask: COOKIE_MASK)

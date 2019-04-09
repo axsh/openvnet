@@ -11,20 +11,19 @@ module Vnet
       # Default table used by all incoming packets.
       TABLE_CLASSIFIER = 0
 
-      # Straight-forward routing of packets to the port tied to the
-      # destination mac address, which includes all non-virtual
-      # networks.
-      TABLE_TUNNEL_IF_NIL = 1
-
       # For packets explicitly marked as being from the controller.
       #
       # Some packets are handed to the controller after modifications,
       # and as such can't be handled again by the classifier in the
       # normal fashion. The in_port is explicitly set to
       # OFPP_CONTROLLER.
-      TABLE_CONTROLLER_PORT  = 5
-      TABLE_LOCAL_PORT       = 6
-      TABLE_PROMISCUOUS_PORT = 7
+      TABLE_CONTROLLER_PORT = 1
+      TABLE_LOCAL_PORT      = 2
+
+      # Straight-forward routing of packets to the port tied to the
+      # destination mac address, which includes all non-virtual
+      # networks.
+      TABLE_TUNNEL_IF_NIL = 3
 
       # Handle ingress packets to host interfaces from unmanaged
       # sources.
@@ -56,30 +55,28 @@ module Vnet
       # although some special cases may exist thus checking for the
       # remote metdata flag is the responsibility of the flow that
       # sends the packet to these tables.
-
-      TABLE_SEGMENT_SRC_CLASSIFIER    = 25
-      TABLE_NETWORK_CONNECTION        = 26
-      TABLE_NETWORK_SRC_CLASSIFIER    = 27
+      TABLE_SEGMENT_SRC_CLASSIFIER_SEG_NIL = 25
+      TABLE_NETWORK_SRC_CLASSIFIER_NW_NIL  = 26
 
       # In the transition from TABLE_ROUTER_EGRESS_LOOKUP to
       # TABLE_ROUTE_EGRESS_LOOKUP the packet loses it's metadata flags.
-      TABLE_ROUTE_INGRESS_INTERFACE          = 30
-      TABLE_ROUTE_INGRESS_TRANSLATION        = 31
-      TABLE_ROUTER_INGRESS_LOOKUP            = 32
-      TABLE_ROUTER_CLASSIFIER                = 33
+      TABLE_ROUTE_INGRESS_INTERFACE_NW_NIL   = 30
+      TABLE_ROUTE_INGRESS_TRANSLATION_IF_NIL = 31
+      TABLE_ROUTER_INGRESS_LOOKUP_IF_NIL     = 32
+      TABLE_ROUTER_CLASSIFIER_RL_NIL         = 33
       TABLE_ROUTER_EGRESS_LOOKUP             = 34
       TABLE_ROUTE_EGRESS_LOOKUP              = 35
       TABLE_ROUTE_EGRESS_TRANSLATION         = 36
       TABLE_ROUTE_EGRESS_INTERFACE           = 37
 
-      TABLE_ARP_TABLE                        = 40
-      TABLE_ARP_LOOKUP                       = 41
+      TABLE_ARP_TABLE_NW_NIL                 = 40
+      TABLE_ARP_LOOKUP_NW_NIL                = 41
 
-      TABLE_NETWORK_DST_CLASSIFIER           = 42
-      TABLE_NETWORK_DST_MAC_LOOKUP           = 43
+      TABLE_NETWORK_DST_CLASSIFIER_NW_NIL    = 42
+      TABLE_NETWORK_DST_MAC_LOOKUP_NW_NIL    = 43
 
-      TABLE_SEGMENT_DST_CLASSIFIER           = 44
-      TABLE_SEGMENT_DST_MAC_LOOKUP           = 45
+      TABLE_SEGMENT_DST_CLASSIFIER_SEG_NIL   = 44
+      TABLE_SEGMENT_DST_MAC_LOOKUP_SEG_NIL   = 45
 
       TABLE_INTERFACE_INGRESS_FILTER         = 46
       TABLE_INTERFACE_INGRESS_FILTER_LOOKUP  = 47

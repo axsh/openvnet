@@ -149,13 +149,20 @@ module Vnet::Core::Interfaces
       #
 
       # TODO: Currently only one mac address / network is supported.
-      flows << flow_create(table: TABLE_INTERFACE_EGRESS_MAC,
-                           goto_table: TABLE_ARP_TABLE,
+      flows << flow_create(table: TABLE_INTERFACE_EGRESS_ROUTES_IF_NW,
+                           goto_table: TABLE_ARP_TABLE_NW_NIL,
                            priority: 20,
+
                            match: {
                              :eth_src => mac_info[:mac_address]
                            },
-                           match_network: ipv4_info[:network_id],
+                           match_value_pair_first: @id,
+                           match_value_pair_second: ipv4_info[:network_id],
+
+                           write_value_pair_flag: FLAG_,
+                           write_value_pair_first: ipv4_info[:network_id],,
+                           write_value_pair_second: 0,
+
                            cookie: cookie)
       flows << flow_create(table: TABLE_ROUTE_EGRESS_LOOKUP,
                            goto_table: TABLE_ROUTE_EGRESS_TRANSLATION,

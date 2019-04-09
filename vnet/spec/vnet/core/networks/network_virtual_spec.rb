@@ -37,17 +37,17 @@ describe Vnet::Core::Networks::Virtual do
         nil,
         flow_options.merge(tunnel_md).merge(:goto_table => TABLE_INTERFACE_INGRESS_IF_NW))
       expect(flows).to include Vnet::Openflow::Flow.create(
-        TABLE_NETWORK_SRC_CLASSIFIER,
+        TABLE_NETWORK_SRC_CLASSIFIER_NW_NIL,
         30,
         network_md,
         nil,
-        flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS_INTERFACE))
+        flow_options.merge(:goto_table => TABLE_ROUTE_INGRESS_INTERFACE_NW_NIL))
       expect(flows).to include Vnet::Openflow::Flow.create(
-        TABLE_NETWORK_DST_CLASSIFIER,
+        TABLE_NETWORK_DST_CLASSIFIER_NW_NIL,
         30,
         network_md,
         nil,
-        flow_options.merge(:goto_table => TABLE_NETWORK_DST_MAC_LOOKUP))
+        flow_options.merge(:goto_table => TABLE_NETWORK_DST_MAC_LOOKUP_NW_NIL))
     end
   end
 end

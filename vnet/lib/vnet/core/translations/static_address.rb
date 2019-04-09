@@ -80,7 +80,7 @@ module Vnet::Core::Translations
       return unless valid_translation?(translation)
 
       match_actions_for_ingress(translation).each { |match, actions|
-        @dp_info.del_flows(table_id: TABLE_ROUTE_INGRESS_TRANSLATION,
+        @dp_info.del_flows(table_id: TABLE_ROUTE_INGRESS_TRANSLATION_IF_NIL,
                            cookie: self.cookie,
                            cookie_mask: self.cookie_mask,
                            match: match)
@@ -158,33 +158,33 @@ module Vnet::Core::Translations
     end
 
     def flows_for_enable_passthrough(flows)
-      [[TABLE_ROUTE_INGRESS_TRANSLATION, TABLE_ROUTER_INGRESS_LOOKUP],
+      [[TABLE_ROUTE_INGRESS_TRANSLATION_IF_NIL, TABLE_ROUTER_INGRESS_LOOKUP_IF_NIL],
        [TABLE_ROUTE_EGRESS_TRANSLATION, TABLE_ROUTE_EGRESS_INTERFACE]
       ].each { |table, goto_table|
         flows << flow_create(table: table,
                              goto_table: goto_table,
                              priority: 10,
-
-                             match_interface: @interface_id)
+                             match_value_pair_first: @interface_id,
+                            )
       }
     end
 
     def flows_for_ingress_translation(flows, translation)
       match_actions_for_ingress(translation).each { |match, actions|
         flow_options = {
-          table: TABLE_ROUTE_INGRESS_TRANSLATION,
+          table: TABLE_ROUTE_INGRESS_TRANSLATION_IF_NIL,
           priority: 50,
           match: match,
-          match_interface: @interface_id,
-          actions: actions
+          match_value_pair_first: @interface_id,
+          actions: actions,
         }
 
         if translation[:route_link_id]
-          flow_options[:goto_table] = TABLE_ROUTER_CLASSIFIER
-          flow_options[:write_route_link] = translation[:route_link_id]
-          flow_options[:write_reflection] = true
+          flow_options[:goto_table] = TABLE_ROUTER_CLASSIFIER_RL_NIL
+          flow_options[:write_value_pair_first] = translation[:route_link_id]
+          #flow_options[:write_reflection] = FLAG_REFLECTION
         else
-          flow_options[:goto_table] = TABLE_ROUTER_INGRESS_LOOKUP
+          flow_options[:goto_table] = TABLE_ROUTER_INGRESS_LOOKUP_IF_NIL
         end
 
         flows << flow_create(flow_options)

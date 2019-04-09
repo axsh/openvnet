@@ -137,15 +137,13 @@ module Vnet::Core::Datapaths
 
                            cookie: flow_cookie)
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_NW_DPNW,
-                           goto_table: TABLE_NETWORK_SRC_CLASSIFIER,
+                           goto_table: TABLE_NETWORK_SRC_CLASSIFIER_NW_NIL,
                            priority: 1,
 
                            match_value_pair_first: dpg_map[:network_id],
                            match_value_pair_second: dpg_map[:id],
 
-                           clear_all: true,
-                           write_remote: true,
-                           write_network: dpg_map[:network_id],
+                           write_value_pair_second: 0,
 
                            cookie: flow_cookie)
       flows << flow_create(table: TABLE_LOOKUP_NETWORK_TO_HOST_IF_EGRESS,
@@ -211,16 +209,14 @@ module Vnet::Core::Datapaths
 
                            cookie: flow_cookie)
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_SEG_DPSEG,
-                           goto_table: TABLE_SEGMENT_SRC_CLASSIFIER,
+                           goto_table: TABLE_SEGMENT_SRC_CLASSIFIER_SEG_NIL,
                            priority: 1,
 
                            match_value_pair_flag: FLAG_REMOTE,
                            match_value_pair_first: dpg_map[:segment_id],
                            match_value_pair_second: dpg_map[:id],
 
-                           clear_all: true,
-                           write_remote: true,
-                           write_segment: dpg_map[:segment_id],
+                           write_value_pair_second: 0,
 
                            cookie: flow_cookie)
       flows << flow_create(table: TABLE_LOOKUP_SEGMENT_TO_HOST_IF_EGRESS,
@@ -245,8 +241,9 @@ module Vnet::Core::Datapaths
       flow_cookie = dpg_map[:segment_id] | COOKIE_TYPE_SEGMENT
 
       flows << flow_create(table: TABLE_CONTROLLER_PORT,
-                           goto_table: TABLE_SEGMENT_DST_CLASSIFIER,
+                           goto_table: TABLE_SEGMENT_DST_CLASSIFIER_SEG_NIL,
                            priority: 20,
+
                            match: {
                              # :eth_type => 0x0806
                              :eth_dst => dpg_map[:mac_address]
@@ -254,7 +251,11 @@ module Vnet::Core::Datapaths
                            actions: {
                              :eth_dst => MAC_BROADCAST
                            },
-                           write_segment: dpg_map[:segment_id],
+
+                           write_value_pair_flag: FLAG_LOCAL,
+                           write_value_pair_first: dpg_map[:segment_id],
+                           write_value_pair_second: 0,
+
                            cookie: flow_cookie)
       flows << flow_create(table: TABLE_OUTPUT_DP_TO_CONTROLLER,
                            priority: 1,
@@ -284,17 +285,18 @@ module Vnet::Core::Datapaths
       #
       # TODO: Add verification of the ingress host interface.
       flows << flow_create(table: TABLE_TUNNEL_IF_NIL,
-                           goto_table: TABLE_ROUTER_CLASSIFIER,
+                           goto_table: TABLE_ROUTER_CLASSIFIER_RL_NIL,
                            priority: 30,
 
                            match: {
                              :tunnel_id => TUNNEL_ROUTE_LINK,
                              :eth_dst => dpg_map[:mac_address]
                            },
+                           # TODO: match interface here?
 
-                           clear_all: true,
-                           write_remote: true,
-                           write_route_link: dpg_map[:route_link_id],
+                           write_value_pair_flag: FLAG_REMOTE,
+                           write_value_pair_first: dpg_map[:route_link_id],
+                           write_value_pair_second: 0,
 
                            cookie: flow_cookie)
 
@@ -349,23 +351,27 @@ module Vnet::Core::Datapaths
       match_dpg_md = md_create(match_value_pair_flag: FLAG_REMOTE,
                                match_value_pair_first: dpg_map[:segment_id],
                                match_value_pair_second: dpg_map[:id])
-      write_md = md_create(clear_all: true, write_remote: true, write_segment: dpg_map[:segment_id])
+      write_md = md_create(write_value_pair_second: 0)
 
       flow_cookie = dpg_map[:id] | COOKIE_TYPE_DP_SEGMENT
 
       flow_learn_arp = "table=%d,priority=%d,cookie=0x%x,arp,metadata=0x%x/0x%x,%sactions=" %
         [TABLE_INTERFACE_INGRESS_SEG_DPSEG, priority, flow_cookie, match_dpg_md[:metadata], match_dpg_md[:metadata_mask], match_options]
 
-      [md_create(match_segment: dpg_map[:segment_id], match_local: nil),
-       md_create(segment: dpg_map[:segment_id], match_reflection: true)
+      [ md_create(match_value_pair_flag: FLAG_LOCAL,
+                  match_value_pair_first: dpg_map[:segment_id],
+                  match_value_pair_second: 0)
+        # md_create(match_value_pair_flag: FLAG_REFLECTION,
+        #           match_value_pair_first: dpg_map[:segment_id],
+        #           match_value_pair_second: 0)
       ].each { |metadata|
         flow_learn_arp << "learn(table=%d,cookie=0x%x,idle_timeout=36000,priority=35,metadata:0x%x,NXM_OF_ETH_DST[]=NXM_OF_ETH_SRC[]," %
-          [TABLE_SEGMENT_DST_MAC_LOOKUP, flow_cookie, metadata[:metadata]]
+          [TABLE_SEGMENT_DST_MAC_LOOKUP_SEG_NIL, flow_cookie, metadata[:metadata]]
         flow_learn_arp << learn_options
         flow_learn_arp << "output:NXM_OF_IN_PORT[]),"
       }
 
-      flow_learn_arp << "write_metadata:0x%x/0x%x,goto_table:%d" % [write_md[:metadata], write_md[:metadata_mask], TABLE_SEGMENT_SRC_CLASSIFIER]
+      flow_learn_arp << "write_metadata:0x%x/0x%x,goto_table:%d" % [write_md[:metadata], write_md[:metadata_mask], TABLE_SEGMENT_SRC_CLASSIFIER_SEG_NIL]
       flow_learn_arp
     end
 
@@ -376,23 +382,27 @@ module Vnet::Core::Datapaths
       match_dpg_md = md_create(match_value_pair_flag: FLAG_REMOTE,
                                match_value_pair_first: dpg_map[:network_id],
                                match_value_pair_second: dpg_map[:id])
-      write_md = md_create(clear_all: true, write_remote: true, write_network: dpg_map[:network_id])
+      write_md = md_create(write_value_pair_second: 0)
 
       flow_cookie = dpg_map[:id] | COOKIE_TYPE_DP_NETWORK
 
       flow_learn_arp = "table=%d,priority=%d,cookie=0x%x,arp,metadata=0x%x/0x%x,%sactions=" %
         [TABLE_INTERFACE_INGRESS_NW_DPNW, priority, flow_cookie, match_dpg_md[:metadata], match_dpg_md[:metadata_mask], match_options]
 
-      [md_create(match_network: dpg_map[:network_id], match_local: nil),
-       md_create(network: dpg_map[:network_id], match_reflection: true)
+      [ md_create(match_value_pair_flag: FLAG_LOCAL,
+                  match_value_pair_first: dpg_map[:network_id],
+                  match_value_pair_second: 0)
+        # md_create(match_value_pair_flag: FLAG_REFLECTION,
+        #           match_value_pair_first: dpg_map[:segment_id],
+        #           match_value_pair_second: 0)
       ].each { |metadata|
         flow_learn_arp << "learn(table=%d,cookie=0x%x,idle_timeout=36000,priority=35,metadata:0x%x,NXM_OF_ETH_DST[]=NXM_OF_ETH_SRC[]," %
-          [TABLE_NETWORK_DST_MAC_LOOKUP, flow_cookie, metadata[:metadata]]
+          [TABLE_NETWORK_DST_MAC_LOOKUP_NW_NIL, flow_cookie, metadata[:metadata]]
         flow_learn_arp << learn_options
         flow_learn_arp << "output:NXM_OF_IN_PORT[]),"
       }
 
-      flow_learn_arp << "write_metadata:0x%x/0x%x,goto_table:%d" % [write_md[:metadata], write_md[:metadata_mask], TABLE_NETWORK_SRC_CLASSIFIER]
+      flow_learn_arp << "write_metadata:0x%x/0x%x,goto_table:%d" % [write_md[:metadata], write_md[:metadata_mask], TABLE_NETWORK_SRC_CLASSIFIER_NW_NIL]
       flow_learn_arp
     end
 

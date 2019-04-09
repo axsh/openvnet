@@ -53,14 +53,17 @@ module Vnet::Openflow
             :ipv4_dst_mask => IPV4_BROADCAST.mask(ipv4_info_mask)
           }],
       ].each { |priority, match|
-        flows << flow_create(table: TABLE_ARP_LOOKUP,
+        flows << flow_create(table: TABLE_ARP_LOOKUP_NW_NIL,
                              priority: priority,
+                             
                              match: match,
-                             match_network: ipv4_info[:network_id],
-                             match_not_no_controller: true,
+                             #match_value_pair_flag: FLAG_NO_CONTROLLER,
+                             match_value_pair_first: ipv4_info[:network_id],
+
                              actions: {
                                :output => Controller::OFPP_CONTROLLER
                              },
+
                              cookie: @arp_lookup[:lookup_cookie])
       }
     end
@@ -81,7 +84,7 @@ module Vnet::Openflow
       mac_info, ipv4_info, network = find_ipv4_and_network(message, message.ipv4_src)
 
       # When the source ipv4 address belongs to the simulated
-      # interface we need to match it in TABLE_ARP_LOOKUP so that each
+      # interface we need to match it in TABLE_ARP_LOOKUP_NW_NIL so that each
       # ip lease used is forced to do an arp request. This ensures
       # that the external interface sends us an arp request.
       use_src_ipv4 = network && message.ipv4_src
@@ -200,7 +203,7 @@ module Vnet::Openflow
       [ [35, {}],
         [45, { :ipv4_src => message.arp_tpa } ]
       ].each { |priority, match_extra|
-        flow = Flow.create(TABLE_ARP_LOOKUP, priority,
+        flow = Flow.create(TABLE_ARP_LOOKUP_NW_NIL, priority,
           match_md.merge({ :eth_type => 0x0800,
               :ipv4_dst => message.arp_spa
             }).merge(match_extra), {
@@ -208,7 +211,7 @@ module Vnet::Openflow
           },
           reflection_md.merge!({ :cookie => cookie,
               :idle_timeout => 3600,
-              :goto_table => TABLE_NETWORK_DST_CLASSIFIER
+              :goto_table => TABLE_NETWORK_DST_CLASSIFIER_NW_NIL
             }))
         @dp_info.add_flow(flow)
       }
@@ -229,7 +232,7 @@ module Vnet::Openflow
 
         flows = []
 
-        flows << Flow.create(TABLE_ARP_LOOKUP, 25,
+        flows << Flow.create(TABLE_ARP_LOOKUP_NW_NIL, 25,
           match_md.merge({ :eth_type => 0x0800,
               :ipv4_dst => queued_message[:destination_ipv4].mask(queued_message[:destination_prefix]),
               :ipv4_dst_mask => IPV4_BROADCAST.mask(queued_message[:destination_prefix]),
@@ -238,11 +241,11 @@ module Vnet::Openflow
           },
           reflection_md.merge!({ :cookie => cookie,
               :idle_timeout => 3600,
-              :goto_table => TABLE_NETWORK_DST_CLASSIFIER
+              :goto_table => TABLE_NETWORK_DST_CLASSIFIER_NW_NIL
             }))
 
         # if queued_message[:use_src_ipv4]
-        #   flows << Flow.create(TABLE_ARP_LOOKUP, 45,
+        #   flows << Flow.create(TABLE_ARP_LOOKUP_NW_NIL, 45,
         #     match_md.merge({ :eth_type => 0x0800,
         #         :ipv4_src => queued_message[:use_src_ipv4],
         #         :ipv4_dst => queued_message[:destination_ipv4].mask(queued_message[:destination_prefix]),
@@ -358,24 +361,22 @@ module Vnet::Openflow
       # TODO: Check if interface is remote?
 
       flows = []
-      flows << flow_create(table: TABLE_ARP_LOOKUP,
+      flows << flow_create(table: TABLE_ARP_LOOKUP_NW_NIL,
                            goto_table: TABLE_LOOKUP_IF_NW_TO_DP_NW,
                            priority: 35,
+                           idle_timeout: 3600,
 
                            match: {
                              :eth_type => 0x0800,
                              :ipv4_dst => params[:request_ipv4]
                            },
-                           match_network: params[:interface_network_id],
+                           #match_value_pair_flag: FLAG_,
+                           match_value_pair_first: params[:interface_network_id],
 
                            actions: {
                              :eth_dst => Pio::Mac.new(ip_lease.mac_lease.mac_address),
                            },
-
-                           idle_timeout: 3600,
-
-                           # Reflection based on metadata flag...
-                           write_value_pair_flag: true,
+                           #write_value_pair_flag: FLAG_REFLECTION,
                            write_value_pair_first: ip_lease.interface_id,
                            write_value_pair_second: params[:interface_network_id],
 
@@ -392,7 +393,7 @@ module Vnet::Openflow
       messages.each { |message|
         # Set the in_port to OFPP_CONTROLLER since the packets stored
         # have already been processed by TABLE_CLASSIFIER to
-        # TABLE_ARP_LOOKUP, and as such no longer match the fields
+        # TABLE_ARP_LOOKUP_NW_NIL, and as such no longer match the fields
         # required by the old in_port.
         #
         # The route link is identified by eth_dst, which was set in
@@ -436,7 +437,7 @@ module Vnet::Openflow
       when :inactive_interface then hard_timeout = 10
       end
 
-      flow = Flow.create(TABLE_ARP_LOOKUP, 21,
+      flow = Flow.create(TABLE_ARP_LOOKUP_NW_NIL, 21,
                          match_packet(message),
                          nil, {
                            :cookie => message.cookie,

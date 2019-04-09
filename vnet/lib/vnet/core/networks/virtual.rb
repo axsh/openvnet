@@ -32,14 +32,16 @@ module Vnet::Core::Networks
 
                            write_value_pair_second: @id,
                           )
-      flows << flow_create(table: TABLE_NETWORK_SRC_CLASSIFIER,
-                           goto_table: TABLE_ROUTE_INGRESS_INTERFACE,
+      flows << flow_create(table: TABLE_NETWORK_SRC_CLASSIFIER_NW_NIL,
+                           goto_table: TABLE_ROUTE_INGRESS_INTERFACE_NW_NIL,
                            priority: 30,
-                           match_network: @id)
-      flows << flow_create(table: TABLE_NETWORK_DST_CLASSIFIER,
-                           goto_table: TABLE_NETWORK_DST_MAC_LOOKUP,
+                           match_value_pair_first: @id,
+                          )
+      flows << flow_create(table: TABLE_NETWORK_DST_CLASSIFIER_NW_NIL,
+                           goto_table: TABLE_NETWORK_DST_MAC_LOOKUP_NW_NIL,
                            priority: 30,
-                           match_network: @id)
+                           match_value_pair_first: @id,
+                          )
 
       ovs_flows = []
 
@@ -47,28 +49,32 @@ module Vnet::Core::Networks
         subnet_dst = match_ipv4_subnet_dst(@ipv4_network, @ipv4_prefix)
         subnet_src = match_ipv4_subnet_src(@ipv4_network, @ipv4_prefix)
 
-        flows << flow_create(table: TABLE_SEGMENT_SRC_CLASSIFIER,
-                             goto_table: TABLE_NETWORK_CONNECTION,
+        flows << flow_create(table: TABLE_SEGMENT_SRC_CLASSIFIER_SEG_NIL,
+                             goto_table: TABLE_NETWORK_SRC_CLASSIFIER_NW_NIL,
                              priority: 50 + flow_priority,
-                             match: subnet_dst,
-                             match_segment: @segment_id,
-                             write_network: @id)
 
+                             match: subnet_dst,
+                             match_value_pair_first: @segment_id,
+                             write_value_pair_first: @id,
+                            )
         # TODO: ??????????? This should be for _all_ networks.
-        flows << flow_create(table: TABLE_NETWORK_DST_CLASSIFIER,
+        flows << flow_create(table: TABLE_NETWORK_DST_CLASSIFIER_NW_NIL,
                              goto_table: TABLE_FLOOD_SIMULATED,
                              priority: 31,
+
                              match: {
                                :eth_dst => MAC_BROADCAST
                              },
-                             match_network: @id,
-                             write_segment: @segment_id)
-
-        flows << flow_create(table: TABLE_NETWORK_DST_MAC_LOOKUP,
-                             goto_table: TABLE_SEGMENT_DST_CLASSIFIER,
+                             match_value_pair_first: @id,
+                             write_value_pair_first: @segment_id,
+                            )
+        flows << flow_create(table: TABLE_NETWORK_DST_MAC_LOOKUP_NW_NIL,
+                             goto_table: TABLE_SEGMENT_DST_CLASSIFIER_SEG_NIL,
                              priority: 25,
-                             match_network: @id,
-                             write_segment: @segment_id)
+
+                             match_value_pair_first: @id,
+                             write_value_pair_first: @segment_id,
+                            )
       end
 
       @dp_info.add_flows(flows)

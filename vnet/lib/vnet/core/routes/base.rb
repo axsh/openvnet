@@ -97,14 +97,16 @@ module Vnet::Core::Routes
                           )
 
       if @ingress == true
-        flows << flow_create(table: TABLE_ROUTER_INGRESS_LOOKUP,
-                             goto_table: TABLE_ROUTER_CLASSIFIER,
+        flows << flow_create(table: TABLE_ROUTER_INGRESS_LOOKUP_IF_NIL,
+                             goto_table: TABLE_ROUTER_CLASSIFIER_RL_NIL,
                              priority: flow_priority,
 
                              match: subnet_src,
-                             match_interface: @interface_id,
-                             write_route_link: @route_link_id,
-                             write_reflection: true)
+                             match_value_pair_first: @interface_id,
+                             
+                             #write_value_pair_flag: FLAG_REFLECTION,
+                             write_value_pair_first: @route_link_id,
+                            )
       end
 
       # In order to know what interface to egress from this flow needs

@@ -176,7 +176,6 @@ module Vnet
       autoload :IfBase, 'vnet/core/interfaces/if_base'
       autoload :Internal, 'vnet/core/interfaces/internal'
       autoload :Patch, 'vnet/core/interfaces/patch'
-      autoload :Promiscuous, 'vnet/core/interfaces/promiscuous'
       autoload :Simulated, 'vnet/core/interfaces/simulated'
       autoload :Vif, 'vnet/core/interfaces/vif'
     end
@@ -209,7 +208,6 @@ module Vnet
       autoload :Generic, 'vnet/core/ports/generic'
       autoload :Host, 'vnet/core/ports/host'
       autoload :Local, 'vnet/core/ports/local'
-      autoload :Promiscuous, 'vnet/core/ports/promiscuous'
       autoload :Tunnel, 'vnet/core/ports/tunnel'
       autoload :Vif, 'vnet/core/ports/vif'
     end

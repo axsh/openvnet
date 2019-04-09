@@ -70,23 +70,27 @@ module Vnet::Core::Interfaces
 
       if segment_id
         flows << flow_create(table: TABLE_INTERFACE_EGRESS_VALIDATE_IF_NIL,
-                             goto_table: TABLE_SEGMENT_SRC_CLASSIFIER,
+                             goto_table: TABLE_SEGMENT_SRC_CLASSIFIER_SEG_NIL,
                              priority: 30,
 
                              match: { :eth_src => mac_address },
                              match_value_pair_first: @id,
 
-                             clear_all: true,
-                             write_local: true,
-                             write_segment: segment_id,
+                             write_value_pair_first: segment_id,
+                             write_value_pair_second: 0,
                              
                              cookie: cookie)
-        flows << flow_create(table: TABLE_SEGMENT_DST_MAC_LOOKUP,
+        flows << flow_create(table: TABLE_SEGMENT_DST_MAC_LOOKUP_SEG_NIL,
                              goto_table: TABLE_INTERFACE_INGRESS_FILTER,
                              priority: 60,
-                             match: { :eth_dst => mac_address },
-                             match_segment: segment_id,
+
+                             match: {
+                               :eth_dst => mac_address
+                             },
+                             match_value_pair_first: segment_id,
+
                              write_interface: @id,
+
                              cookie: cookie)
       end
     end
@@ -118,28 +122,25 @@ module Vnet::Core::Interfaces
        }].each { |match|
         if segment_id
           flows << flow_create(table: TABLE_INTERFACE_EGRESS_VALIDATE_IF_NIL,
-                               goto_table: TABLE_SEGMENT_SRC_CLASSIFIER,
+                               goto_table: TABLE_SEGMENT_SRC_CLASSIFIER_SEG_NIL,
                                priority: 40,
 
                                match: match,
                                match_value_pair_first: @id,
 
-                               clear_all: true,
-                               write_local: true,
-                               write_segment: segment_id,
+                               write_value_pair_first: segment_id,
+                               write_value_pair_second: 0,
 
                                cookie: cookie)
         else
           flows << flow_create(table: TABLE_INTERFACE_EGRESS_VALIDATE_IF_NIL,
-                               goto_table: TABLE_NETWORK_CONNECTION,
+                               goto_table: TABLE_NETWORK_SRC_CLASSIFIER_NW_NIL,
                                priority: 40,
 
                                match: match,
                                match_value_pair_first: @id,
 
-                               clear_all: true,
-                               write_local: true,
-                               write_network: network_id,
+                               write_value_pair_first: network_id,
 
                                cookie: cookie)
         end
@@ -148,17 +149,20 @@ module Vnet::Core::Interfaces
       #
       # IPv4
       #
-      flows << flow_create(table: TABLE_ARP_TABLE,
-                           goto_table: TABLE_NETWORK_DST_CLASSIFIER,
+      flows << flow_create(table: TABLE_ARP_TABLE_NW_NIL,
+                           goto_table: TABLE_NETWORK_DST_CLASSIFIER_NW_NIL,
                            priority: 40,
+
                            match: {
                              :eth_type => 0x0800,
                              :ipv4_dst => ipv4_address,
                            },
-                           match_network: network_id,
+                           match_value_pair_first: network_id,
+
                            actions: {
                              :eth_dst => mac_address,
                            },
+                           
                            cookie: cookie)
 
       [{:eth_type => 0x0800,
@@ -170,12 +174,15 @@ module Vnet::Core::Interfaces
         :arp_tha => mac_address,
         :arp_tpa => ipv4_address
        }].each { |match|
-        flows << flow_create(table: TABLE_NETWORK_DST_MAC_LOOKUP,
+        flows << flow_create(table: TABLE_NETWORK_DST_MAC_LOOKUP_NW_NIL,
                              goto_table: TABLE_INTERFACE_INGRESS_FILTER,
                              priority: 60,
+
                              match: match,
-                             match_network: network_id,
+                             match_value_pair_first: network_id,
+
                              write_interface: @id,
+
                              cookie: cookie)
       }
 
@@ -210,27 +217,31 @@ module Vnet::Core::Interfaces
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
 
       if ipv4_info[:enable_routing] != true
-        flows << flow_create(table: TABLE_ROUTE_INGRESS_INTERFACE,
-                             goto_table: TABLE_NETWORK_DST_CLASSIFIER,
+        flows << flow_create(table: TABLE_ROUTE_INGRESS_INTERFACE_NW_NIL,
+                             goto_table: TABLE_NETWORK_DST_CLASSIFIER_NW_NIL,
                              priority: 20,
+                             
                              match: {
                                :eth_type => 0x0800,
                                :eth_dst => mac_info[:mac_address],
                                :ipv4_dst => ipv4_info[:ipv4_address]
                              },
-                             match_network: ipv4_info[:network_id],
+                             match_value_pair_first: ipv4_info[:network_id],
+
                              cookie: cookie)
       end
 
-      flows << flow_create(table: TABLE_ROUTE_INGRESS_INTERFACE,
-                           goto_table: TABLE_ROUTE_INGRESS_TRANSLATION,
+      flows << flow_create(table: TABLE_ROUTE_INGRESS_INTERFACE_NW_NIL,
+                           goto_table: TABLE_ROUTE_INGRESS_TRANSLATION_IF_NIL,
                            priority: 10,
+
                            match: {
                              :eth_type => 0x0800,
                              :eth_dst => mac_info[:mac_address]
                            },
-                           match_network: ipv4_info[:network_id],
-                           write_interface: @id,
+                           match_value_pair_first: ipv4_info[:network_id],
+                           write_value_pair_first: @id,
+
                            cookie: cookie)
     end
 
@@ -292,7 +303,7 @@ module Vnet::Core::Interfaces
 
       # TODO: Currently only one mac address / network is supported.
       flows << flow_create(table: TABLE_INTERFACE_EGRESS_ROUTES_IF_NW,
-                           goto_table: TABLE_ARP_TABLE,
+                           goto_table: TABLE_ARP_TABLE_NW_NIL,
                            priority: 20,
 
                            match: {
@@ -301,8 +312,8 @@ module Vnet::Core::Interfaces
                            match_value_pair_first: @id,
                            match_value_pair_second: ipv4_info[:network_id],
 
-                           clear_all: true,
-                           write_network: ipv4_info[:network_id],
+                           write_value_pair_first: ipv4_info[:network_id],
+                           write_value_pair_second: 0,
 
                            cookie: cookie)
       flows << flow_create(table: TABLE_ROUTE_EGRESS_LOOKUP,
@@ -318,25 +329,29 @@ module Vnet::Core::Interfaces
                            cookie: cookie)
 
       flows << flow_create(table: TABLE_ROUTE_EGRESS_INTERFACE,
-                           goto_table: TABLE_ARP_TABLE,
+                           goto_table: TABLE_ARP_TABLE_NW_NIL,
                            priority: 20,
 
                            actions: {
                              :eth_src => mac_info[:mac_address]
                            },
                            match_interface: @id,
-                           write_network: ipv4_info[:network_id],
+
+                           write_value_pair_first: ipv4_info[:network_id],
+                           write_value_pair_second: 0,
+
                            cookie: cookie)
     end
 
     def flows_for_route_translation(flows)
-      [[TABLE_ROUTE_INGRESS_TRANSLATION, TABLE_ROUTER_INGRESS_LOOKUP],
+      [[TABLE_ROUTE_INGRESS_TRANSLATION_IF_NIL, TABLE_ROUTER_INGRESS_LOOKUP_IF_NIL],
        [TABLE_ROUTE_EGRESS_TRANSLATION, TABLE_ROUTE_EGRESS_INTERFACE],
       ].each { |table, goto_table|
         flows << flow_create(table: table,
                              goto_table: goto_table,
                              priority: 90,
-                             match_interface: @id)
+                             write_value_pair_first: @id,
+                            )
       }
     end
 

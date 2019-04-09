@@ -27,36 +27,40 @@ module Vnet::Core::Routers
     private
 
     def flows_for_dynamic_load(flows)
-      flows << flow_create(table: TABLE_ROUTER_CLASSIFIER,
+      flows << flow_create(table: TABLE_ROUTER_CLASSIFIER_RL_NIL,
                            goto_table: TABLE_ROUTER_EGRESS_LOOKUP,
                            priority: 30,
 
-                           # TODO: Set reflection flag here?... If so don't set it in route_link_ingress(?)
-                           match_route_link: @id)
+                           # TODO: Set FLAG_REFLECTION here?... If so don't set it in route_link_ingress(?)
+                           match_value_pair_first: @id,
+                          )
     end
 
     def flows_for_route_link(flows)
       flows << flow_create(table: TABLE_CONTROLLER_PORT,
-                           goto_table: TABLE_ROUTER_CLASSIFIER,
+                           goto_table: TABLE_ROUTER_CLASSIFIER_RL_NIL,
                            priority: 30,
 
                            match: {
                              :eth_src => @mac_address
                            },
-                           write_route_link: @id)
+
+                           #write_value_pair_flag: FLAG_REFLECTION,
+                           write_value_pair_first: @id,
+                           write_value_pair_second: 0,
+                          )
 
       flows << flow_create(table: TABLE_TUNNEL_IF_NIL,
-                           goto_table: TABLE_ROUTER_CLASSIFIER,
+                           goto_table: TABLE_ROUTER_CLASSIFIER_RL_NIL,
                            priority: 30,
 
                            match: {
                              :tunnel_id => TUNNEL_ROUTE_LINK,
                              :eth_dst => @mac_address
                            },
-                           
-                           clear_all: true,
-                           write_remote: true,
-                           write_route_link: @id
+
+                           #write_value_pair_flag: FLAG_REMOTE,
+                           write_value_pair_first: @id,
                           )
 
       flows_for_filtering_mac_address(flows, @mac_address)

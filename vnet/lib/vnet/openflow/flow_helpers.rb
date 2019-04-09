@@ -117,14 +117,14 @@ module Vnet::Openflow
     end
 
     def flows_for_filtering_mac_address(flows, mac_address, use_cookie = self.cookie)
-      [[TABLE_SEGMENT_SRC_CLASSIFIER, { :eth_src => mac_address }],
-       [TABLE_SEGMENT_SRC_CLASSIFIER, { :eth_dst => mac_address }],
-       [TABLE_SEGMENT_DST_CLASSIFIER, { :eth_src => mac_address }],
-       [TABLE_SEGMENT_DST_CLASSIFIER, { :eth_dst => mac_address }],
-       [TABLE_NETWORK_SRC_CLASSIFIER, { :eth_src => mac_address }],
-       [TABLE_NETWORK_SRC_CLASSIFIER, { :eth_dst => mac_address }],
-       [TABLE_NETWORK_DST_CLASSIFIER, { :eth_src => mac_address }],
-       [TABLE_NETWORK_DST_CLASSIFIER, { :eth_dst => mac_address }],
+      [[TABLE_SEGMENT_SRC_CLASSIFIER_SEG_NIL, { :eth_src => mac_address }],
+       [TABLE_SEGMENT_SRC_CLASSIFIER_SEG_NIL, { :eth_dst => mac_address }],
+       [TABLE_SEGMENT_DST_CLASSIFIER_SEG_NIL, { :eth_src => mac_address }],
+       [TABLE_SEGMENT_DST_CLASSIFIER_SEG_NIL, { :eth_dst => mac_address }],
+       [TABLE_NETWORK_SRC_CLASSIFIER_NW_NIL, { :eth_src => mac_address }],
+       [TABLE_NETWORK_SRC_CLASSIFIER_NW_NIL, { :eth_dst => mac_address }],
+       [TABLE_NETWORK_DST_CLASSIFIER_NW_NIL, { :eth_src => mac_address }],
+       [TABLE_NETWORK_DST_CLASSIFIER_NW_NIL, { :eth_dst => mac_address }],
       ].each { |table, match|
         flows << flow_create(table: table,
                              priority: 90,
