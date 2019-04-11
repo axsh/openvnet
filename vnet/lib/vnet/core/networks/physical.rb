@@ -20,14 +20,20 @@ module Vnet::Core::Networks
                            match_value_pair_first: @id,
                           )
       flows << flow_create(table: TABLE_NETWORK_DST_CLASSIFIER_NW_NIL,
-                           goto_table: TABLE_NETWORK_DST_MAC_LOOKUP_NW_NIL,
+                           goto_table: TABLE_NETWORK_DST_MAC_LOOKUP_NIL_NW,
                            priority: 30,
+
                            match_value_pair_first: @id,
+                           write_value_pair_first: 0,
+                           write_value_pair_second: @id,
                           )
-      flows << flow_create(table: TABLE_NETWORK_DST_MAC_LOOKUP_NW_NIL,
+      flows << flow_create(table: TABLE_NETWORK_DST_MAC_LOOKUP_NIL_NW,
                            goto_table: TABLE_LOOKUP_NW_NIL,
                            priority: 20,
+
                            match_value_pair_first: @id,
+                           write_value_pair_first: 0,
+                           write_value_pair_second: @id,
                           )
 
       @dp_info.add_flows(flows)

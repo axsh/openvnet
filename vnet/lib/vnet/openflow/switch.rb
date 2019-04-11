@@ -71,9 +71,9 @@ module Vnet::Openflow
        TABLE_ARP_LOOKUP_NW_NIL,
 
        TABLE_NETWORK_DST_CLASSIFIER_NW_NIL,
-       TABLE_NETWORK_DST_MAC_LOOKUP_NW_NIL,
-       TABLE_SEGMENT_DST_CLASSIFIER_SEG_NIL,
-       TABLE_SEGMENT_DST_MAC_LOOKUP_SEG_NIL,
+       TABLE_NETWORK_DST_MAC_LOOKUP_NIL_NW,
+       TABLE_SEGMENT_DST_CLASSIFIER_SEG_NW,
+       TABLE_SEGMENT_DST_MAC_LOOKUP_SEG_NW,
 
        TABLE_FLOOD_LOCAL_SEG_NW,
        TABLE_FLOOD_SEGMENT_SEG_NW,
@@ -136,21 +136,16 @@ module Vnet::Openflow
                              priority: 0)
       }
 
-      # TODO: Need to change NW_NIL to NIL_NW.
-      # [[TABLE_NETWORK_DST_MAC_LOOKUP_NW_NIL, TABLE_FLOOD_SIMULATED_SEG_NW, 30, nil, {
-      #     :eth_dst => MAC_BROADCAST
-      #   }],
-      #  [TABLE_SEGMENT_DST_MAC_LOOKUP_SEG_NIL, TABLE_FLOOD_SIMULATED, 30, nil, {
-      #     :eth_dst => MAC_BROADCAST
-      #   }],
-      # ].each { |from_table, to_table, priority, flag, match|
-      #   flows << flow_create({ table: from_table,
-      #                          goto_table: to_table,
-      #                          priority: priority,
-      #                          match: match,
-      #                          flag => true
-      #                        })
-      # }
+      [[TABLE_NETWORK_DST_MAC_LOOKUP_NIL_NW, TABLE_FLOOD_SIMULATED_SEG_NW],
+       [TABLE_SEGMENT_DST_MAC_LOOKUP_SEG_NW, TABLE_FLOOD_SIMULATED_SEG_NW],
+      ].each { |from_table, to_table, priority, match|
+        flows << flow_create(table: from_table,
+                             goto_table: to_table,
+                             priority: 30,
+                             match: {
+                               eth_dst: MAC_BROADCAST
+                             })
+      }
 
       #
       # Default classifier flows:

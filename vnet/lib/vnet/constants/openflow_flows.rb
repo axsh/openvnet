@@ -74,10 +74,9 @@ module Vnet
       TABLE_ARP_LOOKUP_NW_NIL                = 41
 
       TABLE_NETWORK_DST_CLASSIFIER_NW_NIL    = 42
-      TABLE_NETWORK_DST_MAC_LOOKUP_NW_NIL    = 43
-
-      TABLE_SEGMENT_DST_CLASSIFIER_SEG_NIL   = 44
-      TABLE_SEGMENT_DST_MAC_LOOKUP_SEG_NIL   = 45
+      TABLE_NETWORK_DST_MAC_LOOKUP_NIL_NW    = 43
+      TABLE_SEGMENT_DST_CLASSIFIER_SEG_NW    = 44
+      TABLE_SEGMENT_DST_MAC_LOOKUP_SEG_NW    = 45
 
       TABLE_INTERFACE_INGRESS_FILTER_IF_NIL        = 46
       TABLE_INTERFACE_INGRESS_FILTER_LOOKUP_IF_NIL = 47
@@ -115,10 +114,6 @@ module Vnet
       TABLE_OUTPUT_MAC2MAC_SIF_DIF           = 86
       TABLE_OUTPUT_TUNNEL_SIF_DIF            = 87
       TABLE_OUTPUT_CONTROLLER_SEG_NW         = 88
-
-      #
-      # Output ports tables:
-      #
 
       # Directly output to a port type with no additional
       # actions. Usable by any table and as such need to be the last

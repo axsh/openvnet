@@ -47,7 +47,7 @@ describe Vnet::Core::Networks::Virtual do
         30,
         network_md,
         nil,
-        flow_options.merge(:goto_table => TABLE_NETWORK_DST_MAC_LOOKUP_NW_NIL))
+        flow_options.merge(:goto_table => TABLE_NETWORK_DST_MAC_LOOKUP_NIL_NW))
     end
   end
 end

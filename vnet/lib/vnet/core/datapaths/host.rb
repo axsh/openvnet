@@ -241,7 +241,7 @@ module Vnet::Core::Datapaths
       flow_cookie = dpg_map[:segment_id] | COOKIE_TYPE_SEGMENT
 
       flows << flow_create(table: TABLE_CONTROLLER_PORT,
-                           goto_table: TABLE_SEGMENT_DST_CLASSIFIER_SEG_NIL,
+                           goto_table: TABLE_SEGMENT_DST_CLASSIFIER_SEG_NW,
                            priority: 20,
 
                            match: {
@@ -367,7 +367,7 @@ module Vnet::Core::Datapaths
         #           match_value_pair_second: 0)
       ].each { |metadata|
         flow_learn_arp << "learn(table=%d,cookie=0x%x,idle_timeout=36000,priority=35,metadata:0x%x,NXM_OF_ETH_DST[]=NXM_OF_ETH_SRC[]," %
-          [TABLE_SEGMENT_DST_MAC_LOOKUP_SEG_NIL, flow_cookie, metadata[:metadata]]
+          [TABLE_SEGMENT_DST_MAC_LOOKUP_SEG_NW, flow_cookie, metadata[:metadata]]
         flow_learn_arp << learn_options
         flow_learn_arp << "output:NXM_OF_IN_PORT[]),"
       }
@@ -391,14 +391,14 @@ module Vnet::Core::Datapaths
         [TABLE_INTERFACE_INGRESS_NW_DPNW, priority, flow_cookie, match_dpg_md[:metadata], match_dpg_md[:metadata_mask], match_options]
 
       [ md_create(match_value_pair_flag: FLAG_LOCAL,
-                  match_value_pair_first: dpg_map[:network_id],
-                  match_value_pair_second: 0)
+                  match_value_pair_first: 0,
+                  match_value_pair_second: dpg_map[:network_id])
         # md_create(match_value_pair_flag: FLAG_REFLECTION,
         #           match_value_pair_first: dpg_map[:segment_id],
         #           match_value_pair_second: 0)
       ].each { |metadata|
         flow_learn_arp << "learn(table=%d,cookie=0x%x,idle_timeout=36000,priority=35,metadata:0x%x,NXM_OF_ETH_DST[]=NXM_OF_ETH_SRC[]," %
-          [TABLE_NETWORK_DST_MAC_LOOKUP_NW_NIL, flow_cookie, metadata[:metadata]]
+          [TABLE_NETWORK_DST_MAC_LOOKUP_NIL_NW, flow_cookie, metadata[:metadata]]
         flow_learn_arp << learn_options
         flow_learn_arp << "output:NXM_OF_IN_PORT[]),"
       }

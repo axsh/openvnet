@@ -74,7 +74,7 @@ module Vnet::Core::Interfaces
 
                              write_value_pair_first: segment_id,
                             )
-        flows << flow_create(table: TABLE_SEGMENT_DST_MAC_LOOKUP_SEG_NIL,
+        flows << flow_create(table: TABLE_SEGMENT_DST_MAC_LOOKUP_SEG_NW,
                              goto_table: TABLE_INTERFACE_INGRESS_FILTER_IF_NIL,
                              priority: 60,
 
@@ -82,7 +82,9 @@ module Vnet::Core::Interfaces
                                :eth_dst => mac_address
                              },
                              match_value_pair_first: segment_id,
-                             write_value_pair_first: @id
+
+                             write_value_pair_first: @id,
+                             write_value_pair_second: 0,
                             )
       end
     end
@@ -166,13 +168,15 @@ module Vnet::Core::Interfaces
         :arp_tha => mac_address,
         :arp_tpa => ipv4_address
        }].each { |match|
-        flows << flow_create(table: TABLE_NETWORK_DST_MAC_LOOKUP_NW_NIL,
+        flows << flow_create(table: TABLE_NETWORK_DST_MAC_LOOKUP_NIL_NW,
                              goto_table: TABLE_INTERFACE_INGRESS_FILTER_IF_NIL,
                              priority: 60,
 
                              match: match,
-                             match_value_pair_first: network_id,
-                             write_value_pair_first: @id
+                             match_value_pair_second: network_id,
+
+                             write_value_pair_first: @id,
+                             write_value_pair_second: 0,
                             )
       }
 

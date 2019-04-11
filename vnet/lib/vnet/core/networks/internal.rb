@@ -20,9 +20,12 @@ module Vnet::Core::Networks
                            match_value_pair_first: @id,
                           )
       flows << flow_create(table: TABLE_NETWORK_DST_CLASSIFIER_NW_NIL,
-                           goto_table: TABLE_NETWORK_DST_MAC_LOOKUP_NW_NIL,
+                           goto_table: TABLE_NETWORK_DST_MAC_LOOKUP_NIL_NW,
                            priority: 30,
                            match_value_pair_first: @id,
+
+                           write_value_pair_first: 0,
+                           write_value_pair_second: @id,
                           )
 
       @dp_info.add_flows(flows)
@@ -37,7 +40,7 @@ module Vnet::Core::Networks
       # ports.
       local_actions << { :output => OFPP_LOCAL }
 
-      # TODO: Require matching IPv4? Probably do it in TABLE_NETWORK_DST_MAC_LOOKUP_NW_NIL.
+      # TODO: Require matching IPv4? Probably do it in TABLE_NETWORK_DST_MAC_LOOKUP_NIL_NW.
 
       flows = []
       flows << flow_create(table: TABLE_FLOOD_LOCAL_SEG_NW,
