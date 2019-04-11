@@ -96,13 +96,12 @@ module Vnet::Core::Filters
                            match: egress_match,
                            match_value_pair_first: @interface_id,
                           )
-
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_FILTER_IF_NIL,
                            goto_table: TABLE_OUT_PORT_INGRESS_IF_NIL,
                            priority: PRIORITY_FILTER_STATEFUL,
                            idle_timeout: INGRESS_IDLE_TIMEOUT,
                            
-                           match: ingress_match
+                           match: ingress_match,
                            match_value_pair_first: @interface_id,
                           )
 

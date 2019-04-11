@@ -211,13 +211,16 @@ describe Vnet::Core::TunnelManager do
       #   [],
       #   {:cookie => 1 | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)})
       expect(added_flows[0]).to eq Vnet::Openflow::Flow.create(
-        TABLE_FLOOD_TUNNELS,
-        1,
-        {:metadata => 1 | METADATA_TYPE_NETWORK,
-         :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK},
-        [{:tunnel_id => (1 & TUNNEL_ID_MASK) | TUNNEL_NETWORK}, {:output => 9}],
-        {:goto_table => TABLE_FLOOD_SEGMENT,
-         :cookie => 1 | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)})
+        TABLE_FLOOD_TUNNELS_SEG_NW,
+        1, {
+          metadata: 1 | METADATA_VALUE_PAIR_TYPE,
+          metadata_mask: METADATA_VALUE_PAIR_SECOND_MASK | METADATA_VALUE_PAIR_TYPE,
+        }, [
+          { :tunnel_id => (1 & TUNNEL_ID_MASK) | TUNNEL_NETWORK}, {:output => 9}
+        ], {
+          goto_table: TABLE_FLOOD_SEGMENT_SEG_NW,
+          cookie: 1 | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)
+        })
     end
 
   end
