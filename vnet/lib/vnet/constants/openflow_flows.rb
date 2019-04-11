@@ -87,13 +87,13 @@ module Vnet
       TABLE_FLOOD_TUNNELS                    = 52
       TABLE_FLOOD_SEGMENT                    = 53
 
-      TABLE_LOOKUP_IF_NW_TO_DP_NW            = 70
-      TABLE_LOOKUP_IF_RL_TO_DP_RL            = 72
-      TABLE_LOOKUP_DP_NW_TO_DP_NETWORK       = 73
-      TABLE_LOOKUP_DP_SEG_TO_DP_SEGMENT      = 74
-      TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK    = 75
-      TABLE_LOOKUP_NETWORK_TO_HOST_IF_EGRESS = 76
-      TABLE_LOOKUP_SEGMENT_TO_HOST_IF_EGRESS = 77
+      TABLE_LOOKUP_IF_NW                     = 70
+      TABLE_LOOKUP_IF_RL                     = 71
+      TABLE_LOOKUP_DP_NW                     = 72
+      TABLE_LOOKUP_DP_SEG                    = 73
+      TABLE_LOOKUP_DP_RL                     = 74
+      TABLE_LOOKUP_NW_NIL                    = 75
+      TABLE_LOOKUP_SEG_NIL                   = 76
 
       # The 'output dp * lookup' tables use the DatapathNetwork and
       # DatapathRouteLink database entry keys to determine what source

@@ -25,7 +25,7 @@ module Vnet::Core::Networks
                            match_value_pair_first: @id,
                           )
       flows << flow_create(table: TABLE_NETWORK_DST_MAC_LOOKUP_NW_NIL,
-                           goto_table: TABLE_LOOKUP_NETWORK_TO_HOST_IF_EGRESS,
+                           goto_table: TABLE_LOOKUP_NW_NIL,
                            priority: 20,
                            match_value_pair_first: @id,
                           )
@@ -44,10 +44,12 @@ module Vnet::Core::Networks
 
       flows = []
       flows << flow_create(table: TABLE_FLOOD_LOCAL,
-                           goto_table: TABLE_LOOKUP_NETWORK_TO_HOST_IF_EGRESS,
+                           goto_table: TABLE_LOOKUP_NW_NIL,
                            priority: 1,
-                           match_network: @id,
-                           actions: local_actions)
+
+                           match_value_pair_first: @id,
+                           actions: local_actions,
+                          )
 
       @dp_info.add_flows(flows)
     end

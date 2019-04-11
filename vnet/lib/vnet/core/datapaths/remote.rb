@@ -102,11 +102,11 @@ module Vnet::Core::Datapaths
 
       [true, false].each { |reflection|
 
-        flows << flow_create(table: TABLE_LOOKUP_DP_NW_TO_DP_NETWORK,
+        flows << flow_create(table: TABLE_LOOKUP_DP_NW,
                              goto_table: TABLE_OUTPUT_DP_NETWORK_DST_IF,
                              priority: 1,
 
-                             match_value_pair_flag: reflection,
+                             #match_value_pair_flag: FLAG_REFLECTION,
                              match_value_pair_first: @id,
                              match_value_pair_second: flow_gen_id,
 
@@ -142,11 +142,11 @@ module Vnet::Core::Datapaths
 
       [true, false].each { |reflection|
 
-        flows << flow_create(table: TABLE_LOOKUP_DP_SEG_TO_DP_SEGMENT,
+        flows << flow_create(table: TABLE_LOOKUP_DP_SEG,
                              goto_table: TABLE_OUTPUT_DP_SEGMENT_DST_IF,
                              priority: 1,
 
-                             match_value_pair_flag: reflection,
+                             #match_value_pair_flag: FLAG_REFLECTION,
                              match_value_pair_first: @id,
                              match_value_pair_second: flow_gen_id,
 
@@ -198,11 +198,11 @@ module Vnet::Core::Datapaths
                            cookie: flow_cookie)
 
       [true, false].each { |reflection|
-        flows << flow_create(table: TABLE_LOOKUP_DP_RL_TO_DP_ROUTE_LINK,
+        flows << flow_create(table: TABLE_LOOKUP_DP_RL,
                              goto_table: TABLE_OUTPUT_DP_ROUTE_LINK_DST_IF,
                              priority: 1,
 
-                             match_value_pair_flag: reflection,
+                             #match_value_pair_flag: FLAG_REFLECTION,
                              match_value_pair_first: @id,
                              match_value_pair_second: flow_gen_id,
 

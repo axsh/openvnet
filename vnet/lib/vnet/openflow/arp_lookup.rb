@@ -365,7 +365,7 @@ module Vnet::Openflow
 
       flows = []
       flows << flow_create(table: TABLE_ARP_LOOKUP_NW_NIL,
-                           goto_table: TABLE_LOOKUP_IF_NW_TO_DP_NW,
+                           goto_table: TABLE_LOOKUP_IF_NW,
                            priority: 35,
                            idle_timeout: 3600,
 

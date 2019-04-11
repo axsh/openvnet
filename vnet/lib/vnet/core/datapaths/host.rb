@@ -146,14 +146,12 @@ module Vnet::Core::Datapaths
                            write_value_pair_second: 0,
 
                            cookie: flow_cookie)
-      flows << flow_create(table: TABLE_LOOKUP_NETWORK_TO_HOST_IF_EGRESS,
+      flows << flow_create(table: TABLE_LOOKUP_NW_NIL,
                            goto_table: TABLE_OUT_PORT_EGRESS_IF_NIL,
                            priority: 1,
 
-                           match_network: dpg_map[:network_id],
-
+                           match_value_pair_first: dpg_map[:network_id],
                            write_value_pair_first: dpg_map[:interface_id],
-                           write_value_pair_second: 0,
 
                            cookie: flow_cookie)
       flows << flow_create(table: TABLE_OUTPUT_DP_NETWORK_SRC_IF,
@@ -221,14 +219,12 @@ module Vnet::Core::Datapaths
                            write_value_pair_second: 0,
 
                            cookie: flow_cookie)
-      flows << flow_create(table: TABLE_LOOKUP_SEGMENT_TO_HOST_IF_EGRESS,
+      flows << flow_create(table: TABLE_LOOKUP_SEG_NIL,
                            goto_table: TABLE_OUT_PORT_EGRESS_IF_NIL,
                            priority: 1,
 
-                           match_segment: dpg_map[:segment_id],
-                           
+                           match_value_pair_first: dpg_map[:segment_id],
                            write_value_pair_first: dpg_map[:interface_id],
-                           write_value_pair_second: 0,
 
                            cookie: flow_cookie)
       flows << flow_create(table: TABLE_OUTPUT_DP_SEGMENT_SRC_IF,

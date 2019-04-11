@@ -41,7 +41,7 @@ module Vnet::Core::Networks
 
       flows = []
       flows << flow_create(table: TABLE_FLOOD_LOCAL,
-                           # goto_table: TABLE_LOOKUP_NETWORK_TO_HOST_IF_EGRESS,
+                           # goto_table: TABLE_LOOKUP_NW_NIL,
                            priority: 1,
                            match_network: @id,
                            actions: local_actions)
