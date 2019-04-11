@@ -113,12 +113,12 @@ module Vnet::Core::Routes
       # to be created even on datapaths where the interface is remote.
       if @egress == true
         flows << flow_create(
-          table: TABLE_ROUTER_EGRESS_LOOKUP,
-          goto_table: TABLE_ROUTE_EGRESS_LOOKUP,
+          table: TABLE_ROUTER_EGRESS_LOOKUP_RL_NIL,
+          goto_table: TABLE_ROUTE_EGRESS_LOOKUP_IF_RL,
           priority: flow_priority,
 
           match: subnet_dst,
-          match_route_link: @route_link_id,
+          match_value_pair_first: @route_link_id,
 
           write_value_pair_flag: false,
           write_value_pair_first: @interface_id,

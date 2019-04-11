@@ -25,7 +25,7 @@ end
 def ingress_tables(pass)
    {
     table: TABLE_INTERFACE_INGRESS_FILTER,
-    goto_table: pass ? TABLE_OUT_PORT_INTERFACE_INGRESS : nil
+    goto_table: pass ? TABLE_OUT_PORT_INGRESS_IF_NIL : nil
    }
 end
 

@@ -34,19 +34,23 @@ module Vnet::Core::Ports
                              write_value_pair_second: 0,
                             )
 
-        flows << flow_create(table: TABLE_OUT_PORT_INTERFACE_EGRESS,
+        flows << flow_create(table: TABLE_OUT_PORT_EGRESS_IF_NIL,
                              priority: 2,
+                             
                              match: {
                                :in_port => self.port_number
                              },
-                             match_interface: @interface_id,
-                             match_reflection: true,
+                             #match_value_pair_flag: FLAG_REFLECTION,
+                             match_value_pair_first: @interface_id,
+
                              actions: {
                                :output => OFPP_IN_PORT
                              })
-        flows << flow_create(table: TABLE_OUT_PORT_INTERFACE_EGRESS,
+        flows << flow_create(table: TABLE_OUT_PORT_EGRESS_IF_NIL,
                              priority: 1,
-                             match_interface: @interface_id,
+                             
+                             match_value_pair_first: @interface_id,
+
                              actions: {
                                :output => self.port_number
                              })

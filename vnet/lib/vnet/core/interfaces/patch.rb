@@ -114,7 +114,7 @@ module Vnet::Core::Interfaces
     end
 
     def flows_for_router_egress_mac(flows, mac_info)
-      cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
+      flow_cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
 
       flows << flow_create(table: TABLE_INTERFACE_EGRESS_VALIDATE_IF_NIL,
                            goto_table: TABLE_INTERFACE_EGRESS_ROUTES_IF_NIL,
@@ -125,24 +125,25 @@ module Vnet::Core::Interfaces
                            },
                            match_value_pair_first: @id,
 
-                           cookie: cookie)
+                           cookie: flow_cookie)
 
       # FOOO
-      flows << flow_create(table: TABLE_ROUTE_EGRESS_INTERFACE,
-                           goto_table: TABLE_OUT_PORT_INTERFACE_EGRESS,
+      flows << flow_create(table: TABLE_ROUTE_EGRESS_INTERFACE_IF_NIL,
+                           goto_table: TABLE_OUT_PORT_EGRESS_IF_NIL,
                            priority: 20,
+
+                           match_value_pair_first: @id,
 
                            actions: {
                              :eth_src => Pio::Mac.new('00:00:27:11:11:11'),
                              :eth_dst => Pio::Mac.new('00:00:27:22:22:22'),
                            },
-                           match_interface: @id,
 
-                           cookie: cookie)
+                           cookie: flow_cookie)
     end
 
     def flows_for_router_egress_ipv4(flows, mac_info, ipv4_info)
-      cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
+      flow_cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
 
       #
       # Not needed unless egress routing is used:
@@ -163,18 +164,17 @@ module Vnet::Core::Interfaces
                            write_value_pair_first: ipv4_info[:network_id],,
                            write_value_pair_second: 0,
 
-                           cookie: cookie)
-      flows << flow_create(table: TABLE_ROUTE_EGRESS_LOOKUP,
-                           goto_table: TABLE_ROUTE_EGRESS_TRANSLATION,
+                           cookie: flow_cookie)
+      flows << flow_create(table: TABLE_ROUTE_EGRESS_LOOKUP_IF_RL,
+                           goto_table: TABLE_ROUTE_EGRESS_TRANSLATION_IF_NIL,
                            priority: 1,
 
                            match_value_pair_first: @id,
 
-                           clear_all: true,
-                           write_reflection: true,
-                           write_interface: @id,
+                           #write_value_pair_flag: FLAG_REFLECTION,
+                           write_value_pair_second: nil,
 
-                           cookie: cookie)
+                           cookie: flow_cookie)
     end
 
   end

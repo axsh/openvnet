@@ -18,7 +18,7 @@ module Vnet::Core::Services
 
     def install
       flows = []
-      flows << flow_create(table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+      flows << flow_create(table: TABLE_OUT_PORT_INGRESS_IF_NIL,
                            priority: 30,
 
                            match: {
@@ -27,7 +27,8 @@ module Vnet::Core::Services
                              :udp_dst => 67,
                              :udp_src => 68
                            },
-                           match_interface: @interface_id,
+                           match_value_pair_first: @interface_id,
+
                            actions: {
                              :output => Vnet::Openflow::Controller::OFPP_CONTROLLER
                            })
@@ -116,21 +117,27 @@ module Vnet::Core::Services
 
       flows = []
       flows << flow_create(table: TABLE_FLOOD_SIMULATED,
-                           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+                           goto_table: TABLE_OUT_PORT_INGRESS_IF_NIL,
                            priority: 30,
+
                            match: match_dhcp,
-                           cookie: cookie_for_network(cookie_id),
                            match_network: network_id,
-                           write_interface: @interface_id)
+
+                           write_value_pair_first: @interface_id,
+                           
+                           cookie: cookie_for_network(cookie_id))
 
       if segment_id
         flows << flow_create(table: TABLE_FLOOD_SIMULATED,
-                             goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+                             goto_table: TABLE_OUT_PORT_INGRESS_IF_NIL,
                              priority: 30,
+
                              match: match_dhcp,
-                             cookie: cookie_for_network(cookie_id), # Fix.
                              match_segment: segment_id,
-                             write_interface: @interface_id)
+
+                             write_value_pair_first: @interface_id,
+                             
+                             cookie: cookie_for_network(cookie_id))
       end
 
       @dp_info.add_flows(flows)

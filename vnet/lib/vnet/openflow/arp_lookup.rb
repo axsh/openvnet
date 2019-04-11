@@ -17,16 +17,19 @@ module Vnet::Openflow
     end
 
     def arp_lookup_base_flows(flows)
-      flows << flow_create(table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+      flows << flow_create(table: TABLE_OUT_PORT_INGRESS_IF_NIL,
                            priority: 30,
+                           
                            match: {
                              :eth_type => 0x0806,
                              :arp_op => 2,
                            },
-                           match_interface: @arp_lookup[:interface_id],
+                           match_value_pair_first: @arp_lookup[:interface_id],
+
                            actions: {
                              :output => Controller::OFPP_CONTROLLER
                            },
+
                            cookie: @arp_lookup[:reply_cookie])
     end
 

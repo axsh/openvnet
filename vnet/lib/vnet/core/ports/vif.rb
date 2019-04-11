@@ -32,9 +32,11 @@ module Vnet::Core::Ports
                            write_value_pair_first: @interface_id,
                            write_value_pair_second: 0,
                            )
-      flows << flow_create(table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+      flows << flow_create(table: TABLE_OUT_PORT_INGRESS_IF_NIL,
                            priority: 10,
-                           match_interface: @interface_id,
+                           
+                           match_value_pair_first: @interface_id,
+
                            actions: {
                              :output => self.port_number
                            })

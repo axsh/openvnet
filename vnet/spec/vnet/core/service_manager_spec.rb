@@ -56,7 +56,7 @@ describe Vnet::Core::ServiceManager do
         end
 
         expect(dp_info.added_flows).to be_any { |flow|
-          flow.params[:table_id] == TABLE_OUT_PORT_INTERFACE_INGRESS
+          flow.params[:table_id] == TABLE_OUT_PORT_INGRESS_IF_NIL
           flow.params[:priority] == 30
           flow.params[:match][:eth_type] == 0x0800
           flow.params[:match][:ip_proto] == 0x11
@@ -89,7 +89,7 @@ describe Vnet::Core::ServiceManager do
         expect(service_manager.retrieve(id: network_service.id)).to be_nil
 
         expect(dp_info.deleted_flows).to be_any { |flow|
-          flow.params[:table_id] == TABLE_OUT_PORT_INTERFACE_INGRESS
+          flow.params[:table_id] == TABLE_OUT_PORT_INGRESS_IF_NIL
           flow.params[:priority] == 30
           flow.params[:match][:eth_type] == 0x0800
           flow.params[:match][:ip_proto] == 0x11

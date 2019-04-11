@@ -21,7 +21,7 @@ module Vnet::Core::Services
 
     def install
       flows = []
-      flows << flow_create(table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+      flows << flow_create(table: TABLE_OUT_PORT_INGRESS_IF_NIL,
                            priority: 30,
 
                            match: {
@@ -29,7 +29,7 @@ module Vnet::Core::Services
                              :ip_proto => 0x11,
                              :udp_dst => 53,
                            },
-                           match_interface: @interface_id,
+                           match_value_pair_first: @interface_id,
 
                            actions: {
                              :output => Vnet::Openflow::Controller::OFPP_CONTROLLER
@@ -76,8 +76,9 @@ module Vnet::Core::Services
 
       flows = []
       flows << flow_create(table: TABLE_FLOOD_SIMULATED,
-                           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+                           goto_table: TABLE_OUT_PORT_INGRESS_IF_NIL,
                            priority: 30,
+
                            match: {
                              :eth_type => 0x0800,
                              :ip_proto => 0x11,
@@ -85,9 +86,12 @@ module Vnet::Core::Services
                              :ipv4_src => IPV4_ZERO,
                              :udp_dst => 53,
                            },
-                           cookie: cookie_for_network(cookie_id),
                            match_network: network_id,
-                           write_interface: @interface_id)
+
+                           write_value_pair_first: @interface_id,,
+
+                           cookie: cookie_for_network(cookie_id))
+
       @dp_info.add_flows(flows)
     end
 

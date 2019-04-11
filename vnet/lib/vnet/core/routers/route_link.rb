@@ -28,7 +28,7 @@ module Vnet::Core::Routers
 
     def flows_for_dynamic_load(flows)
       flows << flow_create(table: TABLE_ROUTER_CLASSIFIER_RL_NIL,
-                           goto_table: TABLE_ROUTER_EGRESS_LOOKUP,
+                           goto_table: TABLE_ROUTER_EGRESS_LOOKUP_RL_NIL,
                            priority: 30,
 
                            # TODO: Set FLAG_REFLECTION here?... If so don't set it in route_link_ingress(?)

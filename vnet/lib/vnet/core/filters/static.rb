@@ -67,12 +67,15 @@ module Vnet::Core::Filters
           @dp_info.del_flows(table_id: TABLE_INTERFACE_EGRESS_FILTER_IF_NIL,
                              cookie: self.cookie,
                              cookie_mask: Vnet::Constants::OpenflowFlows::COOKIE_MASK,
-                             match: egress_rule)
 
-          @dp_info.del_flows(table_id: TABLE_INTERFACE_INGRESS_FILTER,
+                             match: egress_rule
+                            )
+          @dp_info.del_flows(table_id: TABLE_INTERFACE_INGRESS_FILTER_IF_NIL,
                              cookie: self.cookie,
                              cookie_mask: Vnet::Constants::OpenflowFlows::COOKIE_MASK,
-                             match: ingress_rule)
+
+                             match: ingress_rule
+                            )
         }
       }
     end
@@ -94,12 +97,14 @@ module Vnet::Core::Filters
                            match_value_pair_first: @interface_id,
                           )
 
-      flows << flow_create(table: TABLE_INTERFACE_INGRESS_FILTER,
-                           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_FILTER_IF_NIL,
+                           goto_table: TABLE_OUT_PORT_INGRESS_IF_NIL,
                            priority: PRIORITY_FILTER_STATEFUL,
                            idle_timeout: INGRESS_IDLE_TIMEOUT,
-                           match_interface: @interface_id,
-                           match: ingress_match)
+                           
+                           match: ingress_match
+                           match_value_pair_first: @interface_id,
+                          )
 
       @dp_info.add_flows(flows)
       @dp_info.send_packet_out(message, OFPP_TABLE)
@@ -239,14 +244,14 @@ module Vnet::Core::Filters
                                                match: egress_rule,
                                                actions: { output: Vnet::Openflow::Controller::OFPP_CONTROLLER }))
         when 'pass'
-          flows << flow_create(flow_base.merge(table: TABLE_INTERFACE_INGRESS_FILTER,
-                                               goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+          flows << flow_create(flow_base.merge(table: TABLE_INTERFACE_INGRESS_FILTER_IF_NIL,
+                                               goto_table: TABLE_OUT_PORT_INGRESS_IF_NIL,
                                                match: ingress_rule))
           flows << flow_create(flow_base.merge(table: TABLE_INTERFACE_EGRESS_FILTER_IF_NIL,
                                                goto_table: TABLE_INTERFACE_EGRESS_VALIDATE_IF_NIL,
                                                match: egress_rule))
         when 'drop'
-          flows << flow_create(flow_base.merge(table: TABLE_INTERFACE_INGRESS_FILTER,
+          flows << flow_create(flow_base.merge(table: TABLE_INTERFACE_INGRESS_FILTER_IF_NIL,
                                                goto_table: nil,
                                                match: ingress_rule))
           flows << flow_create(flow_base.merge(table: TABLE_INTERFACE_EGRESS_FILTER_IF_NIL,

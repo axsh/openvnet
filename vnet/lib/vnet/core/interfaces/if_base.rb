@@ -29,19 +29,15 @@ module Vnet::Core::Interfaces
                            goto_table: @enabled_filtering ? TABLE_INTERFACE_EGRESS_STATEFUL_IF_NIL : TABLE_INTERFACE_EGRESS_VALIDATE_IF_NIL,
                            priority: 30,
 
-                           match_value_pair_first: @id,
-
-                           cookie: cookie
-                          )
+                           match_value_pair_first: @id)
     end
 
     def flows_for_disabled_filtering(flows = [])
-      flows << flow_create(table: TABLE_INTERFACE_INGRESS_FILTER,
-                           goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+      flows << flow_create(table: TABLE_INTERFACE_INGRESS_FILTER_IF_NIL,
+                           goto_table: TABLE_OUT_PORT_INGRESS_IF_NIL,
                            priority: PRIORITY_FILTER_SKIP,
-                           match_interface: @id,
-                           cookie: self.cookie
-                          )
+
+                           match_value_pair_first: @id)
     end
 
     def flows_for_interface_mac(flows, mac_info)
@@ -63,8 +59,8 @@ module Vnet::Core::Interfaces
         flows << flow_create(table: TABLE_INTERFACE_INGRESS_LOOKUP_IF_NIL,
                              priority: 50,
                              match: match,
-                             #match_segment: mac_info[:segment_id],
-                             cookie: cookie)
+                             #match_segment: mac_info[:segment_id]
+                            )
 
       }
 
@@ -77,21 +73,17 @@ module Vnet::Core::Interfaces
                              match_value_pair_first: @id,
 
                              write_value_pair_first: segment_id,
-                             write_value_pair_second: 0,
-                             
-                             cookie: cookie)
+                            )
         flows << flow_create(table: TABLE_SEGMENT_DST_MAC_LOOKUP_SEG_NIL,
-                             goto_table: TABLE_INTERFACE_INGRESS_FILTER,
+                             goto_table: TABLE_INTERFACE_INGRESS_FILTER_IF_NIL,
                              priority: 60,
 
                              match: {
                                :eth_dst => mac_address
                              },
                              match_value_pair_first: segment_id,
-
-                             write_interface: @id,
-
-                             cookie: cookie)
+                             write_value_pair_first: @id
+                            )
       end
     end
 
@@ -175,15 +167,13 @@ module Vnet::Core::Interfaces
         :arp_tpa => ipv4_address
        }].each { |match|
         flows << flow_create(table: TABLE_NETWORK_DST_MAC_LOOKUP_NW_NIL,
-                             goto_table: TABLE_INTERFACE_INGRESS_FILTER,
+                             goto_table: TABLE_INTERFACE_INGRESS_FILTER_IF_NIL,
                              priority: 60,
 
                              match: match,
                              match_value_pair_first: network_id,
-
-                             write_interface: @id,
-
-                             cookie: cookie)
+                             write_value_pair_first: @id
+                            )
       }
 
       #
@@ -316,27 +306,26 @@ module Vnet::Core::Interfaces
                            write_value_pair_second: 0,
 
                            cookie: cookie)
-      flows << flow_create(table: TABLE_ROUTE_EGRESS_LOOKUP,
-                           goto_table: TABLE_ROUTE_EGRESS_TRANSLATION,
+      flows << flow_create(table: TABLE_ROUTE_EGRESS_LOOKUP_IF_RL,
+                           goto_table: TABLE_ROUTE_EGRESS_TRANSLATION_IF_NIL,
                            priority: 20,
 
                            match_value_pair_first: @id,
 
-                           clear_all: true,
-                           write_reflection: true,
-                           write_interface: @id,
+                           #write_value_pair_flag: FLAG_REFLECTION,
+                           write_value_pair_second: 0,
 
                            cookie: cookie)
 
-      flows << flow_create(table: TABLE_ROUTE_EGRESS_INTERFACE,
+      flows << flow_create(table: TABLE_ROUTE_EGRESS_INTERFACE_IF_NIL,
                            goto_table: TABLE_ARP_TABLE_NW_NIL,
                            priority: 20,
+
+                           match_value_pair_first: @id,
 
                            actions: {
                              :eth_src => mac_info[:mac_address]
                            },
-                           match_interface: @id,
-
                            write_value_pair_first: ipv4_info[:network_id],
                            write_value_pair_second: 0,
 
@@ -345,12 +334,12 @@ module Vnet::Core::Interfaces
 
     def flows_for_route_translation(flows)
       [[TABLE_ROUTE_INGRESS_TRANSLATION_IF_NIL, TABLE_ROUTER_INGRESS_LOOKUP_IF_NIL],
-       [TABLE_ROUTE_EGRESS_TRANSLATION, TABLE_ROUTE_EGRESS_INTERFACE],
+       [TABLE_ROUTE_EGRESS_TRANSLATION_IF_NIL, TABLE_ROUTE_EGRESS_INTERFACE_IF_NIL],
       ].each { |table, goto_table|
         flows << flow_create(table: table,
                              goto_table: goto_table,
                              priority: 90,
-                             write_value_pair_first: @id,
+                             match_value_pair_first: @id,
                             )
       }
     end

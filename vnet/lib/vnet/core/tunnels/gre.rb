@@ -47,16 +47,17 @@ module Vnet::Core::Tunnels
 
       [true, false].each { |reflection|
         flows << flow_create(table: TABLE_OUTPUT_DP_OVER_TUNNEL,
-                             goto_table: TABLE_OUT_PORT_TUNNEL,
+                             goto_table: TABLE_OUT_PORT_EGRESS_TUN_NIL,
                              priority: 1,
 
                              match_value_pair_flag: reflection,
                              match_value_pair_first: @src_interface_id,
                              match_value_pair_second: @dst_interface_id,
 
-                             clear_all: true,
-                             write_tunnel: @id,
-                             write_reflection: reflection)
+                             #write_value_pair_flag: FLAG_REFLECTION,
+                             write_value_pair_first: @id,
+                             write_value_pair_second: 0
+                            )
       }
 
       @dp_info.add_flows(flows)

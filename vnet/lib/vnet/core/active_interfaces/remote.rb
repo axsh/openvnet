@@ -51,7 +51,7 @@ module Vnet::Core::ActiveInterfaces
     end
 
     def flows_for_routing(flows)
-      flows << flow_create(table: TABLE_ROUTE_EGRESS_LOOKUP,
+      flows << flow_create(table: TABLE_ROUTE_EGRESS_LOOKUP_IF_RL,
                            goto_table: TABLE_LOOKUP_IF_RL_TO_DP_RL,
                            priority: 10,
                            match_value_pair_first: @interface_id)

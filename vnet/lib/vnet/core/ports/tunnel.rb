@@ -38,20 +38,23 @@ module Vnet::Core::Ports
       end
 
       if @tunnel_id && @tunnel_id > 0
-        flows << flow_create(table: TABLE_OUT_PORT_TUNNEL,
+        flows << flow_create(table: TABLE_OUT_PORT_EGRESS_TUN_NIL,
                              priority: 1,
-                             match_tunnel: @tunnel_id,
+                             
+                             match_value_pair_first: @tunnel_id,
+
                              actions: {
                                :output => self.port_number
                              })
-        flows << flow_create(table: TABLE_OUT_PORT_TUNNEL,
+        flows << flow_create(table: TABLE_OUT_PORT_EGRESS_TUN_NIL,
                              priority: 2,
 
-                             match_tunnel: @tunnel_id,
-                             match_reflection: true,
                              match: {
                                :in_port => self.port_number
                              },
+                             #match_value_pair_flag: FLAG_REFLECTION,
+                             match_value_pair_first: @tunnel_id,
+
                              actions: {
                                :output => OFPP_IN_PORT
                              })

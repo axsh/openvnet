@@ -171,28 +171,34 @@ module Vnet::Core::Interfaces
     private
 
     def flows_for_base(flows)
-      flows << flow_create(table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+      flows << flow_create(table: TABLE_OUT_PORT_INGRESS_IF_NIL,
                            priority: 30,
+
                            match: {
                              :eth_type => 0x0806,
                              :arp_op => 1,
                            },
-                           match_interface: @id,
+                           match_value_pair_first: @id,
+
                            actions: {
                              :output => Vnet::Openflow::Controller::OFPP_CONTROLLER
                            },
+                           
                            cookie: self.cookie_for_tag(TAG_ARP_REQUEST_INTERFACE))
-      flows << flow_create(table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+      flows << flow_create(table: TABLE_OUT_PORT_INGRESS_IF_NIL,
                            priority: 30,
+
                            match: {
                              :eth_type => 0x0800,
                              :ip_proto => 0x01,
                              :icmpv4_type => Racket::L4::ICMPGeneric::ICMP_TYPE_ECHO_REQUEST,
                            },
-                           match_interface: @id,
+                           match_value_pair_first: @id,
+
                            actions: {
                              :output => Vnet::Openflow::Controller::OFPP_CONTROLLER
                            },
+
                            cookie: self.cookie_for_tag(TAG_ICMP_REQUEST))
     end
 
@@ -226,15 +232,16 @@ module Vnet::Core::Interfaces
       ipv4_address = ipv4_info[:ipv4_address]
 
       flow_base = {table: TABLE_FLOOD_SIMULATED,
-                   goto_table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+                   goto_table: TABLE_OUT_PORT_INGRESS_IF_NIL,
                    priority: 30,
+                   
                    match: {:eth_type => 0x0806,
                            :arp_op => 1,
                            :arp_tha => MAC_ZERO,
                            :arp_tpa => ipv4_address
                           },
-                   write_interface: @id,
-                   cookie: cookie
+
+                   write_value_pair_first: @id,
                   }
 
       if segment_id

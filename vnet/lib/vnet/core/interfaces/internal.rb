@@ -43,9 +43,11 @@ module Vnet::Core::Interfaces
     private
 
     def flows_for_base(flows)
-      flows << flow_create(table: TABLE_OUT_PORT_INTERFACE_INGRESS,
+      flows << flow_create(table: TABLE_OUT_PORT_INGRESS_IF_NIL,
                            priority: 10,
-                           match_interface: @id,
+
+                           match_value_pair_first: @id,
+
                            actions: {
                              :output => OFPP_LOCAL
                            })

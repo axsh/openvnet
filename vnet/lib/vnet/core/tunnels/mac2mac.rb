@@ -33,16 +33,17 @@ module Vnet::Core::Tunnels
 
       [true, false].each { |reflection|
         flows << flow_create(table: TABLE_OUTPUT_DP_OVER_MAC2MAC,
-                             goto_table: TABLE_OUT_PORT_INTERFACE_EGRESS,
+                             goto_table: TABLE_OUT_PORT_EGRESS_IF_NIL,
                              priority: 2,
 
-                             match_value_pair_flag: reflection,
+                             #match_value_pair_flag: FLAG_REFLECTION,
                              match_value_pair_first: @src_interface_id,
                              match_value_pair_second: @dst_interface_id,
 
-                             clear_all: true,
-                             write_interface: @src_interface_id,
-                             write_reflection: reflection)
+                             #write_value_pair_flag: FLAG_REFLECTION,
+                             write_value_pair_first: @src_interface_id,
+                             write_value_pair_second: 0,
+                            )
       }
 
       @dp_info.add_flows(flows)
@@ -71,7 +72,7 @@ module Vnet::Core::Tunnels
 
       mac2mac_actions << {
         :eth_dst => dpn[:mac_address],
-        :output => @host_port_number
+        :output => @host_port_number,
       }
     end
 
@@ -82,7 +83,7 @@ module Vnet::Core::Tunnels
 
       mac2mac_actions << {
         :eth_dst => dpn[:mac_address],
-        :output => @host_port_number
+        :output => @host_port_number,
       }
     end
 

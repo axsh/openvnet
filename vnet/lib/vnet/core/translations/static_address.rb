@@ -159,7 +159,7 @@ module Vnet::Core::Translations
 
     def flows_for_enable_passthrough(flows)
       [[TABLE_ROUTE_INGRESS_TRANSLATION_IF_NIL, TABLE_ROUTER_INGRESS_LOOKUP_IF_NIL],
-       [TABLE_ROUTE_EGRESS_TRANSLATION, TABLE_ROUTE_EGRESS_INTERFACE]
+       [TABLE_ROUTE_EGRESS_TRANSLATION_IF_NIL, TABLE_ROUTE_EGRESS_INTERFACE_IF_NIL]
       ].each { |table, goto_table|
         flows << flow_create(table: table,
                              goto_table: goto_table,
@@ -195,7 +195,7 @@ module Vnet::Core::Translations
       match_actions_for_egress(translation).each { |match, actions|
         flow_options = {
           table: egress_table_id(translation),
-          goto_table: TABLE_ROUTE_EGRESS_INTERFACE,
+          goto_table: TABLE_ROUTE_EGRESS_INTERFACE_IF_NIL,
 
           priority: 50,
           match: match,
@@ -206,11 +206,12 @@ module Vnet::Core::Translations
         if translation[:route_link_id]
           flow_options[:match_value_pair_first] = @interface_id
           flow_options[:match_value_pair_second] = translation[:route_link_id]
-          flow_options[:clear_all] = true
-          flow_options[:write_reflection] = true
-          flow_options[:write_interface] = @interface_id
+          # flow_options[:write_reflection] = FLAG_REFLECTION
+          flow_options[:write_value_pair_second] = nil
         else
-          flow_options[:match_interface] = @interface_id
+          flow_options[:match_value_pair_first] = @interface_id
+          # flow_options[:write_reflection] = FLAG_REFLECTION
+          flow_options[:write_value_pair_second] = nil
         end
 
         flows << flow_create(flow_options)
@@ -218,7 +219,7 @@ module Vnet::Core::Translations
     end
 
     def egress_table_id(translation)
-      translation[:route_link_id] ? TABLE_ROUTE_EGRESS_LOOKUP : TABLE_ROUTE_EGRESS_TRANSLATION
+      translation[:route_link_id] ? TABLE_ROUTE_EGRESS_LOOKUP_IF_RL : TABLE_ROUTE_EGRESS_TRANSLATION_IF_NIL
     end
 
   end
