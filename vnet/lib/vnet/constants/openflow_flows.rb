@@ -82,10 +82,10 @@ module Vnet
       TABLE_INTERFACE_INGRESS_FILTER_IF_NIL        = 46
       TABLE_INTERFACE_INGRESS_FILTER_LOOKUP_IF_NIL = 47
 
-      TABLE_FLOOD_SIMULATED                  = 50
-      TABLE_FLOOD_LOCAL                      = 51
-      TABLE_FLOOD_TUNNELS                    = 52
-      TABLE_FLOOD_SEGMENT                    = 53
+      TABLE_FLOOD_SIMULATED_SEG_NW           = 50
+      TABLE_FLOOD_LOCAL_SEG_NW               = 51
+      TABLE_FLOOD_TUNNELS_SEG_NW             = 52
+      TABLE_FLOOD_SEGMENT_SEG_NW             = 53
 
       TABLE_LOOKUP_IF_NW                     = 70
       TABLE_LOOKUP_IF_RL                     = 71
@@ -105,16 +105,16 @@ module Vnet
       # network or route link, while for tunnels the output port needs
       # to be selected from pre-created tunnels.
 
-      TABLE_OUTPUT_DP_NETWORK_DST_IF         = 80
-      TABLE_OUTPUT_DP_NETWORK_SRC_IF         = 81
-      TABLE_OUTPUT_DP_SEGMENT_DST_IF         = 82
-      TABLE_OUTPUT_DP_SEGMENT_SRC_IF         = 83
-      TABLE_OUTPUT_DP_ROUTE_LINK_DST_IF      = 84
-      TABLE_OUTPUT_DP_ROUTE_LINK_SRC_IF      = 85
+      TABLE_OUTPUT_HOSTIF_DST_DPN_NIL        = 80
+      TABLE_OUTPUT_HOSTIF_DST_DPS_NIL        = 81
+      TABLE_OUTPUT_HOSTIF_DST_DPR_NIL        = 82
+      TABLE_OUTPUT_HOSTIF_SRC_NW_DIF         = 83
+      TABLE_OUTPUT_HOSTIF_SRC_SEG_DIF        = 84
+      TABLE_OUTPUT_HOSTIF_SRC_RL_DIF         = 85
 
-      TABLE_OUTPUT_DP_OVER_MAC2MAC           = 86 # Match src/dst if id, output if present.
-      TABLE_OUTPUT_DP_OVER_TUNNEL            = 87 # Use tun_id to determine type for goto_table.
-      TABLE_OUTPUT_DP_TO_CONTROLLER          = 88
+      TABLE_OUTPUT_MAC2MAC_SIF_DIF           = 86
+      TABLE_OUTPUT_TUNNEL_SIF_DIF            = 87
+      TABLE_OUTPUT_CONTROLLER_SEG_NW         = 88
 
       #
       # Output ports tables:

@@ -32,7 +32,7 @@ module Vnet::Core::Tunnels
       flows = []
 
       [true, false].each { |reflection|
-        flows << flow_create(table: TABLE_OUTPUT_DP_OVER_MAC2MAC,
+        flows << flow_create(table: TABLE_OUTPUT_MAC2MAC_SIF_DIF,
                              goto_table: TABLE_OUT_PORT_EGRESS_IF_NIL,
                              priority: 2,
 

@@ -154,12 +154,11 @@ module Vnet::Core::Datapaths
                            write_value_pair_first: dpg_map[:interface_id],
 
                            cookie: flow_cookie)
-      flows << flow_create(table: TABLE_OUTPUT_DP_NETWORK_SRC_IF,
-                           goto_table: TABLE_OUTPUT_DP_OVER_MAC2MAC,
+      flows << flow_create(table: TABLE_OUTPUT_HOSTIF_SRC_NW_DIF,
+                           goto_table: TABLE_OUTPUT_MAC2MAC_SIF_DIF,
                            priority: 1,
 
                            match_value_pair_first: dpg_map[:network_id],
-
                            write_value_pair_first: dpg_map[:interface_id],
 
                            cookie: flow_cookie)
@@ -227,13 +226,13 @@ module Vnet::Core::Datapaths
                            write_value_pair_first: dpg_map[:interface_id],
 
                            cookie: flow_cookie)
-      flows << flow_create(table: TABLE_OUTPUT_DP_SEGMENT_SRC_IF,
-                           goto_table: TABLE_OUTPUT_DP_OVER_MAC2MAC,
+      flows << flow_create(table: TABLE_OUTPUT_HOSTIF_SRC_SEG_DIF,
+                           goto_table: TABLE_OUTPUT_MAC2MAC_SIF_DIF,
                            priority: 1,
 
                            match_value_pair_first: dpg_map[:segment_id],
-
                            write_value_pair_first: dpg_map[:interface_id],
+
                            cookie: flow_cookie)
 
       flows_for_filtering_mac_address(flows, dpg_map[:mac_address], flow_cookie)
@@ -249,21 +248,23 @@ module Vnet::Core::Datapaths
                              # :eth_type => 0x0806
                              :eth_dst => dpg_map[:mac_address]
                            },
-                           actions: {
-                             :eth_dst => MAC_BROADCAST
-                           },
 
                            write_value_pair_flag: FLAG_LOCAL,
                            write_value_pair_first: dpg_map[:segment_id],
                            write_value_pair_second: 0,
 
+                           actions: {
+                             :eth_dst => MAC_BROADCAST
+                           },
                            cookie: flow_cookie)
-      flows << flow_create(table: TABLE_OUTPUT_DP_TO_CONTROLLER,
+      flows << flow_create(table: TABLE_OUTPUT_CONTROLLER_SEG_NW,
                            priority: 1,
+                           
                            match: {
                              :eth_dst => MAC_BROADCAST
                            },
-                           match_segment: dpg_map[:segment_id],
+                           match_value_pair_first: dpg_map[:segment_id],
+
                            actions: {
                              :eth_dst => dpg_map[:mac_address],
                              :output => OFPP_CONTROLLER
@@ -329,8 +330,8 @@ module Vnet::Core::Datapaths
       # The source mac address is set to this datapath's dpg_map's mac
       # address in order to uniquely identify the packets as being
       # from this datapath.
-      flows << flow_create(table: TABLE_OUTPUT_DP_ROUTE_LINK_SRC_IF,
-                           goto_table: TABLE_OUTPUT_DP_OVER_MAC2MAC,
+      flows << flow_create(table: TABLE_OUTPUT_HOSTIF_SRC_RL_DIF,
+                           goto_table: TABLE_OUTPUT_MAC2MAC_SIF_DIF,
                            priority: 1,
 
                            match_value_pair_first: dpg_map[:route_link_id],
@@ -339,7 +340,6 @@ module Vnet::Core::Datapaths
                            actions: {
                              :eth_src => dpg_map[:mac_address]
                            },
-
                            cookie: flow_cookie)
 
       flows_for_filtering_mac_address(flows, dpg_map[:mac_address], flow_cookie)

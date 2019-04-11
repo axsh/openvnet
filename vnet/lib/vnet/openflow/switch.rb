@@ -75,8 +75,8 @@ module Vnet::Openflow
        TABLE_SEGMENT_DST_CLASSIFIER_SEG_NIL,
        TABLE_SEGMENT_DST_MAC_LOOKUP_SEG_NIL,
 
-       TABLE_FLOOD_LOCAL,
-       TABLE_FLOOD_SEGMENT,
+       TABLE_FLOOD_LOCAL_SEG_NW,
+       TABLE_FLOOD_SEGMENT_SEG_NW,
 
        TABLE_LOOKUP_IF_NW,
        TABLE_LOOKUP_IF_RL,
@@ -86,15 +86,15 @@ module Vnet::Openflow
        TABLE_LOOKUP_NW_NIL,
        TABLE_LOOKUP_SEG_NIL,
 
-       TABLE_OUTPUT_DP_NETWORK_DST_IF,
-       TABLE_OUTPUT_DP_NETWORK_SRC_IF,
-       TABLE_OUTPUT_DP_SEGMENT_DST_IF,
-       TABLE_OUTPUT_DP_SEGMENT_SRC_IF,
-       TABLE_OUTPUT_DP_ROUTE_LINK_DST_IF,
-       TABLE_OUTPUT_DP_ROUTE_LINK_SRC_IF,
+       TABLE_OUTPUT_HOSTIF_DST_DPN_NIL,
+       TABLE_OUTPUT_HOSTIF_DST_DPS_NIL,
+       TABLE_OUTPUT_HOSTIF_DST_DPR_NIL,
+       TABLE_OUTPUT_HOSTIF_SRC_NW_DIF,
+       TABLE_OUTPUT_HOSTIF_SRC_SEG_DIF,
+       TABLE_OUTPUT_HOSTIF_SRC_RL_DIF,
 
-       TABLE_OUTPUT_DP_OVER_TUNNEL,
-       TABLE_OUTPUT_DP_TO_CONTROLLER,
+       TABLE_OUTPUT_TUNNEL_SIF_DIF,
+       TABLE_OUTPUT_CONTROLLER_SEG_NW,
 
        TABLE_OUT_PORT_INGRESS_IF_NIL,
        TABLE_OUT_PORT_EGRESS_IF_NIL,
@@ -105,9 +105,8 @@ module Vnet::Openflow
       }
 
       [[TABLE_CLASSIFIER, 10, nil, { :tunnel_id => 0 }],
-       [TABLE_FLOOD_TUNNELS, 10, :match_remote, nil],
-       [TABLE_OUTPUT_DP_NETWORK_DST_IF, 2, nil, { :eth_dst => MAC_BROADCAST }],
-       [TABLE_OUTPUT_DP_OVER_MAC2MAC, 1, nil, { :tunnel_id => 0 }],
+       [TABLE_OUTPUT_HOSTIF_DST_DPN_NIL, 2, nil, { :eth_dst => MAC_BROADCAST }],
+       [TABLE_OUTPUT_MAC2MAC_SIF_DIF, 1, nil, { :tunnel_id => 0 }],
       ].each { |table, priority, flag, match|
         flows << flow_create({ table: table,
                                priority: priority,
@@ -116,36 +115,42 @@ module Vnet::Openflow
                              })
       }
 
+      flows << flow_create(table: TABLE_FLOOD_TUNNELS_SEG_NW,
+                           priority: 10,
+                           match_value_pair_flag: FLAG_REMOTE,
+                          )
+
       #
       # Default goto_table flows:
       #
       [[TABLE_INTERFACE_EGRESS_STATEFUL_IF_NIL, TABLE_INTERFACE_EGRESS_FILTER_IF_NIL],
        [TABLE_ROUTE_INGRESS_INTERFACE_NW_NIL, TABLE_NETWORK_DST_CLASSIFIER_NW_NIL],
        [TABLE_ARP_TABLE_NW_NIL, TABLE_ARP_LOOKUP_NW_NIL],
-       [TABLE_FLOOD_SIMULATED, TABLE_FLOOD_LOCAL],
-       [TABLE_FLOOD_TUNNELS, TABLE_FLOOD_SEGMENT],
+       [TABLE_FLOOD_SIMULATED_SEG_NW, TABLE_FLOOD_LOCAL_SEG_NW],
+       [TABLE_FLOOD_TUNNELS_SEG_NW, TABLE_FLOOD_SEGMENT_SEG_NW],
        [TABLE_INTERFACE_INGRESS_FILTER_IF_NIL, TABLE_INTERFACE_INGRESS_FILTER_LOOKUP_IF_NIL],
-       [TABLE_OUTPUT_DP_OVER_MAC2MAC, TABLE_OUTPUT_DP_OVER_TUNNEL],
+       [TABLE_OUTPUT_MAC2MAC_SIF_DIF, TABLE_OUTPUT_TUNNEL_SIF_DIF],
       ].each { |from_table, to_table|
         flows << flow_create(table: from_table,
                              goto_table: to_table,
                              priority: 0)
       }
 
-      [[TABLE_NETWORK_DST_MAC_LOOKUP_NW_NIL, TABLE_FLOOD_SIMULATED, 30, nil, {
-          :eth_dst => MAC_BROADCAST
-        }],
-       [TABLE_SEGMENT_DST_MAC_LOOKUP_SEG_NIL, TABLE_FLOOD_SIMULATED, 30, nil, {
-          :eth_dst => MAC_BROADCAST
-        }],
-      ].each { |from_table, to_table, priority, flag, match|
-        flows << flow_create({ table: from_table,
-                               goto_table: to_table,
-                               priority: priority,
-                               match: match,
-                               flag => true
-                             })
-      }
+      # TODO: Need to change NW_NIL to NIL_NW.
+      # [[TABLE_NETWORK_DST_MAC_LOOKUP_NW_NIL, TABLE_FLOOD_SIMULATED_SEG_NW, 30, nil, {
+      #     :eth_dst => MAC_BROADCAST
+      #   }],
+      #  [TABLE_SEGMENT_DST_MAC_LOOKUP_SEG_NIL, TABLE_FLOOD_SIMULATED, 30, nil, {
+      #     :eth_dst => MAC_BROADCAST
+      #   }],
+      # ].each { |from_table, to_table, priority, flag, match|
+      #   flows << flow_create({ table: from_table,
+      #                          goto_table: to_table,
+      #                          priority: priority,
+      #                          match: match,
+      #                          flag => true
+      #                        })
+      # }
 
       #
       # Default classifier flows:

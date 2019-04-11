@@ -172,10 +172,10 @@ describe Vnet::Core::TunnelManager do
       #   {:metadata => 1 | METADATA_TYPE_NETWORK,
       #    :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK},
       #   [],
-      #   {:goto_table => TABLE_FLOOD_TUNNELS,
+      #   {:goto_table => TABLE_FLOOD_TUNNELS_SEG_NW,
       #    :cookie => 1 | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)})
       # expect(added_flows[1]).to eq Vnet::Openflow::Flow.create(
-      #   TABLE_FLOOD_TUNNELS,
+      #   TABLE_FLOOD_TUNNELS_SEG_NW,
       #   1,
       #   {:metadata => 1 | METADATA_TYPE_NETWORK,
       #    :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK},

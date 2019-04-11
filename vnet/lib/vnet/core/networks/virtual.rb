@@ -59,14 +59,16 @@ module Vnet::Core::Networks
                             )
         # TODO: ??????????? This should be for _all_ networks.
         flows << flow_create(table: TABLE_NETWORK_DST_CLASSIFIER_NW_NIL,
-                             goto_table: TABLE_FLOOD_SIMULATED,
+                             goto_table: TABLE_FLOOD_SIMULATED_SEG_NW,
                              priority: 31,
 
                              match: {
                                :eth_dst => MAC_BROADCAST
                              },
                              match_value_pair_first: @id,
+                             
                              write_value_pair_first: @segment_id,
+                             write_value_pair_second: @id,
                             )
         flows << flow_create(table: TABLE_NETWORK_DST_MAC_LOOKUP_NW_NIL,
                              goto_table: TABLE_SEGMENT_DST_CLASSIFIER_SEG_NIL,
@@ -81,14 +83,18 @@ module Vnet::Core::Networks
     end
 
     def update_flows(port_numbers)
-      flood_actions = port_numbers.collect { |port_number|
+      flow_actions = port_numbers.collect { |port_number|
         { :output => port_number }
       }
 
       flows = []
-      flows << Flow.create(TABLE_FLOOD_LOCAL, 1,
-                           md_create(:network => @id),
-                           flood_actions, flow_options.merge(:goto_table => TABLE_FLOOD_TUNNELS))
+      flows << flow_create(table: TABLE_FLOOD_LOCAL_SEG_NW,
+                           goto_table: TABLE_FLOOD_TUNNELS_SEG_NW,
+                           priority: 1,
+                           
+                           match_value_pair_second: @id,
+
+                           actions: flow_actions)
 
       @dp_info.add_flows(flows)
     end

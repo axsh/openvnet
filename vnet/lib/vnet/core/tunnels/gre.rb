@@ -46,11 +46,11 @@ module Vnet::Core::Tunnels
       flows = []
 
       [true, false].each { |reflection|
-        flows << flow_create(table: TABLE_OUTPUT_DP_OVER_TUNNEL,
+        flows << flow_create(table: TABLE_OUTPUT_TUNNEL_SIF_DIF,
                              goto_table: TABLE_OUT_PORT_EGRESS_TUN_NIL,
                              priority: 1,
 
-                             match_value_pair_flag: reflection,
+                             # match_value_pair_flag: FLAG_REFLECTION,
                              match_value_pair_first: @src_interface_id,
                              match_value_pair_second: @dst_interface_id,
 

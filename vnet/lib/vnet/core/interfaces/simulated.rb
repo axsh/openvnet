@@ -231,9 +231,8 @@ module Vnet::Core::Interfaces
 
       ipv4_address = ipv4_info[:ipv4_address]
 
-      flow_base = {table: TABLE_FLOOD_SIMULATED,
+      flow_base = {table: TABLE_FLOOD_SIMULATED_SEG_NW,
                    goto_table: TABLE_OUT_PORT_INGRESS_IF_NIL,
-                   priority: 30,
                    
                    match: {:eth_type => 0x0806,
                            :arp_op => 1,
@@ -245,10 +244,12 @@ module Vnet::Core::Interfaces
                   }
 
       if segment_id
-        flows << flow_create(flow_base.merge({match_segment: segment_id}))
+        flows << flow_create(flow_base.merge(priority: 20, match_value_pair_first: segment_id))
       end
 
-      flows << flow_create(flow_base.merge({match_network: network_id}))
+      flows << flow_create(flow_base.merge(priority: 30, match_value_pair_second: network_id))
+
+      # TODO: Match segment_id+network_id.
     end
 
   end

@@ -64,7 +64,7 @@ describe Vnet::Core::ServiceManager do
         }
 
         expect(dp_info.added_flows).to be_any { |flow|
-          flow.params[:table_id] == TABLE_FLOOD_SIMULATED
+          flow.params[:table_id] == TABLE_FLOOD_SIMULATED_SEG_NW
           flow.params[:priority] == 30
           flow.params[:match][:eth_type] == 0x0800
           flow.params[:match][:ip_proto] == 0x11
@@ -97,7 +97,7 @@ describe Vnet::Core::ServiceManager do
         }
 
         expect(dp_info.deleted_flows).to be_any { |flow|
-          flow.params[:table_id] == TABLE_FLOOD_SIMULATED
+          flow.params[:table_id] == TABLE_FLOOD_SIMULATED_SEG_NW
           flow.params[:priority] == 30
           flow.params[:match][:eth_type] == 0x0800
           flow.params[:match][:ip_proto] == 0x11

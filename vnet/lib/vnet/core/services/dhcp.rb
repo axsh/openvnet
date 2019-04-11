@@ -116,26 +116,28 @@ module Vnet::Core::Services
       }
 
       flows = []
-      flows << flow_create(table: TABLE_FLOOD_SIMULATED,
+      flows << flow_create(table: TABLE_FLOOD_SIMULATED_SEG_NW,
                            goto_table: TABLE_OUT_PORT_INGRESS_IF_NIL,
                            priority: 30,
 
                            match: match_dhcp,
-                           match_network: network_id,
+                           match_value_pair_second: network_id,
 
                            write_value_pair_first: @interface_id,
+                           write_value_pair_second: 0,
                            
                            cookie: cookie_for_network(cookie_id))
 
       if segment_id
-        flows << flow_create(table: TABLE_FLOOD_SIMULATED,
+        flows << flow_create(table: TABLE_FLOOD_SIMULATED_SEG_NW,
                              goto_table: TABLE_OUT_PORT_INGRESS_IF_NIL,
-                             priority: 30,
+                             priority: 20,
 
                              match: match_dhcp,
-                             match_segment: segment_id,
+                             match_value_pair_first: segment_id,
 
                              write_value_pair_first: @interface_id,
+                             write_value_pair_second: 0,
                              
                              cookie: cookie_for_network(cookie_id))
       end

@@ -52,9 +52,13 @@ module Vnet::Core::Segments
       }
 
       flows = []
-      flows << Flow.create(TABLE_FLOOD_LOCAL, 1,
-                           md_create(:segment => @id),
-                           flood_actions, flow_options.merge(:goto_table => TABLE_FLOOD_TUNNELS))
+      flows << flow_create(table: TABLE_FLOOD_LOCAL_SEG_NW,
+                           # goto_table: TABLE_LOOKUP_NW_NIL,
+                           priority: 1,
+
+                           match_value_pair_first: @id,
+                           actions: local_actions,
+                          )
 
       @dp_info.add_flows(flows)
     end
@@ -117,7 +121,7 @@ module Vnet::Core::Segments
       # packets.
 
       case message.table_id
-      when TABLE_OUTPUT_DP_TO_CONTROLLER
+      when TABLE_OUTPUT_CONTROLLER_SEG_NW
         message.match.in_port = OFPP_CONTROLLER
       when TABLE_INTERFACE_INGRESS_SEG_DPSEG
       else

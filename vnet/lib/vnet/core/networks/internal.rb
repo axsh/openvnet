@@ -40,7 +40,7 @@ module Vnet::Core::Networks
       # TODO: Require matching IPv4? Probably do it in TABLE_NETWORK_DST_MAC_LOOKUP_NW_NIL.
 
       flows = []
-      flows << flow_create(table: TABLE_FLOOD_LOCAL,
+      flows << flow_create(table: TABLE_FLOOD_LOCAL_SEG_NW,
                            # goto_table: TABLE_LOOKUP_NW_NIL,
                            priority: 1,
                            match_network: @id,

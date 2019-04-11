@@ -275,28 +275,32 @@ module Vnet::Core
         # TODO: Change this into using a specific method to remove a network id?
 
         if tunnel_actions.size > 1
-          flows << flow_create(table: TABLE_FLOOD_TUNNELS,
-            goto_table: TABLE_FLOOD_SEGMENT,
-            priority: 1,
-            match_network: property_id,
-            actions: tunnel_actions,
-            cookie: property_id | COOKIE_TYPE_NETWORK)
+          flows << flow_create(table: TABLE_FLOOD_TUNNELS_SEG_NW,
+                               goto_table: TABLE_FLOOD_SEGMENT_SEG_NW,
+                               priority: 1,
+
+                               match_value_pair_second: property_id,
+
+                               actions: tunnel_actions,
+                               cookie: property_id | COOKIE_TYPE_NETWORK)
         else
-          @dp_info.del_flows(table_id: TABLE_FLOOD_TUNNELS,
-            cookie: property_id | COOKIE_TYPE_NETWORK,
-            cookie_mask: COOKIE_MASK)
+          @dp_info.del_flows(table_id: TABLE_FLOOD_TUNNELS_SEG_NW,
+                             cookie: property_id | COOKIE_TYPE_NETWORK,
+                             cookie_mask: COOKIE_MASK)
         end
 
         if !segment_actions.empty?
-          flows << flow_create(table: TABLE_FLOOD_SEGMENT,
-            priority: 1,
-            match_network: property_id,
-            actions: segment_actions,
-            cookie: property_id | COOKIE_TYPE_NETWORK)
+          flows << flow_create(table: TABLE_FLOOD_SEGMENT_SEG_NW,
+                               priority: 1,
+
+                               match_value_pair_second: property_id,
+
+                               actions: segment_actions,
+                               cookie: property_id | COOKIE_TYPE_NETWORK)
         else
-          @dp_info.del_flows(table_id: TABLE_FLOOD_SEGMENT,
-            cookie: property_id | COOKIE_TYPE_NETWORK,
-            cookie_mask: COOKIE_MASK)
+          @dp_info.del_flows(table_id: TABLE_FLOOD_SEGMENT_SEG_NW,
+                             cookie: property_id | COOKIE_TYPE_NETWORK,
+                             cookie_mask: COOKIE_MASK)
         end
 
       when :update_segments
@@ -310,28 +314,32 @@ module Vnet::Core
         # TODO: Change this into using a specific method to remove a segment id?
 
         if tunnel_actions.size > 1
-          flows << flow_create(table: TABLE_FLOOD_TUNNELS,
-            goto_table: TABLE_FLOOD_SEGMENT,
-            priority: 1,
-            match_segment: property_id,
-            actions: tunnel_actions,
-            cookie: property_id | COOKIE_TYPE_SEGMENT)
+          flows << flow_create(table: TABLE_FLOOD_TUNNELS_SEG_NW,
+                               goto_table: TABLE_FLOOD_SEGMENT_SEG_NW,
+                               priority: 1,
+                               
+                               match_value_pair_first: property_id,
+
+                               actions: tunnel_actions,
+                               cookie: property_id | COOKIE_TYPE_SEGMENT)
         else
-          @dp_info.del_flows(table_id: TABLE_FLOOD_TUNNELS,
-            cookie: property_id | COOKIE_TYPE_SEGMENT,
-            cookie_mask: COOKIE_MASK)
+          @dp_info.del_flows(table_id: TABLE_FLOOD_TUNNELS_SEG_NW,
+                             cookie: property_id | COOKIE_TYPE_SEGMENT,
+                             cookie_mask: COOKIE_MASK)
         end
 
         if !segment_actions.empty?
-          flows << flow_create(table: TABLE_FLOOD_SEGMENT,
-            priority: 1,
-            match_segment: property_id,
-            actions: segment_actions,
-            cookie: property_id | COOKIE_TYPE_SEGMENT)
+          flows << flow_create(table: TABLE_FLOOD_SEGMENT_SEG_NW,
+                               priority: 1,
+
+                               match_value_pair_first: property_id,
+
+                               actions: segment_actions,
+                               cookie: property_id | COOKIE_TYPE_SEGMENT)
         else
-          @dp_info.del_flows(table_id: TABLE_FLOOD_SEGMENT,
-            cookie: property_id | COOKIE_TYPE_SEGMENT,
-            cookie_mask: COOKIE_MASK)
+          @dp_info.del_flows(table_id: TABLE_FLOOD_SEGMENT_SEG_NW,
+                             cookie: property_id | COOKIE_TYPE_SEGMENT,
+                             cookie_mask: COOKIE_MASK)
         end
       end
 

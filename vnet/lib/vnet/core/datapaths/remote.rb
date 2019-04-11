@@ -103,34 +103,32 @@ module Vnet::Core::Datapaths
       [true, false].each { |reflection|
 
         flows << flow_create(table: TABLE_LOOKUP_DP_NW,
-                             goto_table: TABLE_OUTPUT_DP_NETWORK_DST_IF,
+                             goto_table: TABLE_OUTPUT_HOSTIF_DST_DPN_NIL,
                              priority: 1,
 
                              #match_value_pair_flag: FLAG_REFLECTION,
                              match_value_pair_first: @id,
                              match_value_pair_second: flow_gen_id,
 
-                             clear_all: true,
-                             write_reflection: reflection,
-                             write_dp_network: flow_id,
+                             write_value_pair_first: flow_id,
+                             write_value_pair_second: 0,
 
                              cookie: flow_cookie)
 
-        flows << flow_create(table: TABLE_OUTPUT_DP_NETWORK_DST_IF,
-                             goto_table: TABLE_OUTPUT_DP_NETWORK_SRC_IF,
+        flows << flow_create(table: TABLE_OUTPUT_HOSTIF_DST_DPN_NIL,
+                             goto_table: TABLE_OUTPUT_HOSTIF_SRC_NW_DIF,
                              priority: 1,
 
-                             match_reflection: reflection,
-                             match_dp_network: flow_id,
+                             #match_value_pair_flag: FLAG_REFLECTION,
+                             match_value_pair_first: flow_id,
+
+                             #write_value_pair_flag: FLAG_REFLECTION,
+                             write_value_pair_first: flow_gen_id,
+                             write_value_pair_second: dpg_map[:interface_id],
 
                              actions: {
                                :tunnel_id => (flow_gen_id & TUNNEL_ID_MASK) | TUNNEL_NETWORK
                              },
-
-                             write_value_pair_flag: reflection,
-                             write_value_pair_first: flow_gen_id,
-                             write_value_pair_second: dpg_map[:interface_id],
-
                              cookie: flow_cookie)
       }
     end
@@ -143,34 +141,33 @@ module Vnet::Core::Datapaths
       [true, false].each { |reflection|
 
         flows << flow_create(table: TABLE_LOOKUP_DP_SEG,
-                             goto_table: TABLE_OUTPUT_DP_SEGMENT_DST_IF,
+                             goto_table: TABLE_OUTPUT_HOSTIF_DST_DPS_NIL,
                              priority: 1,
 
                              #match_value_pair_flag: FLAG_REFLECTION,
                              match_value_pair_first: @id,
                              match_value_pair_second: flow_gen_id,
 
-                             clear_all: true,
-                             write_reflection: reflection,
-                             write_dp_segment: flow_id,
+                             #write_value_pair_flag: FLAG_REFLECTION,
+                             write_value_pair_first: flow_id,
+                             write_value_pair_second: 0,
 
                              cookie: flow_cookie)
 
-        flows << flow_create(table: TABLE_OUTPUT_DP_SEGMENT_DST_IF,
-                             goto_table: TABLE_OUTPUT_DP_SEGMENT_SRC_IF,
+        flows << flow_create(table: TABLE_OUTPUT_HOSTIF_DST_DPS_NIL,
+                             goto_table: TABLE_OUTPUT_HOSTIF_SRC_SEG_DIF,
                              priority: 1,
 
-                             match_reflection: reflection,
-                             match_dp_segment: flow_id,
+                             #match_value_pair_flag: FLAG_REFLECTION,
+                             match_value_pair_first: flow_id,
+
+                             #match_value_pair_flag: FLAG_REFLECTION,
+                             write_value_pair_first: flow_gen_id,
+                             write_value_pair_second: dpg_map[:interface_id],
 
                              actions: {
                                :tunnel_id => (flow_gen_id & TUNNEL_ID_MASK) | TUNNEL_SEGMENT
                              },
-
-                             write_value_pair_flag: reflection,
-                             write_value_pair_first: flow_gen_id,
-                             write_value_pair_second: dpg_map[:interface_id],
-
                              cookie: flow_cookie)
       }
     end
@@ -199,16 +196,16 @@ module Vnet::Core::Datapaths
 
       [true, false].each { |reflection|
         flows << flow_create(table: TABLE_LOOKUP_DP_RL,
-                             goto_table: TABLE_OUTPUT_DP_ROUTE_LINK_DST_IF,
+                             goto_table: TABLE_OUTPUT_HOSTIF_DST_DPR_NIL,
                              priority: 1,
 
                              #match_value_pair_flag: FLAG_REFLECTION,
                              match_value_pair_first: @id,
                              match_value_pair_second: flow_gen_id,
 
-                             clear_all: true,
-                             write_reflection: reflection,
-                             write_dp_route_link: flow_id,
+                             #write_value_pair_flag: FLAG_REFLECTION,
+                             write_value_pair_first: flow_id,
+                             write_value_pair_second: 0,
 
                              cookie: flow_cookie)
 
@@ -219,22 +216,21 @@ module Vnet::Core::Datapaths
         # The route link id will then be used to identify what source
         # interface id is set using the host's datapath route link
         # entry.
-        flows << flow_create(table: TABLE_OUTPUT_DP_ROUTE_LINK_DST_IF,
-                             goto_table: TABLE_OUTPUT_DP_ROUTE_LINK_SRC_IF,
+        flows << flow_create(table: TABLE_OUTPUT_HOSTIF_DST_DPR_NIL,
+                             goto_table: TABLE_OUTPUT_HOSTIF_SRC_RL_DIF,
                              priority: 1,
 
-                             match_reflection: reflection,
-                             match_dp_route_link: flow_id,
+                             #match_value_pair_flag: FLAG_REFLECTION,
+                             match_value_pair_first: flow_id,
+
+                             #match_value_pair_flag: FLAG_REFLECTION,
+                             write_value_pair_first: flow_gen_id,
+                             write_value_pair_second: dpg_map[:interface_id],
 
                              actions: {
                                :eth_dst => dpg_map[:mac_address],
                                :tunnel_id => TUNNEL_ROUTE_LINK
                              },
-
-                             write_value_pair_flag: reflection,
-                             write_value_pair_first: flow_gen_id,
-                             write_value_pair_second: dpg_map[:interface_id],
-
                              cookie: flow_cookie)
       }
     end
