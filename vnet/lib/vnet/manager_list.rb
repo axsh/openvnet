@@ -9,8 +9,6 @@ module Vnet
       manager_list.each { |manager| manager.async.start_initialize }
 
       internal_wait_for_state(manager_list, timeout, interval, :initialized).tap { |stuck_managers|
-        next if stuck_managers.nil?
-
         stuck_managers.each { |manager|
           Celluloid.logger.warn log_format("#{manager.class.name.to_s.demodulize.underscore} failed to initialize within #{timeout} seconds")
         }
@@ -20,14 +18,14 @@ module Vnet
     end
 
     def terminate_manager_list(manager_list, timeout, interval = 10.0)
+      # log each step...
+
       manager_list.each { |manager| safe_actor_call(manager, :event_handler_drop_all) }
       manager_list.each { |manager|
         safe_actor_call(manager, :async) { |a| a.start_cleanup }
       }
 
       internal_wait_for_state(manager_list, timeout, interval, :terminated).tap { |stuck_managers|
-        next if stuck_managers.nil?
-
         stuck_managers.each { |manager|
           Celluloid.logger.warn log_format("#{manager.class.name.to_s.demodulize.underscore} failed to terminate within #{timeout} seconds")
 
@@ -78,7 +76,7 @@ module Vnet
             end
           }
 
-          return if waiting_managers.empty?
+          return waiting_managers if waiting_managers.empty?
           return waiting_managers if timeout < (Time.new - start_timeout)
         end
       }

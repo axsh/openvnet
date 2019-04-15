@@ -29,7 +29,7 @@ module Vnet
           watchdog = Celluloid::Actor[:service_watchdog]
 
           raise "Actor is already registered with watchdog." if @watchdog_register
-          raise "Watchdog is not registered in Celluloid::Actor." if watchdog.nil?
+          raise "Watchdog is not registered in Celluloid::Actor." if watchdog == nil
 
           a = Thread.current[:celluloid_actor]
 
@@ -41,7 +41,7 @@ module Vnet
         end
 
         def watchdog_unregister
-          if @watchdog_register.nil?
+          if @watchdog_register == nil
             debug log_format('can not unregister watchdog, not registered')
             return
           end

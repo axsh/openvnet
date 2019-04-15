@@ -174,7 +174,7 @@ module Vnet::Openflow
       # TODO: Handle vnmgr node link differently.
       vnmgr_node = DCell::Node[:vnmgr]
 
-      if vnmgr_node.nil?
+      if vnmgr_node == nil
         warn log_format('could not find vnmgr dcell node, cannot create link for actor cleanup')
       end
 
@@ -189,7 +189,14 @@ module Vnet::Openflow
       managers.each { |manager|
         begin
           link(manager)
-          vnmgr_node && vnmgr_node.link(manager)
+
+          begin
+            vnmgr_node && vnmgr_node.link(manager)
+          rescue Celluloid::DeadActorError
+            # TODO: Terminate datapath and reconnect to vnmgr node.
+            error log_format("vnmgr node is dead, could not link")
+          end
+
         rescue => e
           error log_format("Fail to link with #{manager.class.name}", e)
           raise e
