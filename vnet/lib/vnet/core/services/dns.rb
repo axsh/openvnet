@@ -42,7 +42,7 @@ module Vnet::Core::Services
       debug log_format('packet_in received')
       #debug log_format('message: ', message.inspect)
 
-      mac_info, ipv4_info, network = find_ipv4_and_network(message, message.ipv4_dst)
+      mac_info, ipv4_info, network = get_mac_ipv4_network(message.ipv4_src)
       return if network.nil?
 
       client_info = find_client_infos(message.match.in_port, mac_info, ipv4_info).first
@@ -139,11 +139,12 @@ module Vnet::Core::Services
     end
 
     def dns_server_for(network_id)
-      interface = @dp_info.interface_manager.wait_for_loaded({id: @interface_id}, 10, true)
+      return if @dp_info.interface_manager.wait_for_loaded({id: @interface_id}, 10, true).nil?
 
-      ipv4_info = interface.get_ipv4_infos(network_id: network_id).map(&:last).detect do |ipv4_info|
+      ipv4_info = get_mac_ipv4(nil, network_id).map(&:last).detect { |ipv4_info|
         ipv4_info[:network_id] == network_id
-      end
+      }
+      
       ipv4_info ? ipv4_info[:ipv4_address].to_s : nil
     end
 

@@ -201,38 +201,6 @@ module Vnet::Core::Services
       [ (i >> 24) % 256, (i >> 16) % 256, (i >> 8) % 256, i % 256 ]
     end
 
-    def find_client_infos(port_number, server_mac_info, server_ipv4_info)
-      case port_number
-      when OFPP_LOCAL
-        find_local_interface(port_number, server_mac_info, server_ipv4_info)
-      else
-        find_client_interface(port_number, server_mac_info, server_ipv4_info)
-      end
-    end
-
-    def find_client_interface(port_number, server_mac_info, server_ipv4_info)
-      interface = @dp_info.interface_manager.detect(port_number: port_number)
-
-      if interface.nil?
-        info log_format("could not find interface for port number #{port_number}")
-        return []
-      end
-
-      interface.get_ipv4_infos(network_id: server_ipv4_info && server_ipv4_info[:network_id])
-    end
-
-    def find_local_interface(port_number, server_mac_info, server_ipv4_info)
-      network_id = server_ipv4_info && server_ipv4_info[:network_id]
-
-      @dp_info.interface_manager.select(mode: :internal).each { |interface|
-        client_infos = interface.get_ipv4_infos(network_id: network_id)
-
-        return client_infos unless client_infos.empty?
-      }
-
-      []
-    end
-
     def parse_dhcp_packet(message)
       if !message.udp?
         debug log_format('DHCP: Message is not UDP')

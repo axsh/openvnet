@@ -96,7 +96,7 @@ module Vnet
     autoload :Filter, 'vnet/core/items'
     autoload :HostDatapath, 'vnet/core/items'
     autoload :HostDatapathManager, 'vnet/core/host_datapath_manager'
-    autoload :Interface, 'vnet/core/interface'
+    autoload :Interface, 'vnet/core/items'
     autoload :InterfaceManager, 'vnet/core/interface_manager'
     autoload :InterfacePort, 'vnet/core/items'
     autoload :InterfacePortManager, 'vnet/core/interface_port_manager'

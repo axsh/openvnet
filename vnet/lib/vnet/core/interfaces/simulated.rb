@@ -113,8 +113,7 @@ module Vnet::Core::Interfaces
       when TAG_ARP_REQUEST_INTERFACE
         info log_format_h('simulated arp reply', arp_spa: message.arp_spa, arp_tpa: message.arp_tpa)
 
-        mac_info, ipv4_info = get_ipv4_address(any_md: message.match.metadata,
-                                               ipv4_address: message.arp_tpa)
+        mac_info, ipv4_info = get_mac_ipv4(message.arp_tpa)
         return if mac_info.nil? || ipv4_info.nil?
 
         packet_arp_out({ :out_port => message.in_port,
@@ -135,8 +134,7 @@ module Vnet::Core::Interfaces
         arp_lookup_reply_packet_in(message)
 
       when TAG_ICMP_REQUEST
-        mac_info, ipv4_info = get_ipv4_address(any_md: message.match.metadata,
-                                               ipv4_address: message.ipv4_dst)
+        mac_info, ipv4_info = get_mac_ipv4(message.ipv4_dst)
         return if mac_info.nil? || ipv4_info.nil?
 
         raw_in = icmpv4_in(message)

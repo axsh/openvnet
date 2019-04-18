@@ -82,39 +82,16 @@ module Vnet::Core::Services
                               interface_id: @interface_id)
     end
 
-    # TODO: Deprecate.
-    def find_ipv4_and_network(message, ipv4_address)
-      ipv4_address = ipv4_address != IPV4_BROADCAST ? ipv4_address : nil
+    #
+    # Manage MAC and IP addresses:
+    #
 
-      interface = @dp_info.interface_manager.detect(id: @interface_id)
-      return unless interface
-
-      # if_addrs = if network_id
-      #   interface.get_ipv4_infos(network_id: network_id, ipv4_address: ipv4_address)
-      # else
-      #   interface.get_ipv4_infos(any_md: message.match.metadata, ipv4_address: ipv4_address)
-      # end
-
-      if_addrs = interface.get_ipv4_infos(any_md: message.match.metadata, ipv4_address: ipv4_address)
-
-      # mac_info, ipv4_info = if_addrs.detect { |addr_map|
-      #   next addr_map if network_id
-      #   addr_map[:ipv4_addresses
-      # }
-
-      mac_info, ipv4_info = if_addrs.first
-
-      return unless ipv4_info
-
-      [mac_info, ipv4_info, @dp_info.network_manager.retrieve(id: ipv4_info[:network_id])]
-    end
-
-    def get_mac_ipv4_network(ipv4_address)
+    def get_mac_ipv4(ipv4_address)
       mac_info = nil
       ipv4_info = nil
       ipv4_address = (ipv4_address != IPV4_ZERO && ipv4_address != IPV4_BROADCAST) ? ipv4_address : nil
 
-      @dp_info.interface_manager.get_interface_addrs(@interface_id).tap { |if_addrs|
+      @dp_info.interface_manager.get_interface_addrs(id: @interface_id).tap { |if_addrs|
         if if_addrs.nil?
           debug log_format_h('get_interface_addrs failed', interface_id: @interface_id)
           return
@@ -131,8 +108,39 @@ module Vnet::Core::Services
       }
 
       return nil if mac_info.nil? || ipv4_info.nil?
-      return [mac_info, ipv4_info, @dp_info.network_manager.retrieve(id: ipv4_info[:network_id])]
+      return [mac_info, ipv4_info]
     end
+
+    def get_mac_ipv4_network(ipv4_address)
+      get_mac_ipv4(ipv4_address).tap { |mac_info, ipv4_info|
+        return nil if mac_info.nil? || ipv4_info.nil?
+        return [mac_info, ipv4_info, ipv4_info && @dp_info.network_manager.retrieve(id: ipv4_info[:network_id])]
+      }
+    end
+
+    def select_mac_ipv4(ipv4_address, network_id, params = { id: @interface_id })
+      if_addrs = @dp_info.interface_manager.get_interface_addrs(params)
+
+      if if_addrs.nil?
+        debug log_format_h('get_interface_addrs failed', interface_id: @interface_id)
+        return []
+      end
+
+      [].tap { |list|
+        if_addrs.each { |mac_lease_id, mac_info|
+          mac_info[:ipv4_addresses].each { |ipv4_info|
+            next if network_id && network_id != ipv4_info[:network_id]
+            next if ipv4_address && ipv4_address != ipv4_info[:ipv4_address]
+
+            list << [mac_info, ipv4_info]
+          }
+        }
+      }
+    end
+
+    #
+    # Networks:
+    #
 
     def add_network_unless_exists(network_id, cookie_id, segment_id)
       return if @networks[network_id]
@@ -169,12 +177,8 @@ module Vnet::Core::Services
     protected
 
     def find_client_infos(port_number, server_mac_info, server_ipv4_info)
-      interface = @dp_info.interface_manager.detect(port_number: port_number)
-      return [] if interface.nil?
+      client_infos = select_mac_ipv4(nil, server_ipv4_info && server_ipv4_info[:network_id], port_number: port_number)
 
-      client_infos = interface.get_ipv4_infos(network_id: server_ipv4_info && server_ipv4_info[:network_id])
-
-      # info log_format("find_client_info", "#{interface.inspect}")
       # info log_format("find_client_info", "server_mac_info:#{server_mac_info.inspect}")
       # info log_format("find_client_info", "server_ipv4_info:#{server_ipv4_info.inspect}")
       # info log_format("find_client_info", "client_infos:#{client_infos.inspect}")

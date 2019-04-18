@@ -84,7 +84,7 @@ module Vnet::Openflow
       # network. For n-hop routing, figure out when the a gateway /
       # route should be looked up.
 
-      mac_info, ipv4_info, network = find_ipv4_and_network(message, message.ipv4_src)
+      mac_info, ipv4_info, network = get_mac_ipv4_network(message.ipv4_src)
 
       # When the source ipv4 address belongs to the simulated
       # interface we need to match it in TABLE_ARP_LOOKUP_NW_NIL so that each
@@ -93,7 +93,7 @@ module Vnet::Openflow
       use_src_ipv4 = network && message.ipv4_src
 
       if network.nil?
-        mac_info, ipv4_info, network = find_ipv4_and_network(message, nil)
+        mac_info, ipv4_info, network = get_mac_ipv4_network(nil)
       end
 
       if network.nil?
@@ -187,8 +187,7 @@ module Vnet::Openflow
     def arp_lookup_reply_packet_in(message)
       port_number = message.match.in_port
 
-      mac_info, ipv4_info = get_ipv4_address(any_md: message.match.metadata,
-                                             ipv4_address: message.arp_tpa)
+      mac_info, ipv4_info = get_mac_ipv4(message.arp_tpa)
 
       if mac_info.nil? || ipv4_info.nil?
         debug log_format_h('arp_lookup_reply_packet_in ip lease not found',

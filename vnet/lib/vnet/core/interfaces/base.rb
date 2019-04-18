@@ -141,44 +141,31 @@ module Vnet::Core::Interfaces
     # Manage MAC and IP addresses:
     #
 
-    # TODO refactoring
-    def get_ipv4_address(params)
-      case
-      when params[:any_md]
-        network_id = md_to_id(:network, params[:any_md])
-        interface_id = md_to_id(:interface, params[:any_md])
-        return nil if network_id.nil? && interface_id.nil?
-      when params[:network_md]
-        network_id = md_to_id(:network, params[:network_md])
-        return nil if network_id.nil?
-      else
-        network_id = nil
-      end
-
+    def get_mac_ipv4(ipv4_address)
+      mac_info = nil
       ipv4_info = nil
-      ipv4_address = params[:ipv4_address]
+      ipv4_address = (ipv4_address != IPV4_ZERO && ipv4_address != IPV4_BROADCAST) ? ipv4_address : nil
 
-      mac_info = @mac_addresses.values.detect { |mac_info|
-        ipv4_info = mac_info[:ipv4_addresses].detect { |ipv4_info|
-          next false if network_id && ipv4_info[:network_id] != network_id
-          next true if ipv4_address.nil?
+      @mac_addresses.tap { |if_addrs|
+        debug log_format_h('get_interface_addrs from interface', interface_id: @interface_id, if_addrs: if_addrs)
 
-          ipv4_info[:ipv4_address] == ipv4_address
+        mac_info = if_addrs.values.detect { |mac_info|
+          ipv4_info = mac_info[:ipv4_addresses].detect { |ipv4_info|
+            next true if ipv4_address.nil?
+            next ipv4_info[:ipv4_address] == ipv4_address
+          }
         }
       }
 
-      mac_info && [mac_info, ipv4_info]
+      return nil if mac_info.nil? || ipv4_info.nil?
+      return [mac_info, ipv4_info]
     end
 
-    def find_ipv4_and_network(message, ipv4_address)
-      ipv4_address = ipv4_address != IPV4_BROADCAST ? ipv4_address : nil
-
-      mac_info, ipv4_info = get_ipv4_address(id: @interface_id,
-                                             any_md: message.match.metadata,
-                                             ipv4_address: ipv4_address)
-      return nil if ipv4_info.nil?
-
-      [mac_info, ipv4_info, @dp_info.network_manager.retrieve(id: ipv4_info[:network_id])]
+    def get_mac_ipv4_network(ipv4_address)
+      get_mac_ipv4(ipv4_address).tap { |mac_info, ipv4_info|
+        return nil if mac_info.nil? || ipv4_info.nil?
+        return [mac_info, ipv4_info, @dp_info.network_manager.retrieve(id: ipv4_info[:network_id])]
+      }
     end
 
     #
