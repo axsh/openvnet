@@ -76,8 +76,8 @@ module Vnet::Core::Interfaces
                            goto_table: TABLE_INTERFACE_INGRESS_LOOKUP_IF_NIL,
                            priority: 10,
 
-                           match_value_pair_flag: FLAG_REMOTE,
-                           match_value_pair_first: @id,
+                           match_remote: FLAG_REMOTE,
+                           match_first: @id,
 
                            cookie: cookie)
 
@@ -88,12 +88,12 @@ module Vnet::Core::Interfaces
                            match: {
                              :eth_dst => mac_info[:mac_address],
                            },
-                           match_value_pair_flag: FLAG_REMOTE,
-                           match_value_pair_first: @id,
+                           match_remote: FLAG_REMOTE,
+                           match_first: @id,
 
-                           write_value_pair_flag: FLAG_REMOTE,
-                           write_value_pair_first: @id,
-                           write_value_pair_second: ipv4_info[:network_id],
+                           write_remote: FLAG_REMOTE,
+                           write_first: @id,
+                           write_second: ipv4_info[:network_id],
 
                            cookie: cookie)
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER_IF_NIL,
@@ -103,12 +103,12 @@ module Vnet::Core::Interfaces
                            match: {
                              :eth_dst => MAC_BROADCAST
                            },
-                           match_value_pair_flag: FLAG_REMOTE,
-                           match_value_pair_first: @id,
+                           match_remote: FLAG_REMOTE,
+                           match_first: @id,
 
-                           write_value_pair_flag: FLAG_REMOTE,
-                           write_value_pair_first: @id,
-                           write_value_pair_second: ipv4_info[:network_id],
+                           write_remote: FLAG_REMOTE,
+                           write_first: @id,
+                           write_second: ipv4_info[:network_id],
 
                            cookie: cookie)
     end
@@ -123,7 +123,7 @@ module Vnet::Core::Interfaces
                            match: {
                              :eth_src => mac_info[:mac_address]
                            },
-                           match_value_pair_first: @id,
+                           match_first: @id,
 
                            cookie: flow_cookie)
 
@@ -132,7 +132,7 @@ module Vnet::Core::Interfaces
                            goto_table: TABLE_OUT_PORT_EGRESS_IF_NIL,
                            priority: 20,
 
-                           match_value_pair_first: @id,
+                           match_first: @id,
 
                            actions: {
                              :eth_src => Pio::Mac.new('00:00:27:11:11:11'),
@@ -157,22 +157,22 @@ module Vnet::Core::Interfaces
                            match: {
                              :eth_src => mac_info[:mac_address]
                            },
-                           match_value_pair_first: @id,
-                           match_value_pair_second: ipv4_info[:network_id],
+                           match_first: @id,
+                           match_second: ipv4_info[:network_id],
 
-                           write_value_pair_flag: FLAG_,
-                           write_value_pair_first: ipv4_info[:network_id],,
-                           write_value_pair_second: 0,
+                           # write_value_pair_flag: FLAG_,
+                           write_first: ipv4_info[:network_id],,
+                           write_second: 0,
 
                            cookie: flow_cookie)
       flows << flow_create(table: TABLE_ROUTE_EGRESS_LOOKUP_IF_RL,
                            goto_table: TABLE_ROUTE_EGRESS_TRANSLATION_IF_NIL,
                            priority: 1,
 
-                           match_value_pair_first: @id,
+                           match_first: @id,
 
                            #write_value_pair_flag: FLAG_REFLECTION,
-                           write_value_pair_second: nil,
+                           write_second: nil,
 
                            cookie: flow_cookie)
     end

@@ -117,7 +117,7 @@ module Vnet::Openflow
 
       flows << flow_create(table: TABLE_FLOOD_TUNNELS_SEG_NW,
                            priority: 10,
-                           match_value_pair_flag: FLAG_REMOTE,
+                           match_remote: FLAG_REMOTE,
                           )
 
       #

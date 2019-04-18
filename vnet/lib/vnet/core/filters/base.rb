@@ -80,7 +80,7 @@ module Vnet::Core::Filters
       flow = {
         table: TABLE_INTERFACE_INGRESS_FILTER_IF_NIL,
         priority: 10,
-        match_value_pair_first: @interface_id,
+        match_first: @interface_id,
       }
       flow[:goto_table] = TABLE_OUT_PORT_INGRESS_IF_NIL if @ingress_passthrough
 
@@ -91,7 +91,7 @@ module Vnet::Core::Filters
       flow = {
         table: TABLE_INTERFACE_EGRESS_FILTER_IF_NIL,
         priority: 10,
-        match_value_pair_first: @interface_id,
+        match_first: @interface_id,
       }
       flow[:goto_table] = TABLE_INTERFACE_EGRESS_VALIDATE_IF_NIL if @egress_passthrough
 

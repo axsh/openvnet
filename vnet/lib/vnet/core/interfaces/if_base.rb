@@ -29,7 +29,7 @@ module Vnet::Core::Interfaces
                            goto_table: @enabled_filtering ? TABLE_INTERFACE_EGRESS_STATEFUL_IF_NIL : TABLE_INTERFACE_EGRESS_VALIDATE_IF_NIL,
                            priority: 30,
 
-                           match_value_pair_first: @id)
+                           match_first: @id)
     end
 
     def flows_for_disabled_filtering(flows = [])
@@ -37,7 +37,7 @@ module Vnet::Core::Interfaces
                            goto_table: TABLE_OUT_PORT_INGRESS_IF_NIL,
                            priority: PRIORITY_FILTER_SKIP,
 
-                           match_value_pair_first: @id)
+                           match_first: @id)
     end
 
     def flows_for_interface_mac(flows, mac_info)
@@ -70,9 +70,9 @@ module Vnet::Core::Interfaces
                              priority: 30,
 
                              match: { :eth_src => mac_address },
-                             match_value_pair_first: @id,
+                             match_first: @id,
 
-                             write_value_pair_first: segment_id,
+                             write_first: segment_id,
                             )
         flows << flow_create(table: TABLE_SEGMENT_DST_MAC_LOOKUP_SEG_NW,
                              goto_table: TABLE_INTERFACE_INGRESS_FILTER_IF_NIL,
@@ -81,10 +81,10 @@ module Vnet::Core::Interfaces
                              match: {
                                :eth_dst => mac_address
                              },
-                             match_value_pair_first: segment_id,
+                             match_first: segment_id,
 
-                             write_value_pair_first: @id,
-                             write_value_pair_second: 0,
+                             write_first: @id,
+                             write_second: 0,
                             )
       end
     end
@@ -120,10 +120,10 @@ module Vnet::Core::Interfaces
                                priority: 40,
 
                                match: match,
-                               match_value_pair_first: @id,
+                               match_first: @id,
 
-                               write_value_pair_first: segment_id,
-                               write_value_pair_second: 0,
+                               write_first: segment_id,
+                               write_second: 0,
 
                                cookie: cookie)
         else
@@ -132,9 +132,9 @@ module Vnet::Core::Interfaces
                                priority: 40,
 
                                match: match,
-                               match_value_pair_first: @id,
+                               match_first: @id,
 
-                               write_value_pair_first: network_id,
+                               write_first: network_id,
 
                                cookie: cookie)
         end
@@ -151,7 +151,7 @@ module Vnet::Core::Interfaces
                              :eth_type => 0x0800,
                              :ipv4_dst => ipv4_address,
                            },
-                           match_value_pair_first: network_id,
+                           match_first: network_id,
 
                            actions: {
                              :eth_dst => mac_address,
@@ -173,10 +173,10 @@ module Vnet::Core::Interfaces
                              priority: 60,
 
                              match: match,
-                             match_value_pair_second: network_id,
+                             match_second: network_id,
 
-                             write_value_pair_first: @id,
-                             write_value_pair_second: 0,
+                             write_first: @id,
+                             write_second: 0,
                             )
       }
 
@@ -198,7 +198,7 @@ module Vnet::Core::Interfaces
           flows << flow_create(table: TABLE_INTERFACE_INGRESS_NW_DPNW,
                                priority: 90,
                                match: match,
-                               match_value_pair_first: network_id,
+                               match_first: network_id,
                                cookie: cookie)
         }
       end
@@ -220,7 +220,7 @@ module Vnet::Core::Interfaces
                                :eth_dst => mac_info[:mac_address],
                                :ipv4_dst => ipv4_info[:ipv4_address]
                              },
-                             match_value_pair_first: ipv4_info[:network_id],
+                             match_first: ipv4_info[:network_id],
 
                              cookie: cookie)
       end
@@ -233,8 +233,8 @@ module Vnet::Core::Interfaces
                              :eth_type => 0x0800,
                              :eth_dst => mac_info[:mac_address]
                            },
-                           match_value_pair_first: ipv4_info[:network_id],
-                           write_value_pair_first: @id,
+                           match_first: ipv4_info[:network_id],
+                           write_first: @id,
 
                            cookie: cookie)
     end
@@ -251,7 +251,7 @@ module Vnet::Core::Interfaces
                              :eth_dst => mac_info[:mac_address]
                            },
 
-                           write_value_pair_second: ipv4_info[:network_id],
+                           write_second: ipv4_info[:network_id],
 
                            cookie: cookie)
 
@@ -268,7 +268,7 @@ module Vnet::Core::Interfaces
                              :eth_src => mac_info[:mac_address]
                            },
 
-                           write_value_pair_second: ipv4_info[:network_id],
+                           write_second: ipv4_info[:network_id],
 
                            cookie: cookie)
     end
@@ -283,7 +283,7 @@ module Vnet::Core::Interfaces
                            match: {
                              :eth_src => mac_info[:mac_address]
                            },
-                           match_value_pair_first: @id,
+                           match_first: @id,
                            
                            cookie: cookie)
     end
@@ -303,21 +303,21 @@ module Vnet::Core::Interfaces
                            match: {
                              :eth_src => mac_info[:mac_address]
                            },
-                           match_value_pair_first: @id,
-                           match_value_pair_second: ipv4_info[:network_id],
+                           match_first: @id,
+                           match_second: ipv4_info[:network_id],
 
-                           write_value_pair_first: ipv4_info[:network_id],
-                           write_value_pair_second: 0,
+                           write_first: ipv4_info[:network_id],
+                           write_second: 0,
 
                            cookie: cookie)
       flows << flow_create(table: TABLE_ROUTE_EGRESS_LOOKUP_IF_RL,
                            goto_table: TABLE_ROUTE_EGRESS_TRANSLATION_IF_NIL,
                            priority: 20,
 
-                           match_value_pair_first: @id,
+                           match_first: @id,
 
                            #write_value_pair_flag: FLAG_REFLECTION,
-                           write_value_pair_second: 0,
+                           write_second: 0,
 
                            cookie: cookie)
 
@@ -325,13 +325,13 @@ module Vnet::Core::Interfaces
                            goto_table: TABLE_ARP_TABLE_NW_NIL,
                            priority: 20,
 
-                           match_value_pair_first: @id,
+                           match_first: @id,
 
                            actions: {
                              :eth_src => mac_info[:mac_address]
                            },
-                           write_value_pair_first: ipv4_info[:network_id],
-                           write_value_pair_second: 0,
+                           write_first: ipv4_info[:network_id],
+                           write_second: 0,
 
                            cookie: cookie)
     end
@@ -343,7 +343,7 @@ module Vnet::Core::Interfaces
         flows << flow_create(table: table,
                              goto_table: goto_table,
                              priority: 90,
-                             match_value_pair_first: @id,
+                             match_first: @id,
                             )
       }
     end
@@ -364,7 +364,7 @@ module Vnet::Core::Interfaces
 
                              match: match,
 
-                             write_value_pair_second: mac_info[:segment_id],
+                             write_second: mac_info[:segment_id],
 
                              cookie: cookie)
       }
@@ -387,7 +387,7 @@ module Vnet::Core::Interfaces
 
                              match: match,
                              
-                             write_value_pair_second: ipv4_info[:network_id],
+                             write_second: ipv4_info[:network_id],
 
                              cookie: cookie)
       }

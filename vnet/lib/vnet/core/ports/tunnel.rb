@@ -31,9 +31,9 @@ module Vnet::Core::Ports
                                :in_port => self.port_number
                              },
 
-                             write_value_pair_flag: FLAG_REMOTE,
-                             write_value_pair_first: @underlay_interface_id,
-                             write_value_pair_second: 0,
+                             write_remote: FLAG_REMOTE,
+                             write_first: @underlay_interface_id,
+                             write_second: 0,
                             )
       end
 
@@ -41,7 +41,7 @@ module Vnet::Core::Ports
         flows << flow_create(table: TABLE_OUT_PORT_EGRESS_TUN_NIL,
                              priority: 1,
                              
-                             match_value_pair_first: @tunnel_id,
+                             match_first: @tunnel_id,
 
                              actions: {
                                :output => self.port_number
@@ -52,8 +52,8 @@ module Vnet::Core::Ports
                              match: {
                                :in_port => self.port_number
                              },
-                             #match_value_pair_flag: FLAG_REFLECTION,
-                             match_value_pair_first: @tunnel_id,
+                             #match_remote: FLAG_REFLECTION,
+                             match_first: @tunnel_id,
 
                              actions: {
                                :output => OFPP_IN_PORT

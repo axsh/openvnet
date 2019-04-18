@@ -187,57 +187,22 @@ module Vnet
       # Metadata constants:
       #
 
-      METADATA_FLAGS_SHIFT = 40
-      METADATA_FLAGS_MASK = (0xffff << METADATA_FLAGS_SHIFT)
-
-      METADATA_FLAG_VIRTUAL    = (0x001 << METADATA_FLAGS_SHIFT)
-      METADATA_FLAG_PHYSICAL   = (0x002 << METADATA_FLAGS_SHIFT)
-      METADATA_FLAG_LOCAL      = (0x004 << METADATA_FLAGS_SHIFT)
-      METADATA_FLAG_REMOTE     = (0x008 << METADATA_FLAGS_SHIFT)
-      METADATA_FLAG_FLOOD      = (0x010 << METADATA_FLAGS_SHIFT)
-      METADATA_FLAG_VIF        = (0x020 << METADATA_FLAGS_SHIFT)
-      METADATA_FLAG_MAC2MAC    = (0x040 << METADATA_FLAGS_SHIFT)
-      METADATA_FLAG_IGNORE_MAC2MAC = (0x100 << METADATA_FLAGS_SHIFT)
-
-      # Allow reflection for this packet, such that if the ingress
-      # port is the same as the egress port we will use the
-      # 'output:OFPP_IN_PORT' action.
-      METADATA_FLAG_REFLECTION = (0x200 << METADATA_FLAGS_SHIFT)
-
-      # Don't pass this packet to the controller, e.g. to look up
-      # routing information.
-      METADATA_FLAG_NO_CONTROLLER = (0x400 << METADATA_FLAGS_SHIFT)
-
-      METADATA_TYPE_SHIFT      = 56
-      METADATA_TYPE_MASK       = (0xff << METADATA_TYPE_SHIFT)
-
-      METADATA_TYPE_DATAPATH        = (0x1 << METADATA_TYPE_SHIFT)
-      METADATA_TYPE_DP_ROUTE_LINK   = (0x2 << METADATA_TYPE_SHIFT)
-      METADATA_TYPE_NETWORK         = (0x3 << METADATA_TYPE_SHIFT)
-      METADATA_TYPE_PORT            = (0x4 << METADATA_TYPE_SHIFT)
-      METADATA_TYPE_ROUTE           = (0x5 << METADATA_TYPE_SHIFT)
-      METADATA_TYPE_ROUTE_LINK      = (0x6 << METADATA_TYPE_SHIFT)
-      METADATA_TYPE_INTERFACE       = (0x7 << METADATA_TYPE_SHIFT)
-      METADATA_TYPE_TUNNEL          = (0xa << METADATA_TYPE_SHIFT)
-      METADATA_TYPE_DP_NETWORK      = (0xb << METADATA_TYPE_SHIFT)
-      METADATA_TYPE_DP_SEGMENT      = (0xc << METADATA_TYPE_SHIFT)
-
-      METADATA_TYPE_SEGMENT         = (0xd << METADATA_TYPE_SHIFT)
-
-      METADATA_VALUE_MASK = 0x7fffffff
-
       # Special case of the metadata bitfield that allows storing two
       # 31-bit values and one single flag.
       #
-      # <64, 63] => 1-bit always true
+      # <64, 63] => 1-bit flag for reflection
       # <63, 48] => first 31-bit value
-      # <48, 47] => 1-bit flag for any use
+      # <48, 47] => 1-bit flag for local/remote
       # <47,  0] => second 31-bit value
 
-      METADATA_VALUE_PAIR_TYPE        = (0x1 << 63)
-      METADATA_VALUE_PAIR_FLAG        = (0x1 << 31)
-      METADATA_VALUE_PAIR_FIRST_MASK  = (0x7fffffff << 32)
-      METADATA_VALUE_PAIR_SECOND_MASK = 0x7fffffff
+      METADATA_REFLECTION  = (0x1 << 63)
+      METADATA_REMOTE      = (0x1 << 31)
+      METADATA_FIRST_MASK  = (0x7fffffff << 32)
+      METADATA_SECOND_MASK = 0x7fffffff
+
+      # METADATA_VALUE_PAIR_FLAG        = (0x1 << 31)
+      # METADATA_VALUE_PAIR_FIRST_MASK  = (0x7fffffff << 32)
+      # METADATA_VALUE_PAIR_SECOND_MASK = 0x7fffffff
 
       FLAG_LOCAL = false
       FLAG_REMOTE = true

@@ -47,8 +47,8 @@ module Vnet::Core::ActiveInterfaces
                            goto_table: TABLE_LOOKUP_DP_NW,
                            priority: 1,
 
-                           match_value_pair_first: @interface_id,
-                           write_value_pair_first: @datapath_id,
+                           match_first: @interface_id,
+                           write_first: @datapath_id,
                           )
     end
 
@@ -57,14 +57,14 @@ module Vnet::Core::ActiveInterfaces
                            goto_table: TABLE_LOOKUP_IF_RL,
                            priority: 10,
                           
-                           match_value_pair_first: @interface_id,
+                           match_first: @interface_id,
                           )
       flows << flow_create(table: TABLE_LOOKUP_IF_RL,
                            goto_table: TABLE_LOOKUP_DP_RL,
                            priority: 1,
                            
-                           match_value_pair_first: @interface_id,
-                           write_value_pair_first: @datapath_id
+                           match_first: @interface_id,
+                           write_first: @datapath_id
                           )
     end
 

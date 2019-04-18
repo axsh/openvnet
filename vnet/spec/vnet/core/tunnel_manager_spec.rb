@@ -213,8 +213,8 @@ describe Vnet::Core::TunnelManager do
       expect(added_flows[0]).to eq Vnet::Openflow::Flow.create(
         TABLE_FLOOD_TUNNELS_SEG_NW,
         1, {
-          metadata: 1 | METADATA_VALUE_PAIR_TYPE,
-          metadata_mask: METADATA_VALUE_PAIR_SECOND_MASK | METADATA_VALUE_PAIR_TYPE,
+          metadata: 1,
+          metadata_mask: METADATA_SECOND_MASK,
         }, [
           { :tunnel_id => (1 & TUNNEL_ID_MASK) | TUNNEL_NETWORK}, {:output => 9}
         ], {

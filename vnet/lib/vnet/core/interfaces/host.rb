@@ -62,7 +62,7 @@ module Vnet::Core::Interfaces
       flows << flow_create(table: TABLE_OUT_PORT_INGRESS_IF_NIL,
                            priority: 10,
 
-                           match_value_pair_first: @id,
+                           match_first: @id,
 
                            actions: {
                              :output => OFPP_LOCAL
@@ -83,9 +83,9 @@ module Vnet::Core::Interfaces
                              :eth_src => mac_info[:mac_address],
                            },
                            
-                           write_value_pair_flag: FLAG_LOCAL,
-                           write_value_pair_first: @id,
-                           write_value_pair_second: 0,
+                           write_remote: FLAG_LOCAL,
+                           write_first: @id,
+                           write_second: 0,
 
                            cookie: cookie)
     end
@@ -102,7 +102,7 @@ module Vnet::Core::Interfaces
                            goto_table: TABLE_INTERFACE_INGRESS_LOOKUP_IF_NIL,
                            priority: 10,
 
-                           match_value_pair_first: @id,
+                           match_first: @id,
 
                            cookie: cookie)
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER_IF_NIL,
@@ -112,10 +112,10 @@ module Vnet::Core::Interfaces
                            match: {
                              :eth_dst => mac_info[:mac_address],
                            },
-                           match_value_pair_first: @id,
+                           match_first: @id,
 
-                           write_value_pair_first: @id,
-                           write_value_pair_second: ipv4_info[:network_id],
+                           write_first: @id,
+                           write_second: ipv4_info[:network_id],
 
                            cookie: cookie)
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER_IF_NIL,
@@ -125,10 +125,10 @@ module Vnet::Core::Interfaces
                            match: {
                              :eth_dst => MAC_BROADCAST
                            },
-                           match_value_pair_first: @id,
+                           match_first: @id,
 
-                           write_value_pair_first: @id,
-                           write_value_pair_second: ipv4_info[:network_id],
+                           write_first: @id,
+                           write_second: ipv4_info[:network_id],
 
                            cookie: cookie)
     end

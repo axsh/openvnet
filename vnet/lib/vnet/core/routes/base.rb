@@ -90,10 +90,10 @@ module Vnet::Core::Routes
                            priority: flow_priority,
 
                            match: subnet_dst,
-                           match_value_pair_first: @interface_id,
+                           match_first: @interface_id,
 
-                           write_value_pair_first: @interface_id,
-                           write_value_pair_second: @network_id,
+                           write_first: @interface_id,
+                           write_second: @network_id,
                           )
 
       if @ingress == true
@@ -102,10 +102,10 @@ module Vnet::Core::Routes
                              priority: flow_priority,
 
                              match: subnet_src,
-                             match_value_pair_first: @interface_id,
+                             match_first: @interface_id,
                              
                              #write_value_pair_flag: FLAG_REFLECTION,
-                             write_value_pair_first: @route_link_id,
+                             write_first: @route_link_id,
                             )
       end
 
@@ -118,11 +118,12 @@ module Vnet::Core::Routes
           priority: flow_priority,
 
           match: subnet_dst,
-          match_value_pair_first: @route_link_id,
+          match_first: @route_link_id,
 
-          write_value_pair_flag: false,
-          write_value_pair_first: @interface_id,
-          write_value_pair_second: @route_link_id)
+          #write_value_pair_flag: FLAG_REFLECTION,
+          #write_value_pair_flag: false,
+          write_first: @interface_id,
+          write_second: @route_link_id)
       end
 
       @dp_info.add_flows(flows)

@@ -30,17 +30,17 @@ module Vnet::Core::Segments
                              :tunnel_id => flow_tunnel_id
                            },
 
-                           write_value_pair_second: @id,
+                           write_second: @id,
                           )
       flows << flow_create(table: TABLE_SEGMENT_SRC_CLASSIFIER_SEG_NIL,
                            goto_table: TABLE_SEGMENT_DST_CLASSIFIER_SEG_NW,
                            priority: 30,
-                           match_value_pair_first: @id,
+                           match_first: @id,
                           )
       flows << flow_create(table: TABLE_SEGMENT_DST_CLASSIFIER_SEG_NW,
                            goto_table: TABLE_SEGMENT_DST_MAC_LOOKUP_SEG_NW,
                            priority: 30,
-                           match_value_pair_first: @id,
+                           match_first: @id,
                           )
 
       @dp_info.add_flows(flows)
@@ -56,7 +56,7 @@ module Vnet::Core::Segments
                            # goto_table: TABLE_LOOKUP_NW_NIL,
                            priority: 1,
 
-                           match_value_pair_first: @id,
+                           match_first: @id,
                            actions: local_actions,
                           )
 
@@ -85,8 +85,8 @@ module Vnet::Core::Segments
                            match: {
                              :eth_dst => message.eth_src
                            },
-                           match_value_pair_flag: FLAG_LOCAL,
-                           match_value_pair_first: @id,
+                           match_remote: FLAG_LOCAL,
+                           match_first: @id,
 
                            actions: {
                              :output => message.in_port
@@ -107,10 +107,10 @@ module Vnet::Core::Segments
                              :eth_type => 0x0806,
                              :eth_src => message.eth_src
                            },
-                           match_value_pair_flag: FLAG_REMOTE,
-                           match_value_pair_first: @id,
+                           match_remote: FLAG_REMOTE,
+                           match_first: @id,
 
-                           write_value_pair_second: 0,
+                           write_second: 0,
                           )
 
       @dp_info.add_flows(flows)

@@ -28,14 +28,14 @@ module Vnet::Core::Ports
                              :in_port => self.port_number,
                            },
                            
-                           write_value_pair_flag: FLAG_LOCAL,
-                           write_value_pair_first: @interface_id,
-                           write_value_pair_second: 0,
+                           write_remote: FLAG_LOCAL,
+                           write_first: @interface_id,
+                           write_second: 0,
                            )
       flows << flow_create(table: TABLE_OUT_PORT_INGRESS_IF_NIL,
                            priority: 10,
                            
-                           match_value_pair_first: @interface_id,
+                           match_first: @interface_id,
 
                            actions: {
                              :output => self.port_number

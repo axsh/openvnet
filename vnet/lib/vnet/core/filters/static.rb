@@ -94,7 +94,7 @@ module Vnet::Core::Filters
                            idle_timeout: EGRESS_IDLE_TIMEOUT,
                            
                            match: egress_match,
-                           match_value_pair_first: @interface_id,
+                           match_first: @interface_id,
                           )
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_FILTER_IF_NIL,
                            goto_table: TABLE_OUT_PORT_INGRESS_IF_NIL,
@@ -102,7 +102,7 @@ module Vnet::Core::Filters
                            idle_timeout: INGRESS_IDLE_TIMEOUT,
                            
                            match: ingress_match,
-                           match_value_pair_first: @interface_id,
+                           match_first: @interface_id,
                           )
 
       @dp_info.add_flows(flows)
@@ -234,7 +234,7 @@ module Vnet::Core::Filters
       rules(filter, protocol).tap { |egress_rule, ingress_rule|
         flow_base = {
           priority: priority_for_static(filter),
-          match_value_pair_first: @interface_id,
+          match_first: @interface_id,
         }
 
         case action

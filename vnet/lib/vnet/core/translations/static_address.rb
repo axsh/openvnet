@@ -164,7 +164,7 @@ module Vnet::Core::Translations
         flows << flow_create(table: table,
                              goto_table: goto_table,
                              priority: 10,
-                             match_value_pair_first: @interface_id,
+                             match_first: @interface_id,
                             )
       }
     end
@@ -175,13 +175,13 @@ module Vnet::Core::Translations
           table: TABLE_ROUTE_INGRESS_TRANSLATION_IF_NIL,
           priority: 50,
           match: match,
-          match_value_pair_first: @interface_id,
+          match_first: @interface_id,
           actions: actions,
         }
 
         if translation[:route_link_id]
           flow_options[:goto_table] = TABLE_ROUTER_CLASSIFIER_RL_NIL
-          flow_options[:write_value_pair_first] = translation[:route_link_id]
+          flow_options[:write_first] = translation[:route_link_id]
           #flow_options[:write_reflection] = FLAG_REFLECTION
         else
           flow_options[:goto_table] = TABLE_ROUTER_INGRESS_LOOKUP_IF_NIL
@@ -204,14 +204,14 @@ module Vnet::Core::Translations
 
         # TODO: Move outside of block...
         if translation[:route_link_id]
-          flow_options[:match_value_pair_first] = @interface_id
-          flow_options[:match_value_pair_second] = translation[:route_link_id]
+          flow_options[:match_first] = @interface_id
+          flow_options[:match_second] = translation[:route_link_id]
           # flow_options[:write_reflection] = FLAG_REFLECTION
-          flow_options[:write_value_pair_second] = nil
+          flow_options[:write_second] = nil
         else
-          flow_options[:match_value_pair_first] = @interface_id
+          flow_options[:match_first] = @interface_id
           # flow_options[:write_reflection] = FLAG_REFLECTION
-          flow_options[:write_value_pair_second] = nil
+          flow_options[:write_second] = nil
         end
 
         flows << flow_create(flow_options)

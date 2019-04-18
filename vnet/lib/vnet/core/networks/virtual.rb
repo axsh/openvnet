@@ -30,21 +30,21 @@ module Vnet::Core::Networks
                              :tunnel_id => flow_tunnel_id
                            },
 
-                           write_value_pair_second: @id,
+                           write_second: @id,
                           )
       flows << flow_create(table: TABLE_NETWORK_SRC_CLASSIFIER_NW_NIL,
                            goto_table: TABLE_ROUTE_INGRESS_INTERFACE_NW_NIL,
                            priority: 30,
 
-                           match_value_pair_first: @id,
+                           match_first: @id,
                           )
       flows << flow_create(table: TABLE_NETWORK_DST_CLASSIFIER_NW_NIL,
                            goto_table: TABLE_NETWORK_DST_MAC_LOOKUP_NIL_NW,
                            priority: 30,
 
-                           match_value_pair_first: @id,
-                           write_value_pair_first: 0,
-                           write_value_pair_second: @id,
+                           match_first: @id,
+                           write_first: 0,
+                           write_second: @id,
                           )
 
       ovs_flows = []
@@ -58,8 +58,8 @@ module Vnet::Core::Networks
                              priority: 50 + flow_priority,
 
                              match: subnet_dst,
-                             match_value_pair_first: @segment_id,
-                             write_value_pair_first: @id,
+                             match_first: @segment_id,
+                             write_first: @id,
                             )
         # TODO: ??????????? This should be for _all_ networks.
         flows << flow_create(table: TABLE_NETWORK_DST_CLASSIFIER_NW_NIL,
@@ -69,17 +69,17 @@ module Vnet::Core::Networks
                              match: {
                                :eth_dst => MAC_BROADCAST
                              },
-                             match_value_pair_first: @id,
+                             match_first: @id,
                              
-                             write_value_pair_first: @segment_id,
-                             write_value_pair_second: @id,
+                             write_first: @segment_id,
+                             write_second: @id,
                             )
         flows << flow_create(table: TABLE_NETWORK_DST_MAC_LOOKUP_NIL_NW,
                              goto_table: TABLE_SEGMENT_DST_CLASSIFIER_SEG_NW,
                              priority: 25,
 
-                             match_value_pair_second: @id,
-                             write_value_pair_first: @segment_id,
+                             match_second: @id,
+                             write_first: @segment_id,
                             )
       end
 
@@ -96,7 +96,7 @@ module Vnet::Core::Networks
                            goto_table: TABLE_FLOOD_TUNNELS_SEG_NW,
                            priority: 1,
                            
-                           match_value_pair_second: @id,
+                           match_second: @id,
 
                            actions: flow_actions)
 

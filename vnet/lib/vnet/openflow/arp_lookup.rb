@@ -24,7 +24,7 @@ module Vnet::Openflow
                              :eth_type => 0x0806,
                              :arp_op => 2,
                            },
-                           match_value_pair_first: @arp_lookup[:interface_id],
+                           match_first: @arp_lookup[:interface_id],
 
                            actions: {
                              :output => Controller::OFPP_CONTROLLER
@@ -60,8 +60,8 @@ module Vnet::Openflow
                              priority: priority,
                              
                              match: match,
-                             #match_value_pair_flag: FLAG_NO_CONTROLLER,
-                             match_value_pair_first: ipv4_info[:network_id],
+                             #match_remote: FLAG_NO_CONTROLLER,
+                             match_first: ipv4_info[:network_id],
 
                              actions: {
                                :output => Controller::OFPP_CONTROLLER
@@ -372,15 +372,15 @@ module Vnet::Openflow
                              :eth_type => 0x0800,
                              :ipv4_dst => params[:request_ipv4]
                            },
-                           #match_value_pair_flag: FLAG_,
-                           match_value_pair_first: params[:interface_network_id],
+                           #match_remote: FLAG_,
+                           match_first: params[:interface_network_id],
 
                            actions: {
                              :eth_dst => Pio::Mac.new(ip_lease.mac_lease.mac_address),
                            },
-                           #write_value_pair_flag: FLAG_REFLECTION,
-                           write_value_pair_first: ip_lease.interface_id,
-                           write_value_pair_second: params[:interface_network_id],
+                           #write_remote: FLAG_REFLECTION,
+                           write_first: ip_lease.interface_id,
+                           write_second: params[:interface_network_id],
 
                            cookie: ip_lease.interface_id | COOKIE_TYPE_INTERFACE)
 

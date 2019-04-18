@@ -279,7 +279,7 @@ module Vnet::Core
                                goto_table: TABLE_FLOOD_SEGMENT_SEG_NW,
                                priority: 1,
 
-                               match_value_pair_second: property_id,
+                               match_second: property_id,
 
                                actions: tunnel_actions,
                                cookie: property_id | COOKIE_TYPE_NETWORK)
@@ -293,7 +293,7 @@ module Vnet::Core
           flows << flow_create(table: TABLE_FLOOD_SEGMENT_SEG_NW,
                                priority: 1,
 
-                               match_value_pair_second: property_id,
+                               match_second: property_id,
 
                                actions: segment_actions,
                                cookie: property_id | COOKIE_TYPE_NETWORK)
@@ -318,7 +318,7 @@ module Vnet::Core
                                goto_table: TABLE_FLOOD_SEGMENT_SEG_NW,
                                priority: 1,
                                
-                               match_value_pair_first: property_id,
+                               match_first: property_id,
 
                                actions: tunnel_actions,
                                cookie: property_id | COOKIE_TYPE_SEGMENT)
@@ -332,7 +332,7 @@ module Vnet::Core
           flows << flow_create(table: TABLE_FLOOD_SEGMENT_SEG_NW,
                                priority: 1,
 
-                               match_value_pair_first: property_id,
+                               match_first: property_id,
 
                                actions: segment_actions,
                                cookie: property_id | COOKIE_TYPE_SEGMENT)

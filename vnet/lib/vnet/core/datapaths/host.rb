@@ -114,52 +114,52 @@ module Vnet::Core::Datapaths
                            match: {
                              :eth_dst => dpg_map[:mac_address]
                            },
-                           match_value_pair_flag: FLAG_REMOTE,
-                           match_value_pair_first: dpg_map[:interface_id],
+                           match_remote: FLAG_REMOTE,
+                           match_first: dpg_map[:interface_id],
 
                            actions: {
                              :eth_dst => MAC_BROADCAST
                            },
-                           write_value_pair_flag: FLAG_REMOTE,
-                           write_value_pair_first: dpg_map[:network_id],
-                           write_value_pair_second: dpg_map[:id],
+                           write_remote: FLAG_REMOTE,
+                           write_first: dpg_map[:network_id],
+                           write_second: dpg_map[:id],
 
                            cookie: flow_cookie)
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_IF_NW,
                            goto_table: TABLE_INTERFACE_INGRESS_NW_DPNW,
                            priority: 1,
 
-                           match_value_pair_first: dpg_map[:interface_id],
-                           match_value_pair_second: dpg_map[:network_id],
+                           match_first: dpg_map[:interface_id],
+                           match_second: dpg_map[:network_id],
 
-                           write_value_pair_first: dpg_map[:network_id],
-                           write_value_pair_second: dpg_map[:id],
+                           write_first: dpg_map[:network_id],
+                           write_second: dpg_map[:id],
 
                            cookie: flow_cookie)
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_NW_DPNW,
                            goto_table: TABLE_NETWORK_SRC_CLASSIFIER_NW_NIL,
                            priority: 1,
 
-                           match_value_pair_first: dpg_map[:network_id],
-                           match_value_pair_second: dpg_map[:id],
+                           match_first: dpg_map[:network_id],
+                           match_second: dpg_map[:id],
 
-                           write_value_pair_second: 0,
+                           write_second: 0,
 
                            cookie: flow_cookie)
       flows << flow_create(table: TABLE_LOOKUP_NW_NIL,
                            goto_table: TABLE_OUT_PORT_EGRESS_IF_NIL,
                            priority: 1,
 
-                           match_value_pair_first: dpg_map[:network_id],
-                           write_value_pair_first: dpg_map[:interface_id],
+                           match_first: dpg_map[:network_id],
+                           write_first: dpg_map[:interface_id],
 
                            cookie: flow_cookie)
       flows << flow_create(table: TABLE_OUTPUT_HOSTIF_SRC_NW_DIF,
                            goto_table: TABLE_OUTPUT_MAC2MAC_SIF_DIF,
                            priority: 1,
 
-                           match_value_pair_first: dpg_map[:network_id],
-                           write_value_pair_first: dpg_map[:interface_id],
+                           match_first: dpg_map[:network_id],
+                           write_first: dpg_map[:interface_id],
 
                            cookie: flow_cookie)
 
@@ -183,55 +183,55 @@ module Vnet::Core::Datapaths
                            match: {
                              :eth_dst => dpg_map[:mac_address]
                            },
-                           match_value_pair_flag: FLAG_REMOTE,
-                           match_value_pair_first: dpg_map[:interface_id],
+                           match_remote: FLAG_REMOTE,
+                           match_first: dpg_map[:interface_id],
 
                            actions: {
                              :eth_dst => MAC_BROADCAST
                            },
-                           write_value_pair_flag: FLAG_REMOTE,
-                           write_value_pair_first: dpg_map[:segment_id],
-                           write_value_pair_second: dpg_map[:id],
+                           write_remote: FLAG_REMOTE,
+                           write_first: dpg_map[:segment_id],
+                           write_second: dpg_map[:id],
 
                            cookie: flow_cookie)
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_IF_SEG,
                            goto_table: TABLE_INTERFACE_INGRESS_SEG_DPSEG,
                            priority: 1,
 
-                           match_value_pair_flag: FLAG_REMOTE,
-                           match_value_pair_first: dpg_map[:interface_id],
-                           match_value_pair_second: dpg_map[:segment_id],
+                           match_remote: FLAG_REMOTE,
+                           match_first: dpg_map[:interface_id],
+                           match_second: dpg_map[:segment_id],
 
-                           write_value_pair_flag: FLAG_REMOTE,
-                           write_value_pair_first: dpg_map[:segment_id],
-                           write_value_pair_second: dpg_map[:id],
+                           write_remote: FLAG_REMOTE,
+                           write_first: dpg_map[:segment_id],
+                           write_second: dpg_map[:id],
 
                            cookie: flow_cookie)
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_SEG_DPSEG,
                            goto_table: TABLE_SEGMENT_SRC_CLASSIFIER_SEG_NIL,
                            priority: 1,
 
-                           match_value_pair_flag: FLAG_REMOTE,
-                           match_value_pair_first: dpg_map[:segment_id],
-                           match_value_pair_second: dpg_map[:id],
+                           match_remote: FLAG_REMOTE,
+                           match_first: dpg_map[:segment_id],
+                           match_second: dpg_map[:id],
 
-                           write_value_pair_second: 0,
+                           write_second: 0,
 
                            cookie: flow_cookie)
       flows << flow_create(table: TABLE_LOOKUP_SEG_NIL,
                            goto_table: TABLE_OUT_PORT_EGRESS_IF_NIL,
                            priority: 1,
 
-                           match_value_pair_first: dpg_map[:segment_id],
-                           write_value_pair_first: dpg_map[:interface_id],
+                           match_first: dpg_map[:segment_id],
+                           write_first: dpg_map[:interface_id],
 
                            cookie: flow_cookie)
       flows << flow_create(table: TABLE_OUTPUT_HOSTIF_SRC_SEG_DIF,
                            goto_table: TABLE_OUTPUT_MAC2MAC_SIF_DIF,
                            priority: 1,
 
-                           match_value_pair_first: dpg_map[:segment_id],
-                           write_value_pair_first: dpg_map[:interface_id],
+                           match_first: dpg_map[:segment_id],
+                           write_first: dpg_map[:interface_id],
 
                            cookie: flow_cookie)
 
@@ -249,9 +249,9 @@ module Vnet::Core::Datapaths
                              :eth_dst => dpg_map[:mac_address]
                            },
 
-                           write_value_pair_flag: FLAG_LOCAL,
-                           write_value_pair_first: dpg_map[:segment_id],
-                           write_value_pair_second: 0,
+                           write_remote: FLAG_LOCAL,
+                           write_first: dpg_map[:segment_id],
+                           write_second: 0,
 
                            actions: {
                              :eth_dst => MAC_BROADCAST
@@ -263,7 +263,7 @@ module Vnet::Core::Datapaths
                            match: {
                              :eth_dst => MAC_BROADCAST
                            },
-                           match_value_pair_first: dpg_map[:segment_id],
+                           match_first: dpg_map[:segment_id],
 
                            actions: {
                              :eth_dst => dpg_map[:mac_address],
@@ -296,9 +296,9 @@ module Vnet::Core::Datapaths
                            },
                            # TODO: match interface here?
 
-                           write_value_pair_flag: FLAG_REMOTE,
-                           write_value_pair_first: dpg_map[:route_link_id],
-                           write_value_pair_second: 0,
+                           write_remote: FLAG_REMOTE,
+                           write_first: dpg_map[:route_link_id],
+                           write_second: 0,
 
                            cookie: flow_cookie)
 
@@ -318,12 +318,12 @@ module Vnet::Core::Datapaths
                            match: {
                              :eth_dst => dpg_map[:mac_address]
                            },
-                           match_value_pair_flag: FLAG_REMOTE,
-                           match_value_pair_first: dpg_map[:interface_id],
+                           match_remote: FLAG_REMOTE,
+                           match_first: dpg_map[:interface_id],
 
-                           write_value_pair_flag: FLAG_REMOTE,
-                           write_value_pair_first: dpg_map[:route_link_id],
-                           write_value_pair_second: dpg_map[:id],
+                           write_remote: FLAG_REMOTE,
+                           write_first: dpg_map[:route_link_id],
+                           write_second: dpg_map[:id],
 
                            cookie: flow_cookie)
 
@@ -334,8 +334,8 @@ module Vnet::Core::Datapaths
                            goto_table: TABLE_OUTPUT_MAC2MAC_SIF_DIF,
                            priority: 1,
 
-                           match_value_pair_first: dpg_map[:route_link_id],
-                           write_value_pair_first: dpg_map[:interface_id],
+                           match_first: dpg_map[:route_link_id],
+                           write_first: dpg_map[:interface_id],
 
                            actions: {
                              :eth_src => dpg_map[:mac_address]
@@ -349,22 +349,22 @@ module Vnet::Core::Datapaths
       #
       # Work around the current limitations of trema / openflow 1.3 using ovs-ofctl directly.
       #
-      match_dpg_md = md_create(match_value_pair_flag: FLAG_REMOTE,
-                               match_value_pair_first: dpg_map[:segment_id],
-                               match_value_pair_second: dpg_map[:id])
-      write_md = md_create(write_value_pair_second: 0)
+      match_dpg_md = md_create(match_remote: FLAG_REMOTE,
+                               match_first: dpg_map[:segment_id],
+                               match_second: dpg_map[:id])
+      write_md = md_create(write_second: 0)
 
       flow_cookie = dpg_map[:id] | COOKIE_TYPE_DP_SEGMENT
 
       flow_learn_arp = "table=%d,priority=%d,cookie=0x%x,arp,metadata=0x%x/0x%x,%sactions=" %
         [TABLE_INTERFACE_INGRESS_SEG_DPSEG, priority, flow_cookie, match_dpg_md[:metadata], match_dpg_md[:metadata_mask], match_options]
 
-      [ md_create(match_value_pair_flag: FLAG_LOCAL,
-                  match_value_pair_first: dpg_map[:segment_id],
-                  match_value_pair_second: 0)
-        # md_create(match_value_pair_flag: FLAG_REFLECTION,
-        #           match_value_pair_first: dpg_map[:segment_id],
-        #           match_value_pair_second: 0)
+      [ md_create(match_remote: FLAG_LOCAL,
+                  match_first: dpg_map[:segment_id],
+                  match_second: 0)
+        # md_create(match_remote: FLAG_REFLECTION,
+        #           match_first: dpg_map[:segment_id],
+        #           match_second: 0)
       ].each { |metadata|
         flow_learn_arp << "learn(table=%d,cookie=0x%x,idle_timeout=36000,priority=35,metadata:0x%x,NXM_OF_ETH_DST[]=NXM_OF_ETH_SRC[]," %
           [TABLE_SEGMENT_DST_MAC_LOOKUP_SEG_NW, flow_cookie, metadata[:metadata]]
@@ -380,22 +380,22 @@ module Vnet::Core::Datapaths
       #
       # Work around the current limitations of trema / openflow 1.3 using ovs-ofctl directly.
       #
-      match_dpg_md = md_create(match_value_pair_flag: FLAG_REMOTE,
-                               match_value_pair_first: dpg_map[:network_id],
-                               match_value_pair_second: dpg_map[:id])
-      write_md = md_create(write_value_pair_second: 0)
+      match_dpg_md = md_create(match_remote: FLAG_REMOTE,
+                               match_first: dpg_map[:network_id],
+                               match_second: dpg_map[:id])
+      write_md = md_create(write_second: 0)
 
       flow_cookie = dpg_map[:id] | COOKIE_TYPE_DP_NETWORK
 
       flow_learn_arp = "table=%d,priority=%d,cookie=0x%x,arp,metadata=0x%x/0x%x,%sactions=" %
         [TABLE_INTERFACE_INGRESS_NW_DPNW, priority, flow_cookie, match_dpg_md[:metadata], match_dpg_md[:metadata_mask], match_options]
 
-      [ md_create(match_value_pair_flag: FLAG_LOCAL,
-                  match_value_pair_first: 0,
-                  match_value_pair_second: dpg_map[:network_id])
-        # md_create(match_value_pair_flag: FLAG_REFLECTION,
-        #           match_value_pair_first: dpg_map[:segment_id],
-        #           match_value_pair_second: 0)
+      [ md_create(match_remote: FLAG_LOCAL,
+                  match_first: 0,
+                  match_second: dpg_map[:network_id])
+        # md_create(match_remote: FLAG_REFLECTION,
+        #           match_first: dpg_map[:segment_id],
+        #           match_second: 0)
       ].each { |metadata|
         flow_learn_arp << "learn(table=%d,cookie=0x%x,idle_timeout=36000,priority=35,metadata:0x%x,NXM_OF_ETH_DST[]=NXM_OF_ETH_SRC[]," %
           [TABLE_NETWORK_DST_MAC_LOOKUP_NIL_NW, flow_cookie, metadata[:metadata]]

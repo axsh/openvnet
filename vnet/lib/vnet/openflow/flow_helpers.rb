@@ -7,13 +7,13 @@ module Vnet::Openflow
 
     Flow = Vnet::Openflow::Flow
 
-    FLOW_MATCH_METADATA_PARAMS = [:match_value_pair_flag,
-                                  :match_value_pair_first,
-                                  :match_value_pair_second,
+    FLOW_MATCH_METADATA_PARAMS = [:match_remote,
+                                  :match_first,
+                                  :match_second,
                                  ]
-    FLOW_WRITE_METADATA_PARAMS = [:write_value_pair_flag,
-                                  :write_value_pair_first,
-                                  :write_value_pair_second,
+    FLOW_WRITE_METADATA_PARAMS = [:write_remote,
+                                  :write_first,
+                                  :write_second,
                                  ]
 
     def is_ipv4_broadcast(address, prefix)

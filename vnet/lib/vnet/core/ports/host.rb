@@ -29,9 +29,9 @@ module Vnet::Core::Ports
                                :in_port => self.port_number
                              },
 
-                             write_value_pair_flag: FLAG_REMOTE,
-                             write_value_pair_first: @interface_id,
-                             write_value_pair_second: 0,
+                             write_remote: FLAG_REMOTE,
+                             write_first: @interface_id,
+                             write_second: 0,
                             )
 
         flows << flow_create(table: TABLE_OUT_PORT_EGRESS_IF_NIL,
@@ -40,8 +40,8 @@ module Vnet::Core::Ports
                              match: {
                                :in_port => self.port_number
                              },
-                             #match_value_pair_flag: FLAG_REFLECTION,
-                             match_value_pair_first: @interface_id,
+                             #match_remote: FLAG_REFLECTION,
+                             match_first: @interface_id,
 
                              actions: {
                                :output => OFPP_IN_PORT
@@ -49,7 +49,7 @@ module Vnet::Core::Ports
         flows << flow_create(table: TABLE_OUT_PORT_EGRESS_IF_NIL,
                              priority: 1,
                              
-                             match_value_pair_first: @interface_id,
+                             match_first: @interface_id,
 
                              actions: {
                                :output => self.port_number

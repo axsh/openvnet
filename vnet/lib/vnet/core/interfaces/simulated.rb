@@ -176,7 +176,7 @@ module Vnet::Core::Interfaces
                              :eth_type => 0x0806,
                              :arp_op => 1,
                            },
-                           match_value_pair_first: @id,
+                           match_first: @id,
 
                            actions: {
                              :output => Vnet::Openflow::Controller::OFPP_CONTROLLER
@@ -191,7 +191,7 @@ module Vnet::Core::Interfaces
                              :ip_proto => 0x01,
                              :icmpv4_type => Racket::L4::ICMPGeneric::ICMP_TYPE_ECHO_REQUEST,
                            },
-                           match_value_pair_first: @id,
+                           match_first: @id,
 
                            actions: {
                              :output => Vnet::Openflow::Controller::OFPP_CONTROLLER
@@ -214,9 +214,9 @@ module Vnet::Core::Interfaces
                              :eth_src => mac_info[:mac_address],
                            },
 
-                           write_value_pair_flag: FLAG_LOCAL,
-                           write_value_pair_first: @id,
-                           write_value_pair_second: 0,
+                           write_remote: FLAG_LOCAL,
+                           write_first: @id,
+                           write_second: 0,
 
                            cookie: cookie)
     end
@@ -238,14 +238,14 @@ module Vnet::Core::Interfaces
                            :arp_tpa => ipv4_address
                           },
 
-                   write_value_pair_first: @id,
+                   write_first: @id,
                   }
 
       if segment_id
-        flows << flow_create(flow_base.merge(priority: 20, match_value_pair_first: segment_id))
+        flows << flow_create(flow_base.merge(priority: 20, match_first: segment_id))
       end
 
-      flows << flow_create(flow_base.merge(priority: 30, match_value_pair_second: network_id))
+      flows << flow_create(flow_base.merge(priority: 30, match_second: network_id))
 
       # TODO: Match segment_id+network_id.
     end

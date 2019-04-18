@@ -32,7 +32,7 @@ module Vnet::Core::Routers
                            priority: 30,
 
                            # TODO: Set FLAG_REFLECTION here?... If so don't set it in route_link_ingress(?)
-                           match_value_pair_first: @id,
+                           match_first: @id,
                           )
     end
 
@@ -45,9 +45,9 @@ module Vnet::Core::Routers
                              :eth_src => @mac_address
                            },
 
-                           #write_value_pair_flag: FLAG_REFLECTION,
-                           write_value_pair_first: @id,
-                           write_value_pair_second: 0,
+                           #write_remote: FLAG_REFLECTION,
+                           write_first: @id,
+                           write_second: 0,
                           )
 
       flows << flow_create(table: TABLE_TUNNEL_IF_NIL,
@@ -59,8 +59,8 @@ module Vnet::Core::Routers
                              :eth_dst => @mac_address
                            },
 
-                           #write_value_pair_flag: FLAG_REMOTE,
-                           write_value_pair_first: @id,
+                           #write_remote: FLAG_REMOTE,
+                           write_first: @id,
                           )
 
       flows_for_filtering_mac_address(flows, @mac_address)

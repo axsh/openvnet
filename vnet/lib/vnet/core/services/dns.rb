@@ -29,7 +29,7 @@ module Vnet::Core::Services
                              :ip_proto => 0x11,
                              :udp_dst => 53,
                            },
-                           match_value_pair_first: @interface_id,
+                           match_first: @interface_id,
 
                            actions: {
                              :output => Vnet::Openflow::Controller::OFPP_CONTROLLER
@@ -86,10 +86,10 @@ module Vnet::Core::Services
                              :ipv4_src => IPV4_ZERO,
                              :udp_dst => 53,
                            },
-                           match_value_pair_second: network_id,
+                           match_second: network_id,
 
-                           write_value_pair_first: @interface_id,
-                           write_value_pair_second: 0,
+                           write_first: @interface_id,
+                           write_second: 0,
 
                            cookie: cookie_for_network(cookie_id))
 

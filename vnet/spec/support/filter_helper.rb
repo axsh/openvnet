@@ -7,7 +7,7 @@ def flow(params)
     priority: params[:priority],
 
     match: params[:match],
-    match_value_pair_first: params[:interface_id],
+    match_first: params[:interface_id],
 
     cookie: params[:id] | COOKIE_TYPE_FILTER,
   )

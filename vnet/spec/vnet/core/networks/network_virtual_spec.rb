@@ -20,18 +20,18 @@ describe Vnet::Core::Networks::Virtual do
       {:cookie => vnet_map.id | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)}
     }
     let(:network_md) {
-      { metadata: METADATA_VALUE_PAIR_TYPE | ((vnet_map.id << 32) & METADATA_VALUE_PAIR_FIRST_MASK),
-        metadata_mask: METADATA_VALUE_PAIR_TYPE | METADATA_VALUE_PAIR_FIRST_MASK,
+      { metadata: ((vnet_map.id << 32) & METADATA_FIRST_MASK),
+        metadata_mask: METADATA_FIRST_MASK,
       }
     }
     let(:tunnel_md) {
-      { metadata: METADATA_VALUE_PAIR_TYPE | (vnet_map.id & METADATA_VALUE_PAIR_SECOND_MASK),
-        metadata_mask: METADATA_VALUE_PAIR_TYPE | METADATA_VALUE_PAIR_SECOND_MASK,
+      { metadata: (vnet_map.id & METADATA_SECOND_MASK),
+        metadata_mask: METADATA_SECOND_MASK,
       }
     }
     let(:convert_nw_md) {
-      { metadata: METADATA_VALUE_PAIR_TYPE | (vnet_map.id & METADATA_VALUE_PAIR_SECOND_MASK),
-        metadata_mask: METADATA_VALUE_PAIR_TYPE | METADATA_VALUE_PAIR_FIRST_MASK | METADATA_VALUE_PAIR_SECOND_MASK,
+      { metadata: (vnet_map.id & METADATA_SECOND_MASK),
+        metadata_mask: METADATA_FIRST_MASK | METADATA_SECOND_MASK,
       }
     }
 

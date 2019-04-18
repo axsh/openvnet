@@ -27,7 +27,7 @@ module Vnet::Core::Services
                              :udp_dst => 67,
                              :udp_src => 68
                            },
-                           match_value_pair_first: @interface_id,
+                           match_first: @interface_id,
 
                            actions: {
                              :output => Vnet::Openflow::Controller::OFPP_CONTROLLER
@@ -124,10 +124,10 @@ module Vnet::Core::Services
                            priority: 30,
 
                            match: match_dhcp,
-                           match_value_pair_second: network_id,
+                           match_second: network_id,
 
-                           write_value_pair_first: @interface_id,
-                           write_value_pair_second: 0,
+                           write_first: @interface_id,
+                           write_second: 0,
                            
                            cookie: cookie_for_network(cookie_id))
 
@@ -137,10 +137,10 @@ module Vnet::Core::Services
                              priority: 20,
 
                              match: match_dhcp,
-                             match_value_pair_first: segment_id,
+                             match_first: segment_id,
 
-                             write_value_pair_first: @interface_id,
-                             write_value_pair_second: 0,
+                             write_first: @interface_id,
+                             write_second: 0,
                              
                              cookie: cookie_for_network(cookie_id))
       end

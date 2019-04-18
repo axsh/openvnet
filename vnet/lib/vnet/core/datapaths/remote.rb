@@ -106,12 +106,12 @@ module Vnet::Core::Datapaths
                              goto_table: TABLE_OUTPUT_HOSTIF_DST_DPN_NIL,
                              priority: 1,
 
-                             #match_value_pair_flag: FLAG_REFLECTION,
-                             match_value_pair_first: @id,
-                             match_value_pair_second: flow_gen_id,
+                             #match_remote: FLAG_REFLECTION,
+                             match_first: @id,
+                             match_second: flow_gen_id,
 
-                             write_value_pair_first: flow_id,
-                             write_value_pair_second: 0,
+                             write_first: flow_id,
+                             write_second: 0,
 
                              cookie: flow_cookie)
 
@@ -119,12 +119,12 @@ module Vnet::Core::Datapaths
                              goto_table: TABLE_OUTPUT_HOSTIF_SRC_NW_DIF,
                              priority: 1,
 
-                             #match_value_pair_flag: FLAG_REFLECTION,
-                             match_value_pair_first: flow_id,
+                             #match_remote: FLAG_REFLECTION,
+                             match_first: flow_id,
 
-                             #write_value_pair_flag: FLAG_REFLECTION,
-                             write_value_pair_first: flow_gen_id,
-                             write_value_pair_second: dpg_map[:interface_id],
+                             #write_remote: FLAG_REFLECTION,
+                             write_first: flow_gen_id,
+                             write_second: dpg_map[:interface_id],
 
                              actions: {
                                :tunnel_id => (flow_gen_id & TUNNEL_ID_MASK) | TUNNEL_NETWORK
@@ -144,13 +144,13 @@ module Vnet::Core::Datapaths
                              goto_table: TABLE_OUTPUT_HOSTIF_DST_DPS_NIL,
                              priority: 1,
 
-                             #match_value_pair_flag: FLAG_REFLECTION,
-                             match_value_pair_first: @id,
-                             match_value_pair_second: flow_gen_id,
+                             #match_remote: FLAG_REFLECTION,
+                             match_first: @id,
+                             match_second: flow_gen_id,
 
-                             #write_value_pair_flag: FLAG_REFLECTION,
-                             write_value_pair_first: flow_id,
-                             write_value_pair_second: 0,
+                             #write_remote: FLAG_REFLECTION,
+                             write_first: flow_id,
+                             write_second: 0,
 
                              cookie: flow_cookie)
 
@@ -158,12 +158,12 @@ module Vnet::Core::Datapaths
                              goto_table: TABLE_OUTPUT_HOSTIF_SRC_SEG_DIF,
                              priority: 1,
 
-                             #match_value_pair_flag: FLAG_REFLECTION,
-                             match_value_pair_first: flow_id,
+                             #match_remote: FLAG_REFLECTION,
+                             match_first: flow_id,
 
-                             #match_value_pair_flag: FLAG_REFLECTION,
-                             write_value_pair_first: flow_gen_id,
-                             write_value_pair_second: dpg_map[:interface_id],
+                             #match_remote: FLAG_REFLECTION,
+                             write_first: flow_gen_id,
+                             write_second: dpg_map[:interface_id],
 
                              actions: {
                                :tunnel_id => (flow_gen_id & TUNNEL_ID_MASK) | TUNNEL_SEGMENT
@@ -186,11 +186,11 @@ module Vnet::Core::Datapaths
                            match: {
                              :eth_src => dpg_map[:mac_address]
                            },
-                           match_value_pair_flag: FLAG_REMOTE,
-                           match_value_pair_first: flow_gen_id,
-                           match_value_pair_second: flow_id,
+                           match_remote: FLAG_REMOTE,
+                           match_first: flow_gen_id,
+                           match_second: flow_id,
 
-                           write_value_pair_second: 0,
+                           write_second: 0,
 
                            cookie: flow_cookie)
 
@@ -199,13 +199,13 @@ module Vnet::Core::Datapaths
                              goto_table: TABLE_OUTPUT_HOSTIF_DST_DPR_NIL,
                              priority: 1,
 
-                             #match_value_pair_flag: FLAG_REFLECTION,
-                             match_value_pair_first: @id,
-                             match_value_pair_second: flow_gen_id,
+                             #match_remote: FLAG_REFLECTION,
+                             match_first: @id,
+                             match_second: flow_gen_id,
 
-                             #write_value_pair_flag: FLAG_REFLECTION,
-                             write_value_pair_first: flow_id,
-                             write_value_pair_second: 0,
+                             #write_remote: FLAG_REFLECTION,
+                             write_first: flow_id,
+                             write_second: 0,
 
                              cookie: flow_cookie)
 
@@ -220,12 +220,12 @@ module Vnet::Core::Datapaths
                              goto_table: TABLE_OUTPUT_HOSTIF_SRC_RL_DIF,
                              priority: 1,
 
-                             #match_value_pair_flag: FLAG_REFLECTION,
-                             match_value_pair_first: flow_id,
+                             #match_remote: FLAG_REFLECTION,
+                             match_first: flow_id,
 
-                             #match_value_pair_flag: FLAG_REFLECTION,
-                             write_value_pair_first: flow_gen_id,
-                             write_value_pair_second: dpg_map[:interface_id],
+                             #match_remote: FLAG_REFLECTION,
+                             write_first: flow_gen_id,
+                             write_second: dpg_map[:interface_id],
 
                              actions: {
                                :eth_dst => dpg_map[:mac_address],
