@@ -5,17 +5,21 @@ require 'spec_helper'
 Dir["#{File.dirname(__FILE__)}/shared_examples/*.rb"].map {|f| require f }
 
 describe Vnet::Services::TopologyManager do
-  before(:each) {
-    use_mock_event_handler(pass_events)
-  }
-
-  let(:vnet_info) { Vnet::Services::VnetInfo.new }
-  let(:manager) { described_class.new(vnet_info) }
+  let(:node) { double(:node) }
+  let(:node_id) { double(:node_id) }
 
   let(:pass_events) {
     { Vnet::Event::TOPOLOGY_ADDED_NETWORK => manager,
     }
   }
+
+  before(:each) {
+    mock_dcell_me_id(node, node_id)
+    use_mock_event_handler(pass_events)
+  }
+
+  let(:vnet_info) { Vnet::Services::VnetInfo.new }
+  let(:manager) { described_class.new(vnet_info) }
 
   item_names = [
     'item_pnet_1',

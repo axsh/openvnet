@@ -292,7 +292,7 @@ describe Vnet::Core::TunnelManager do
         dp_info.tunnel_manager.publish(event, id: :datapath_network, dp_obj: dp_obj)
       }
 
-      sleep(0.3)
+      sleep(2.0)
       dp_info.added_flows.clear
       dp_info.deleted_flows.clear
 
