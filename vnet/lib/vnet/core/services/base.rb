@@ -86,7 +86,7 @@ module Vnet::Core::Services
     # Manage MAC and IP addresses:
     #
 
-    def get_mac_ipv4(ipv4_address)
+    def get_mac_ipv4(ipv4_address, network_id = nil)
       mac_info = nil
       ipv4_info = nil
       ipv4_address = (ipv4_address != IPV4_ZERO && ipv4_address != IPV4_BROADCAST) ? ipv4_address : nil
@@ -101,8 +101,9 @@ module Vnet::Core::Services
 
         mac_info = if_addrs.values.detect { |mac_info|
           ipv4_info = mac_info[:ipv4_addresses].detect { |ipv4_info|
-            next true if ipv4_address.nil?
-            next ipv4_info[:ipv4_address] == ipv4_address
+            next if network_id && network_id != ipv4_info[:network_id]
+            next if ipv4_address && ipv4_address != ipv4_info[:ipv4_address]
+            true
           }
         }
       }
@@ -112,7 +113,7 @@ module Vnet::Core::Services
     end
 
     def get_mac_ipv4_network(ipv4_address)
-      get_mac_ipv4(ipv4_address).tap { |mac_info, ipv4_info|
+      get_mac_ipv4(ipv4_address, nil).tap { |mac_info, ipv4_info|
         return nil if mac_info.nil? || ipv4_info.nil?
         return [mac_info, ipv4_info, ipv4_info && @dp_info.network_manager.retrieve(id: ipv4_info[:network_id])]
       }

@@ -139,13 +139,9 @@ module Vnet::Core::Services
     end
 
     def dns_server_for(network_id)
-      return if @dp_info.interface_manager.wait_for_loaded({id: @interface_id}, 10, true).nil?
-
-      ipv4_info = get_mac_ipv4(nil, network_id).map(&:last).detect { |ipv4_info|
-        ipv4_info[:network_id] == network_id
+      get_mac_ipv4(nil, network_id).tap { |mac_info, ipv4_info|
+        return ipv4_info && ipv4_info[:ipv4_address].to_s
       }
-      
-      ipv4_info ? ipv4_info[:ipv4_address].to_s : nil
     end
 
     def add_dns_server(network_id)

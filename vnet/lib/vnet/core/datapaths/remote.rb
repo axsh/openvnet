@@ -106,7 +106,7 @@ module Vnet::Core::Datapaths
                              goto_table: TABLE_OUTPUT_HOSTIF_DST_DPN_NIL,
                              priority: 1,
 
-                             #match_remote: FLAG_REFLECTION,
+                             match_reflection: reflection,
                              match_first: @id,
                              match_second: flow_gen_id,
 
@@ -119,10 +119,9 @@ module Vnet::Core::Datapaths
                              goto_table: TABLE_OUTPUT_HOSTIF_SRC_NW_DIF,
                              priority: 1,
 
-                             #match_remote: FLAG_REFLECTION,
+                             match_reflection: reflection,
                              match_first: flow_id,
 
-                             #write_remote: FLAG_REFLECTION,
                              write_first: flow_gen_id,
                              write_second: dpg_map[:interface_id],
 
@@ -144,11 +143,10 @@ module Vnet::Core::Datapaths
                              goto_table: TABLE_OUTPUT_HOSTIF_DST_DPS_NIL,
                              priority: 1,
 
-                             #match_remote: FLAG_REFLECTION,
+                             match_reflection: reflection,
                              match_first: @id,
                              match_second: flow_gen_id,
 
-                             #write_remote: FLAG_REFLECTION,
                              write_first: flow_id,
                              write_second: 0,
 
@@ -158,10 +156,9 @@ module Vnet::Core::Datapaths
                              goto_table: TABLE_OUTPUT_HOSTIF_SRC_SEG_DIF,
                              priority: 1,
 
-                             #match_remote: FLAG_REFLECTION,
+                             match_reflection: reflection,
                              match_first: flow_id,
 
-                             #match_remote: FLAG_REFLECTION,
                              write_first: flow_gen_id,
                              write_second: dpg_map[:interface_id],
 
@@ -186,7 +183,7 @@ module Vnet::Core::Datapaths
                            match: {
                              :eth_src => dpg_map[:mac_address]
                            },
-                           match_remote: FLAG_REMOTE,
+                           match_remote: true,
                            match_first: flow_gen_id,
                            match_second: flow_id,
 
@@ -199,11 +196,10 @@ module Vnet::Core::Datapaths
                              goto_table: TABLE_OUTPUT_HOSTIF_DST_DPR_NIL,
                              priority: 1,
 
-                             #match_remote: FLAG_REFLECTION,
+                             match_reflection: reflection,
                              match_first: @id,
                              match_second: flow_gen_id,
 
-                             #write_remote: FLAG_REFLECTION,
                              write_first: flow_id,
                              write_second: 0,
 
@@ -220,10 +216,9 @@ module Vnet::Core::Datapaths
                              goto_table: TABLE_OUTPUT_HOSTIF_SRC_RL_DIF,
                              priority: 1,
 
-                             #match_remote: FLAG_REFLECTION,
+                             match_reflection: reflection,
                              match_first: flow_id,
 
-                             #match_remote: FLAG_REFLECTION,
                              write_first: flow_gen_id,
                              write_second: dpg_map[:interface_id],
 

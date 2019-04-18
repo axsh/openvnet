@@ -11,6 +11,9 @@ module Vnet::Openflow
 
       options.each { |key,value|
         case key
+        when :match_reflection, :write_reflection
+          metadata = metadata | (value ? METADATA_REFLECTION : 0)
+          metadata_mask = metadata_mask | METADATA_REFLECTION
         when :match_remote, :write_remote
           metadata = metadata | (value ? METADATA_REMOTE : 0)
           metadata_mask = metadata_mask | METADATA_REMOTE

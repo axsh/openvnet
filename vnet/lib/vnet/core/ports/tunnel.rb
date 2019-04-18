@@ -31,7 +31,7 @@ module Vnet::Core::Ports
                                :in_port => self.port_number
                              },
 
-                             write_remote: FLAG_REMOTE,
+                             write_remote: true,
                              write_first: @underlay_interface_id,
                              write_second: 0,
                             )
@@ -52,7 +52,7 @@ module Vnet::Core::Ports
                              match: {
                                :in_port => self.port_number
                              },
-                             #match_remote: FLAG_REFLECTION,
+                             match_reflection: true,
                              match_first: @tunnel_id,
 
                              actions: {

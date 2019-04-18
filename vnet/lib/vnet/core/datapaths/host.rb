@@ -114,13 +114,13 @@ module Vnet::Core::Datapaths
                            match: {
                              :eth_dst => dpg_map[:mac_address]
                            },
-                           match_remote: FLAG_REMOTE,
+                           match_remote: true,
                            match_first: dpg_map[:interface_id],
 
                            actions: {
                              :eth_dst => MAC_BROADCAST
                            },
-                           write_remote: FLAG_REMOTE,
+                           write_remote: true,
                            write_first: dpg_map[:network_id],
                            write_second: dpg_map[:id],
 
@@ -183,13 +183,13 @@ module Vnet::Core::Datapaths
                            match: {
                              :eth_dst => dpg_map[:mac_address]
                            },
-                           match_remote: FLAG_REMOTE,
+                           match_remote: true,
                            match_first: dpg_map[:interface_id],
 
                            actions: {
                              :eth_dst => MAC_BROADCAST
                            },
-                           write_remote: FLAG_REMOTE,
+                           write_remote: true,
                            write_first: dpg_map[:segment_id],
                            write_second: dpg_map[:id],
 
@@ -198,11 +198,11 @@ module Vnet::Core::Datapaths
                            goto_table: TABLE_INTERFACE_INGRESS_SEG_DPSEG,
                            priority: 1,
 
-                           match_remote: FLAG_REMOTE,
+                           match_remote: true,
                            match_first: dpg_map[:interface_id],
                            match_second: dpg_map[:segment_id],
 
-                           write_remote: FLAG_REMOTE,
+                           write_remote: true,
                            write_first: dpg_map[:segment_id],
                            write_second: dpg_map[:id],
 
@@ -211,7 +211,7 @@ module Vnet::Core::Datapaths
                            goto_table: TABLE_SEGMENT_SRC_CLASSIFIER_SEG_NIL,
                            priority: 1,
 
-                           match_remote: FLAG_REMOTE,
+                           match_remote: true,
                            match_first: dpg_map[:segment_id],
                            match_second: dpg_map[:id],
 
@@ -249,7 +249,7 @@ module Vnet::Core::Datapaths
                              :eth_dst => dpg_map[:mac_address]
                            },
 
-                           write_remote: FLAG_LOCAL,
+                           write_remote: false,
                            write_first: dpg_map[:segment_id],
                            write_second: 0,
 
@@ -296,7 +296,7 @@ module Vnet::Core::Datapaths
                            },
                            # TODO: match interface here?
 
-                           write_remote: FLAG_REMOTE,
+                           write_remote: true,
                            write_first: dpg_map[:route_link_id],
                            write_second: 0,
 
@@ -318,10 +318,10 @@ module Vnet::Core::Datapaths
                            match: {
                              :eth_dst => dpg_map[:mac_address]
                            },
-                           match_remote: FLAG_REMOTE,
+                           match_remote: true,
                            match_first: dpg_map[:interface_id],
 
-                           write_remote: FLAG_REMOTE,
+                           write_remote: true,
                            write_first: dpg_map[:route_link_id],
                            write_second: dpg_map[:id],
 
@@ -349,7 +349,7 @@ module Vnet::Core::Datapaths
       #
       # Work around the current limitations of trema / openflow 1.3 using ovs-ofctl directly.
       #
-      match_dpg_md = md_create(match_remote: FLAG_REMOTE,
+      match_dpg_md = md_create(match_remote: true,
                                match_first: dpg_map[:segment_id],
                                match_second: dpg_map[:id])
       write_md = md_create(write_second: 0)
@@ -359,12 +359,12 @@ module Vnet::Core::Datapaths
       flow_learn_arp = "table=%d,priority=%d,cookie=0x%x,arp,metadata=0x%x/0x%x,%sactions=" %
         [TABLE_INTERFACE_INGRESS_SEG_DPSEG, priority, flow_cookie, match_dpg_md[:metadata], match_dpg_md[:metadata_mask], match_options]
 
-      [ md_create(match_remote: FLAG_LOCAL,
+      [ md_create(match_remote: false,
                   match_first: dpg_map[:segment_id],
-                  match_second: 0)
-        # md_create(match_remote: FLAG_REFLECTION,
-        #           match_first: dpg_map[:segment_id],
-        #           match_second: 0)
+                  match_second: 0),
+        md_create(match_reflection: true,
+                  match_first: dpg_map[:segment_id],
+                  match_second: 0),
       ].each { |metadata|
         flow_learn_arp << "learn(table=%d,cookie=0x%x,idle_timeout=36000,priority=35,metadata:0x%x,NXM_OF_ETH_DST[]=NXM_OF_ETH_SRC[]," %
           [TABLE_SEGMENT_DST_MAC_LOOKUP_SEG_NW, flow_cookie, metadata[:metadata]]
@@ -380,7 +380,7 @@ module Vnet::Core::Datapaths
       #
       # Work around the current limitations of trema / openflow 1.3 using ovs-ofctl directly.
       #
-      match_dpg_md = md_create(match_remote: FLAG_REMOTE,
+      match_dpg_md = md_create(match_remote: true,
                                match_first: dpg_map[:network_id],
                                match_second: dpg_map[:id])
       write_md = md_create(write_second: 0)
@@ -390,12 +390,12 @@ module Vnet::Core::Datapaths
       flow_learn_arp = "table=%d,priority=%d,cookie=0x%x,arp,metadata=0x%x/0x%x,%sactions=" %
         [TABLE_INTERFACE_INGRESS_NW_DPNW, priority, flow_cookie, match_dpg_md[:metadata], match_dpg_md[:metadata_mask], match_options]
 
-      [ md_create(match_remote: FLAG_LOCAL,
+      [ md_create(match_remote: false,
                   match_first: 0,
-                  match_second: dpg_map[:network_id])
-        # md_create(match_remote: FLAG_REFLECTION,
-        #           match_first: dpg_map[:segment_id],
-        #           match_second: 0)
+                  match_second: dpg_map[:network_id]),
+        md_create(match_reflection: true,
+                  match_first: 0,
+                  match_second: dpg_map[:network_id]),
       ].each { |metadata|
         flow_learn_arp << "learn(table=%d,cookie=0x%x,idle_timeout=36000,priority=35,metadata:0x%x,NXM_OF_ETH_DST[]=NXM_OF_ETH_SRC[]," %
           [TABLE_NETWORK_DST_MAC_LOOKUP_NIL_NW, flow_cookie, metadata[:metadata]]

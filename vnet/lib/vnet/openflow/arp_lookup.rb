@@ -372,16 +372,15 @@ module Vnet::Openflow
                              :eth_type => 0x0800,
                              :ipv4_dst => params[:request_ipv4]
                            },
-                           #match_remote: FLAG_,
+                           match_reflection: true,
                            match_first: params[:interface_network_id],
+
+                           write_first: ip_lease.interface_id,
+                           write_second: params[:interface_network_id],
 
                            actions: {
                              :eth_dst => Pio::Mac.new(ip_lease.mac_lease.mac_address),
                            },
-                           #write_remote: FLAG_REFLECTION,
-                           write_first: ip_lease.interface_id,
-                           write_second: params[:interface_network_id],
-
                            cookie: ip_lease.interface_id | COOKIE_TYPE_INTERFACE)
 
       @dp_info.add_flows(flows)

@@ -214,7 +214,7 @@ module Vnet::Core::Interfaces
                              :eth_src => mac_info[:mac_address],
                            },
 
-                           write_remote: FLAG_LOCAL,
+                           write_remote: false,
                            write_first: @id,
                            write_second: 0,
 

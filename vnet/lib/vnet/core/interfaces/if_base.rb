@@ -316,7 +316,7 @@ module Vnet::Core::Interfaces
 
                            match_first: @id,
 
-                           #write_value_pair_flag: FLAG_REFLECTION,
+                           write_reflection: true,
                            write_second: 0,
 
                            cookie: cookie)

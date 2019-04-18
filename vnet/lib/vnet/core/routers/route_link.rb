@@ -45,7 +45,7 @@ module Vnet::Core::Routers
                              :eth_src => @mac_address
                            },
 
-                           #write_remote: FLAG_REFLECTION,
+                           write_remote: true,
                            write_first: @id,
                            write_second: 0,
                           )
@@ -59,7 +59,7 @@ module Vnet::Core::Routers
                              :eth_dst => @mac_address
                            },
 
-                           #write_remote: FLAG_REMOTE,
+                           write_remote: true,
                            write_first: @id,
                           )
 

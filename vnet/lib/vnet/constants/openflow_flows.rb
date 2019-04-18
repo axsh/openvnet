@@ -200,10 +200,6 @@ module Vnet
       METADATA_FIRST_MASK  = (0x7fffffff << 32)
       METADATA_SECOND_MASK = 0x7fffffff
 
-      # METADATA_VALUE_PAIR_FLAG        = (0x1 << 31)
-      # METADATA_VALUE_PAIR_FIRST_MASK  = (0x7fffffff << 32)
-      # METADATA_VALUE_PAIR_SECOND_MASK = 0x7fffffff
-
       FLAG_LOCAL = false
       FLAG_REMOTE = true
 

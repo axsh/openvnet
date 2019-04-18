@@ -182,7 +182,7 @@ module Vnet::Core::Translations
         if translation[:route_link_id]
           flow_options[:goto_table] = TABLE_ROUTER_CLASSIFIER_RL_NIL
           flow_options[:write_first] = translation[:route_link_id]
-          #flow_options[:write_reflection] = FLAG_REFLECTION
+          flow_options[:write_reflection] = true
         else
           flow_options[:goto_table] = TABLE_ROUTER_INGRESS_LOOKUP_IF_NIL
         end
@@ -206,11 +206,11 @@ module Vnet::Core::Translations
         if translation[:route_link_id]
           flow_options[:match_first] = @interface_id
           flow_options[:match_second] = translation[:route_link_id]
-          # flow_options[:write_reflection] = FLAG_REFLECTION
+          flow_options[:write_reflection] = true
           flow_options[:write_second] = nil
         else
           flow_options[:match_first] = @interface_id
-          # flow_options[:write_reflection] = FLAG_REFLECTION
+          flow_options[:write_reflection] = true
           flow_options[:write_second] = nil
         end
 

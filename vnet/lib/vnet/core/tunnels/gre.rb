@@ -50,11 +50,10 @@ module Vnet::Core::Tunnels
                              goto_table: TABLE_OUT_PORT_EGRESS_TUN_NIL,
                              priority: 1,
 
-                             # match_remote: FLAG_REFLECTION,
+                             match_remote: reflection,
                              match_first: @src_interface_id,
                              match_second: @dst_interface_id,
 
-                             #write_remote: FLAG_REFLECTION,
                              write_first: @id,
                              write_second: 0
                             )

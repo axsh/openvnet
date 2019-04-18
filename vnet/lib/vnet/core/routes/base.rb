@@ -104,7 +104,7 @@ module Vnet::Core::Routes
                              match: subnet_src,
                              match_first: @interface_id,
                              
-                             #write_value_pair_flag: FLAG_REFLECTION,
+                             write_reflection: true,
                              write_first: @route_link_id,
                             )
       end
@@ -120,8 +120,8 @@ module Vnet::Core::Routes
           match: subnet_dst,
           match_first: @route_link_id,
 
-          #write_value_pair_flag: FLAG_REFLECTION,
-          #write_value_pair_flag: false,
+          write_reflection: true,
+          write_remote: false,
           write_first: @interface_id,
           write_second: @route_link_id)
       end

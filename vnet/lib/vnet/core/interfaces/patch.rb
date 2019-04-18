@@ -76,7 +76,7 @@ module Vnet::Core::Interfaces
                            goto_table: TABLE_INTERFACE_INGRESS_LOOKUP_IF_NIL,
                            priority: 10,
 
-                           match_remote: FLAG_REMOTE,
+                           match_remote: true,
                            match_first: @id,
 
                            cookie: cookie)
@@ -88,10 +88,10 @@ module Vnet::Core::Interfaces
                            match: {
                              :eth_dst => mac_info[:mac_address],
                            },
-                           match_remote: FLAG_REMOTE,
+                           match_remote: true,
                            match_first: @id,
 
-                           write_remote: FLAG_REMOTE,
+                           write_remote: true,
                            write_first: @id,
                            write_second: ipv4_info[:network_id],
 
@@ -103,10 +103,10 @@ module Vnet::Core::Interfaces
                            match: {
                              :eth_dst => MAC_BROADCAST
                            },
-                           match_remote: FLAG_REMOTE,
+                           match_remote: true,
                            match_first: @id,
 
-                           write_remote: FLAG_REMOTE,
+                           write_remote: true,
                            write_first: @id,
                            write_second: ipv4_info[:network_id],
 
@@ -171,7 +171,7 @@ module Vnet::Core::Interfaces
 
                            match_first: @id,
 
-                           #write_value_pair_flag: FLAG_REFLECTION,
+                           write_reflection: true,
                            write_second: nil,
 
                            cookie: flow_cookie)

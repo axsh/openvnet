@@ -85,7 +85,7 @@ module Vnet::Core::Segments
                            match: {
                              :eth_dst => message.eth_src
                            },
-                           match_remote: FLAG_LOCAL,
+                           match_remote: false,
                            match_first: @id,
 
                            actions: {
@@ -107,7 +107,7 @@ module Vnet::Core::Segments
                              :eth_type => 0x0806,
                              :eth_src => message.eth_src
                            },
-                           match_remote: FLAG_REMOTE,
+                           match_remote: true,
                            match_first: @id,
 
                            write_second: 0,
