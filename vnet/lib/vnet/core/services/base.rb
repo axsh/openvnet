@@ -82,6 +82,7 @@ module Vnet::Core::Services
                               interface_id: @interface_id)
     end
 
+    # TODO: Deprecate.
     def find_ipv4_and_network(message, ipv4_address)
       ipv4_address = ipv4_address != IPV4_BROADCAST ? ipv4_address : nil
 
@@ -106,6 +107,31 @@ module Vnet::Core::Services
       return unless ipv4_info
 
       [mac_info, ipv4_info, @dp_info.network_manager.retrieve(id: ipv4_info[:network_id])]
+    end
+
+    def get_mac_ipv4_network(ipv4_address)
+      mac_info = nil
+      ipv4_info = nil
+      ipv4_address = (ipv4_address != IPV4_ZERO && ipv4_address != IPV4_BROADCAST) ? ipv4_address : nil
+
+      @dp_info.interface_manager.get_interface_addrs(@interface_id).tap { |if_addrs|
+        if if_addrs.nil?
+          debug log_format_h('get_interface_addrs failed', interface_id: @interface_id)
+          return
+        end
+      
+        debug log_format_h('get_interface_addrs from interface', interface_id: @interface_id, if_addrs: if_addrs)
+
+        mac_info = if_addrs.values.detect { |mac_info|
+          ipv4_info = mac_info[:ipv4_addresses].detect { |ipv4_info|
+            next true if ipv4_address.nil?
+            next ipv4_info[:ipv4_address] == ipv4_address
+          }
+        }
+      }
+
+      return nil if mac_info.nil? || ipv4_info.nil?
+      return [mac_info, ipv4_info, @dp_info.network_manager.retrieve(id: ipv4_info[:network_id])]
     end
 
     def add_network_unless_exists(network_id, cookie_id, segment_id)
