@@ -24,6 +24,9 @@ module Vnet
   class ManagerInitializationFailed < StandardError
   end
 
+  class ManagerTerminationFailed < StandardError
+  end
+
   class ParamError < ArgumentError
   end
 

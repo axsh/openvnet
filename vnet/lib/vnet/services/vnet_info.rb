@@ -9,6 +9,7 @@
 module Vnet::Services
   class VnetInfo
     include Vnet::ManagerList
+    include Celluloid::Logger
 
     SERVICE_MANAGER_NAMES = %w(
       ip_retention_container
@@ -51,7 +52,7 @@ module Vnet::Services
     private
 
     def log_format(message, values = nil)
-      "#{@dpid_s} dp_info: #{message}" + (values ? " (#{values})" : '')
+      "vnet_info: #{message}" + (values ? " (#{values})" : '')
     end
 
     def internal_initialize_managers(name_list)

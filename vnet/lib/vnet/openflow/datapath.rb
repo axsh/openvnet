@@ -35,7 +35,7 @@ module Vnet::Openflow
     include Celluloid::Logger
     include FlowHelpers
 
-    finalizer :do_cleanup
+    finalizer :do_terminate
 
     attr_reader :dp_info
     attr_reader :datapath_info
@@ -111,6 +111,21 @@ module Vnet::Openflow
       @controller.pass_task { @controller.reset_datapath(@dpid) }
     end
 
+    def do_cleanup
+      return if @dp_info.nil?
+      # return if already cleaned up.
+
+      info log_format('cleaning up')
+
+      # We terminate the managers manually rather than relying on
+      # actor's 'link' in order to ensure the managers are terminated
+      # before Datapath's 'terminate' returns.
+      @dp_info.terminate_all_managers
+      @dp_info.del_all_flows
+
+      info log_format('cleaned up')
+    end
+
     #
     # Internal methods:
     #
@@ -156,23 +171,18 @@ module Vnet::Openflow
       debug log_format('host datapath was unloaded')
     end
 
-    def do_cleanup
-      return if @dp_info.nil?
+    def do_terminate
+      info log_format('terminating')
 
-      info log_format('cleaning up')
+      # TODO: Try to ensure managers are terminated and no longer in
+      # watchdog.
 
-      # We terminate the managers manually rather than relying on
-      # actor's 'link' in order to ensure the managers are terminated
-      # before Datapath's 'terminate' returns.
-      @dp_info.terminate_all_managers
-      @dp_info.del_all_flows
-
-      info log_format('cleaned up')
+      info log_format('terminated')
     end
 
     def link_with_managers(managers)
       # TODO: Handle vnmgr node link differently.
-      vnmgr_node = DCell::Node[:vnmgr]
+      vnmgr_node = DCell::Node['vnmgr']
 
       if vnmgr_node == nil
         warn log_format('could not find vnmgr dcell node, cannot create link for actor cleanup')

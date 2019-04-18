@@ -143,7 +143,19 @@ module Vnet::Openflow
       datapath = datapath_map[:datapath] || return
 
       info "terminating datapath actor. dpid: 0x%016x" % dpid
-      datapath.terminate if datapath.alive?
+      
+      # TODO: Improve terminate so it does as good a job terminating
+      # managers and cleaning them from watchdog, etc, without
+      # triggering callwait.
+      begin
+        # TODO: Test without do_cleanup.
+        datapath.do_cleanup
+        datapath.terminate
+      rescue Celluloid::DeadActorError
+        # TODO: Try to ensure managers are terminated and no longer in
+        # watchdog. (handle in Datapath::do_terminate?)
+      end
+
       info "terminated datapath actor. dpid: 0x%016x" % dpid
     end
 

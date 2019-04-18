@@ -10,6 +10,7 @@
 module Vnet::Core
   class DpInfo
     include Vnet::ManagerList
+    include Celluloid::Logger
 
     BOOTSTRAP_MANAGER_NAMES = %w(
       host_datapath

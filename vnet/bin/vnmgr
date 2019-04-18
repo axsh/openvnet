@@ -36,8 +36,10 @@ Vnet::NodeModules::Rpc.supervise_as :rpc
 Vnet::NodeModules::EventHandler.supervise_as :event_handler
 Vnet::Services::Vnmgr.supervise_as :vnmgr
 
-DCell::Global[:rpc] = Celluloid::Actor[:rpc]
-DCell::Global[:event_handler] = Celluloid::Actor[:event_handler]
+Vnet::Configurations::Vnmgr.conf.node.id.tap { |node_id|
+  DCell::Global[:rpc_node_id] = node_id
+  DCell::Global[:event_handler_node_id] = node_id
+}
 
 dp_mg_uuid = conf.datapath_mac_group
 if dp_mg_uuid.nil?

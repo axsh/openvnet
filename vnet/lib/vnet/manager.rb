@@ -18,7 +18,9 @@ module Vnet
     include Vnet::Manager::Query
     include Vnet::Params
 
-    finalizer :start_cleanup
+    finalizer :do_finalizer
+
+    attr_reader :state
 
     # Main events:
     #
@@ -191,11 +193,11 @@ module Vnet
       nil
     end
 
-    def start_cleanup
+    def start_terminate
       case @state
-      when :terminated, :uninitialized
-        return
-      when :cleanup
+      when :terminated, :uninitialized, :cleanup
+        info log_format_h("could not start terminating manager", from_state: @state)
+        terminate
         return
       when :initializing
       when :initialized
@@ -203,30 +205,18 @@ module Vnet
         raise "Manager.start_cleanup has invalid state: #{@state}."
       end
 
+      info log_format_h("start terminating manager", from_state: @state)
+
       if @state == :initialized
         @state = :cleanup
         do_cleanup
       end
 
-      # TODO: Protect watchdog from dead actor.
+      # TODO: Move to do_finalizer.
       do_unregister_watchdog
 
-      @state = :terminated
-
-      resume_event_tasks(:terminated, true)
+      terminate
       nil
-    end
-
-    def do_register_watchdog
-    end
-
-    def do_unregister_watchdog
-    end
-
-    def do_initialize
-    end
-
-    def do_cleanup
     end
 
     #
@@ -265,7 +255,28 @@ module Vnet
     def cleared_datapath_info
     end
 
+    #
+    # Handle state changes:
+    #
+
+    def do_register_watchdog
+    end
+
+    def do_unregister_watchdog
+    end
+
     def do_initialize
+    end
+
+    def do_cleanup
+    end
+
+    def do_finalizer
+      #do_unregister_watchdog
+
+      @state = :terminated
+
+      resume_event_tasks(:terminated, true)
     end
 
     #

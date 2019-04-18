@@ -10,7 +10,11 @@ module Vnet::Event
     end
 
     def _find_event_handler
-      DCell::Global[:event_handler] or raise "event_handler not found in DCell::Global"
+      event_handler_node_id = DCell::Global[:event_handler_node_id] or raise "event_handler_node_id not found in DCell::Global"
+      raise "tried to use non-string event_handler_node_id '#{event_handler_node_id.inspect}'" if !event_handler_node_id.is_a? String
+
+      event_handler_node = DCell::Node[event_handler_node_id] or raise "node '#{event_handler_node_id}' with event_handler not found"
+      event_handler_node[:event_handler] or raise "event_handler actor on node '#{event_handler_node_id}' not found"
     end
   end
 end
