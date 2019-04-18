@@ -36,20 +36,17 @@ module Vnet::Core::Services
     end
 
     def packet_in(message)
-      debug log_format_h('packet_in received', message: message.inspect)
+      debug log_format('packet_in received')
 
       dhcp_in, message_type = parse_dhcp_packet(message)
-
-      if dhcp_in.nil? || message_type.empty? || message_type[0].payload.empty?
-        debug log_format_h('invalid packet received', message: message.inspect)
-      end
+      return if dhcp_in.nil? || message_type.empty? || message_type[0].payload.empty?
 
       # Verify dhcp_in values...
 
-      mac_info, ipv4_info, network = get_mac_ipv4_network(message.ipv4_src)
+      mac_info, ipv4_info, network = find_ipv4_and_network(message, message.ipv4_dst)
 
       if network.nil?
-        debug log_format_h('could not find network', mac_info: mac_info.inspect, ipv4_info: ipv4_info.inspect, network_id: network.inspect)
+        debug log_format('could not find network', "mac_info:#{mac_info.inspect}")
         return
       end
 

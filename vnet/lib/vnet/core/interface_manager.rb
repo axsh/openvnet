@@ -66,12 +66,6 @@ module Vnet::Core
       publish(INTERFACE_UNLOAD_ITEM, id: interface_id)
     end
 
-    def get_interface_addrs(interface_id)
-      @items[interface_id].tap { |item|
-        return item && item.mac_addresses
-      }
-    end
-
     #
     # Internal methods:
     #
