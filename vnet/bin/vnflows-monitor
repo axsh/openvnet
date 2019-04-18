@@ -98,24 +98,11 @@ class Flow
 
       value = result[0][0].to_i(16)
       mask = result[0][1] ? result[0][1].to_i(16) : ((1 << 64) - 1)
-      case Options.opts[:pretty]
-      when 0 then
-        "#{self.metadata_to_pretty(value, mask)}(#{field[1]})"
-      else
-        "#{self.metadata_to_pretty(value, mask)}(#{"0x%x" % (value & 0xffffffff) })"
-      end
+
+      metadata_to_pretty(value, mask)
     else
       field[1]
     end
-  end
-
-  def md_has_flag(flag, value, mask = nil)
-    mask = value if mask.nil?
-    (value & (mask & flag)) == flag
-  end
-
-  def md_has_not_flag(flag, value, mask)
-    (~value & (mask & flag)) == flag
   end
 
   def cookie_to_pretty(hexstring)
@@ -132,40 +119,10 @@ class Flow
   def metadata_to_pretty(value, mask)
     result = ''
 
-    if (value & METADATA_VALUE_PAIR_TYPE) == METADATA_VALUE_PAIR_TYPE
-      result = "VALUE_PAIR(0x%x/0x%x)" % [value, mask]
-      return result
-    end
+    result = "(0x%x/0x%x)" % [value, mask]
 
-    if (mask & METADATA_TYPE_MASK) == METADATA_TYPE_MASK
-      result << self.class.metadata_type_name(value & (mask & METADATA_TYPE_MASK)) << '|'
-    end
-
-    case value & (mask & (METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE))
-    when METADATA_FLAG_LOCAL  then result << 'LOCAL|'
-    when METADATA_FLAG_REMOTE then result << 'REMOTE|'
-    when (METADATA_FLAG_LOCAL | METADATA_FLAG_REMOTE) then result << 'REMOTE+LOCAL|'
-    end
-
-    case value & (mask & (METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL))
-    when METADATA_FLAG_VIRTUAL  then result << 'VIRTUAL|'
-    when METADATA_FLAG_PHYSICAL then result << 'PHYSICAL|'
-    when (METADATA_FLAG_VIRTUAL | METADATA_FLAG_PHYSICAL) then result << 'PHYSICAL+VIRTUAL|'
-    end
-
-    result << 'VIF|'        if md_has_flag(METADATA_FLAG_VIF, value, mask)
-    result << 'FLOOD|'      if md_has_flag(METADATA_FLAG_FLOOD, value, mask)
-    result << 'MAC2MAC|'    if md_has_flag(METADATA_FLAG_MAC2MAC, value, mask)
-
-    result << 'IGNORE_MAC2MAC|'  if md_has_flag(METADATA_FLAG_IGNORE_MAC2MAC, value, mask)
-    result << 'NO_CONTROLLER|'   if md_has_flag(METADATA_FLAG_NO_CONTROLLER, value, mask)
-    result << 'REFLECTION|'      if md_has_flag(METADATA_FLAG_REFLECTION, value, mask)
-
-    result << '!IGNORE_MAC2MAC|' if md_has_not_flag(METADATA_FLAG_IGNORE_MAC2MAC, value, mask)
-    result << '!NO_CONTROLLER|'  if md_has_not_flag(METADATA_FLAG_NO_CONTROLLER, value, mask)
-    result << '!REFLECTION|'     if md_has_not_flag(METADATA_FLAG_REFLECTION, value, mask)
-
-    result.chomp('|')
+    # result.chomp('|')
+    result
   end
 
   def self.parse_ovs(ovs_flow)

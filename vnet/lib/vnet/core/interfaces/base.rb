@@ -147,8 +147,6 @@ module Vnet::Core::Interfaces
       ipv4_address = (ipv4_address != IPV4_ZERO && ipv4_address != IPV4_BROADCAST) ? ipv4_address : nil
 
       @mac_addresses.tap { |if_addrs|
-        debug log_format_h('get_interface_addrs from interface', interface_id: @interface_id, if_addrs: if_addrs)
-
         mac_info = if_addrs.values.detect { |mac_info|
           ipv4_info = mac_info[:ipv4_addresses].detect { |ipv4_info|
             next true if ipv4_address.nil?
