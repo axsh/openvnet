@@ -5,17 +5,18 @@ require 'vnet/node_api/direct_proxy'
 require 'vnet/node_api/rpc_proxy'
 
 describe Vnet::NodeApi do
+
   describe Vnet::NodeApi::RpcProxy do
-    let(:node) { double(:node) }
-    let(:actor) { double(:actor) }
-    let(:actor_node_id) { 'test_vnmgr' }
+    let(:me_node) { double(:me_node) }
+    let(:rpc_node) { double(:rpc_node) }
+    let(:rpc_actor) { double(:rpc_actor) }
 
     before(:each) {
-      mock_dcell_rpc(node, actor, actor_node_id)
+      mock_dcell_rpc(me_node, rpc_node, rpc_actor)
     }
 
     subject {
-      expect(actor).to receive(:execute).with(:network, :all).and_return([{uuid: "test-uuid"}])
+      expect(rpc_actor).to receive(:execute).with(:network, :all).and_return([{uuid: "test-uuid"}])
       Vnet::NodeApi::RpcProxy.new.network.all
     }
 

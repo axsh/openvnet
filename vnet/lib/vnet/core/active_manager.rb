@@ -16,7 +16,7 @@ module Vnet::Core
 
       # TODO: Add an id so we know this instance was then one to call
       # load.
-      mw_class.load_where({}, eh__node_id: DCell.me.id)
+      mw_class.load_where({}, eh__node_id: @datapath_info.node_id)
 
       info log_format('initialize done')
     end
