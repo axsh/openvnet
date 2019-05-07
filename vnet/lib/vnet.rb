@@ -32,6 +32,32 @@ module Vnet
 
   class << self
     attr_reader :use_api_proxy
+    
+    # TODO: Move to module.
+    def get_node_actor(node_id, actor_id)
+      tries = 0
+
+      while true
+        tries += 1
+        node = DCell.me.id == node_id ? Celluloid::Actor : DCell::Node[node_id]
+
+        if node == nil
+          Celluloid.logger.debug "node '#{node_id}' not found, retrying" if (tries % 10) == 1
+          sleep 1
+          next
+        end
+
+        actor = node[actor_id]
+
+        if actor == nil
+          Celluloid.logger.debug "node '#{node_id}' has no '#{actor_id}' actor, retrying" if (tries % 10) == 1
+          sleep 1
+          next
+        end
+
+        return actor
+      end
+    end
   end
 
   autoload :Event,                'vnet/event'
