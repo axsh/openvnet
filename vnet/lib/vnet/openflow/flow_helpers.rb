@@ -7,11 +7,13 @@ module Vnet::Openflow
 
     Flow = Vnet::Openflow::Flow
 
-    FLOW_MATCH_METADATA_PARAMS = [:match_remote,
+    FLOW_MATCH_METADATA_PARAMS = [:match_reflection,
+                                  :match_remote,
                                   :match_first,
                                   :match_second,
                                  ]
-    FLOW_WRITE_METADATA_PARAMS = [:write_remote,
+    FLOW_WRITE_METADATA_PARAMS = [:write_reflection,
+                                  :write_remote,
                                   :write_first,
                                   :write_second,
                                  ]

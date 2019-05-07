@@ -30,6 +30,7 @@ module Vnet::Core::Segments
                              :tunnel_id => flow_tunnel_id
                            },
 
+                           write_reflection: false,
                            write_second: @id,
                           )
       flows << flow_create(table: TABLE_SEGMENT_SRC_CLASSIFIER_SEG_NIL,

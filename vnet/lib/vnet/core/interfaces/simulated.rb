@@ -201,7 +201,7 @@ module Vnet::Core::Interfaces
     end
 
     def flows_for_mac(flows, mac_info)
-      cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
+      flow_cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
 
       #
       # Classifiers:
@@ -214,11 +214,12 @@ module Vnet::Core::Interfaces
                              :eth_src => mac_info[:mac_address],
                            },
 
+                           write_reflection: false,
                            write_remote: false,
                            write_first: @id,
-                           write_second: 0,
+                           write_second: 0
 
-                           cookie: cookie)
+                           cookie: flow_cookie)
     end
 
     def flows_for_ipv4(flows, mac_info, ipv4_info)

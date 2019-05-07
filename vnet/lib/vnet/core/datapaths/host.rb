@@ -120,7 +120,7 @@ module Vnet::Core::Datapaths
                            actions: {
                              :eth_dst => MAC_BROADCAST
                            },
-                           write_remote: true,
+                           write_reflection: false,
                            write_first: dpg_map[:network_id],
                            write_second: dpg_map[:id],
 
@@ -129,6 +129,7 @@ module Vnet::Core::Datapaths
                            goto_table: TABLE_INTERFACE_INGRESS_NW_DPNW,
                            priority: 1,
 
+                           match_remote: true,
                            match_first: dpg_map[:interface_id],
                            match_second: dpg_map[:network_id],
 
@@ -140,6 +141,7 @@ module Vnet::Core::Datapaths
                            goto_table: TABLE_NETWORK_SRC_CLASSIFIER_NW_NIL,
                            priority: 1,
 
+                           match_remote: true,
                            match_first: dpg_map[:network_id],
                            match_second: dpg_map[:id],
 
@@ -189,7 +191,7 @@ module Vnet::Core::Datapaths
                            actions: {
                              :eth_dst => MAC_BROADCAST
                            },
-                           write_remote: true,
+                           write_reflection: false,
                            write_first: dpg_map[:segment_id],
                            write_second: dpg_map[:id],
 
@@ -202,7 +204,6 @@ module Vnet::Core::Datapaths
                            match_first: dpg_map[:interface_id],
                            match_second: dpg_map[:segment_id],
 
-                           write_remote: true,
                            write_first: dpg_map[:segment_id],
                            write_second: dpg_map[:id],
 
@@ -249,6 +250,7 @@ module Vnet::Core::Datapaths
                              :eth_dst => dpg_map[:mac_address]
                            },
 
+                           write_reflection: false,
                            write_remote: false,
                            write_first: dpg_map[:segment_id],
                            write_second: 0,
@@ -294,11 +296,9 @@ module Vnet::Core::Datapaths
                              :tunnel_id => TUNNEL_ROUTE_LINK,
                              :eth_dst => dpg_map[:mac_address]
                            },
-                           # TODO: match interface here?
 
-                           write_remote: true,
+                           write_reflection: true,
                            write_first: dpg_map[:route_link_id],
-                           write_second: 0,
 
                            cookie: flow_cookie)
 
@@ -321,7 +321,7 @@ module Vnet::Core::Datapaths
                            match_remote: true,
                            match_first: dpg_map[:interface_id],
 
-                           write_remote: true,
+                           write_reflection: true,
                            write_first: dpg_map[:route_link_id],
                            write_second: dpg_map[:id],
 

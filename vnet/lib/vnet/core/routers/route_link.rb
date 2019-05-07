@@ -45,6 +45,7 @@ module Vnet::Core::Routers
                              :eth_src => @mac_address
                            },
 
+                           write_reflection: false,
                            write_remote: true,
                            write_first: @id,
                            write_second: 0,
@@ -59,7 +60,7 @@ module Vnet::Core::Routers
                              :eth_dst => @mac_address
                            },
 
-                           write_remote: true,
+                           write_reflection: false,
                            write_first: @id,
                           )
 

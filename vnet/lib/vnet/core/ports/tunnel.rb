@@ -31,6 +31,7 @@ module Vnet::Core::Ports
                                :in_port => self.port_number
                              },
 
+                             write_reflection: false,
                              write_remote: true,
                              write_first: @underlay_interface_id,
                              write_second: 0,

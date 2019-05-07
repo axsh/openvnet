@@ -70,7 +70,7 @@ module Vnet::Core::Interfaces
     end
 
     def flows_for_mac(flows, mac_info)
-      cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
+      flow_cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
 
       #
       # Classifiers:
@@ -87,11 +87,11 @@ module Vnet::Core::Interfaces
                            write_first: @id,
                            write_second: 0,
 
-                           cookie: cookie)
+                           cookie: flow_cookie)
     end
 
     def flows_for_ipv4(flows, mac_info, ipv4_info)
-      cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
+      flow_cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
 
       # We currently only support a single physical network for a
       # host interface.
@@ -104,7 +104,7 @@ module Vnet::Core::Interfaces
 
                            match_first: @id,
 
-                           cookie: cookie)
+                           cookie: flow_cookie)
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER_IF_NIL,
                            goto_table: TABLE_INTERFACE_INGRESS_IF_NW,
                            priority: 20,
@@ -114,10 +114,9 @@ module Vnet::Core::Interfaces
                            },
                            match_first: @id,
 
-                           write_first: @id,
                            write_second: ipv4_info[:network_id],
 
-                           cookie: cookie)
+                           cookie: flow_cookie)
       flows << flow_create(table: TABLE_INTERFACE_INGRESS_CLASSIFIER_IF_NIL,
                            goto_table: TABLE_INTERFACE_INGRESS_IF_NW,
                            priority: 21,
@@ -125,12 +124,11 @@ module Vnet::Core::Interfaces
                            match: {
                              :eth_dst => MAC_BROADCAST
                            },
-                           match_first: @id,
 
                            write_first: @id,
                            write_second: ipv4_info[:network_id],
 
-                           cookie: cookie)
+                           cookie: flow_cookie)
     end
 
   end

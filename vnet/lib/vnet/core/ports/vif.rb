@@ -28,6 +28,7 @@ module Vnet::Core::Ports
                              :in_port => self.port_number,
                            },
                            
+                           write_reflection: false,
                            write_remote: false,
                            write_first: @interface_id,
                            write_second: 0,

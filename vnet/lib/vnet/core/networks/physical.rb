@@ -17,6 +17,7 @@ module Vnet::Core::Networks
       flows << flow_create(table: TABLE_NETWORK_SRC_CLASSIFIER_NW_NIL,
                            goto_table: TABLE_ROUTE_INGRESS_INTERFACE_NW_NIL,
                            priority: 30,
+
                            match_first: @id,
                           )
       flows << flow_create(table: TABLE_NETWORK_DST_CLASSIFIER_NW_NIL,
@@ -24,6 +25,7 @@ module Vnet::Core::Networks
                            priority: 30,
 
                            match_first: @id,
+                           
                            write_first: 0,
                            write_second: @id,
                           )
@@ -31,9 +33,10 @@ module Vnet::Core::Networks
                            goto_table: TABLE_LOOKUP_NW_NIL,
                            priority: 20,
 
-                           match_first: @id,
-                           write_first: 0,
-                           write_second: @id,
+                           match_second: @id,
+                           
+                           write_first: @id,
+                           write_second: 0,
                           )
 
       @dp_info.add_flows(flows)
