@@ -54,11 +54,11 @@ module Vnet::Core::Segments
 
       flows = []
       flows << flow_create(table: TABLE_FLOOD_LOCAL_SEG_NW,
-                           # goto_table: TABLE_LOOKUP_NW_NIL,
+                           goto_table: TABLE_FLOOD_TUNNELS_SEG_NW,
                            priority: 1,
 
                            match_first: @id,
-                           actions: local_actions,
+                           actions: flood_actions,
                           )
 
       @dp_info.add_flows(flows)
