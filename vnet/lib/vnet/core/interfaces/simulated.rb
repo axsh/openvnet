@@ -217,7 +217,7 @@ module Vnet::Core::Interfaces
                            write_reflection: false,
                            write_remote: false,
                            write_first: @id,
-                           write_second: 0
+                           write_second: 0,
 
                            cookie: flow_cookie)
     end

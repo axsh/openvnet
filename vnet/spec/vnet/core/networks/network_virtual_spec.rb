@@ -26,7 +26,7 @@ describe Vnet::Core::Networks::Virtual do
     }
     let(:tunnel_md) {
       { metadata: (vnet_map.id & METADATA_SECOND_MASK),
-        metadata_mask: METADATA_SECOND_MASK,
+        metadata_mask: METADATA_REFLECTION | METADATA_SECOND_MASK,
       }
     }
     let(:convert_nw_md) {
