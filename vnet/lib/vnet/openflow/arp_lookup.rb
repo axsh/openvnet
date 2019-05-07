@@ -296,7 +296,7 @@ module Vnet::Openflow
       messages.select! { |message| Time.now - message[:timestamp] < 30.0 }
 
       Celluloid::Actor.current.after([params[:attempts], 10].min) {
-        params[:attempts] = params[:attempts] + 1
+        params[:attempts] += 1
         arp_lookup_process_timeout(params)
       }
 
@@ -334,10 +334,12 @@ module Vnet::Openflow
       # Remove old packets...
       messages.select! { |message| Time.now - message[:timestamp] < 30.0 }
 
-      Celluloid::Actor.current.after([params[:attempts], 10].min) {
-        params[:attempts] = params[:attempts] + 1
-        arp_lookup_process_timeout(params)
-      }
+      # TODO: Send arp only when simulated interface is part of a
+      # specific datapath.
+      # Celluloid::Actor.current.after([params[:attempts], 10].min) {
+      #   params[:attempts] += 1
+      #   arp_lookup_process_timeout(params)
+      # }
 
       filter_args = {
         :ip_addresses__network_id => params[:interface_network_id],
@@ -372,9 +374,9 @@ module Vnet::Openflow
                              :eth_type => 0x0800,
                              :ipv4_dst => params[:request_ipv4]
                            },
-                           match_reflection: true,
                            match_first: params[:interface_network_id],
 
+                           write_reflection: true,
                            write_first: ip_lease.interface_id,
                            write_second: params[:interface_network_id],
 
@@ -410,12 +412,17 @@ module Vnet::Openflow
     #
 
     def match_packet(message)
-      # Verify metadata is a network type.
+      match = { :eth_type => 0x0800,
+        :ipv4_dst => message.ipv4_dst
+      }
 
-      match = md_create(:network => message.match.metadata & METADATA_VALUE_MASK)
-      match.merge!({ :eth_type => 0x0800,
-                     :ipv4_dst => message.ipv4_dst
-                   })
+      case message.table_id
+      when TABLE_ARP_LOOKUP_NW_NIL
+        match.merge!(match_first: (message.match.metadata & METADATA_FIRST_MASK) >> 32)
+      else
+        debug log_format("arp_lookup match_packet does not support table_id", table_id: message.table_id)
+        nil
+      end
     end
 
     def unreachable_ip(messages, error_msg, suppress_reason)
@@ -438,14 +445,23 @@ module Vnet::Openflow
       when :inactive_interface then hard_timeout = 10
       end
 
-      flow = Flow.create(TABLE_ARP_LOOKUP_NW_NIL, 21,
-                         match_packet(message),
-                         nil, {
-                           :cookie => message.cookie,
-                           :hard_timeout => hard_timeout
-                         })
+      match_packet(message).tap { |match|
+        if match.nil?
+          debug log_format("arp_lookup suppress_packets received packet with unknown table id")
+          return
+        end
 
-      @dp_info.add_flow(flow)
+        flow = flow_create(table: TABLE_ARP_LOOKUP_NW_NIL,
+                           priority: 21,
+                           hard_timeout: hard_timeout,
+
+                           match: match_packet(message),
+
+                           cookie: message.cookie,
+                          )
+
+        @dp_info.add_flow(flow)
+      }
     end
 
   end
