@@ -104,7 +104,11 @@ module Vnspec
 
       # TODO: Move logging stuff to module.
       def fetch_log_output(service)
-        (config[:release_version] != "el7" || service == "vnmgr" ? "cat /var/log/openvnet/%s.log" : "journalctl -u vnet-%s") % service.tr('_', '-')
+        if config[:release_version].to_s != "el7" || service.to_s == "vnmgr"
+          "cat /var/log/openvnet/#{service.to_s.tr('_', '-')}.log"
+        else
+          "journalctl -u vnet-#{service.to_s.tr('_', '-')}"
+        end
       end
 
       def dump_flows(vna_index = nil)
