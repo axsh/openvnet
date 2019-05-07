@@ -10,16 +10,18 @@ module Vnet::Core
     def do_initialize
       info log_format('cleaning up old entries')
 
-      mw_class.batch.dataset.where(datapath_id: @datapath_info.id).destroy.commit
+      mw_class.destroy_where(datapath_id: @datapath_info.id)
 
-      mw_class.batch.all.commit.each { |item_map|
-        internal_new_item(item_map)
-      }
+      info log_format('loading all entries')
+
+      # TODO: Add an id so we know this instance was then one to call
+      # load.
+      mw_class.load_where({}, eh__node_id: DCell.me.id)
+
+      info log_format('initialize done')
     end
 
     private
-
-    # TODO: Add do_initialize, clean up / update old entries.
 
     # TODO: Fix do_cleanup so it gets called and completed before
     # communication with node_api is shut down.
@@ -31,7 +33,7 @@ module Vnet::Core
       info log_format('cleaning up')
 
       begin
-        mw_class.batch.dataset.where(datapath_id: @datapath_info.id).destroy.commit
+        mw_class.destroy_where(datapath_id: @datapath_info.id)
       rescue NoMethodError => e
         info log_format(e.message, e.class.name)
       end

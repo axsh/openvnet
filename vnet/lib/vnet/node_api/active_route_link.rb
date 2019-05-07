@@ -28,6 +28,10 @@ module Vnet::NodeApi
                       )
       end
 
+      def dispatch_load_item_events(model, dispatch_options)
+        dispatch_event(ACTIVE_ROUTE_LINK_CREATED_ITEM, model.to_hash.merge!(dispatch_options))
+      end
+
       def dispatch_deleted_item_events(model)
         dispatch_event(ACTIVE_ROUTE_LINK_DELETED_ITEM, id: model.id)
 

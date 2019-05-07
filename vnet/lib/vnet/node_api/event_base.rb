@@ -39,6 +39,16 @@ module Vnet::NodeApi
 	#TODO: Update deleted items
       end
 
+      def load_where(filter, dispatch_options)
+        raise ArgumentError if dispatch_options.nil?
+
+        transaction {
+          model_class.where(filter).all { |model|
+            dispatch_load_item_events(model, dispatch_options)
+          }
+        }
+      end
+
       def destroy(filter, options = {})
         destroy_with_transaction(filter).tap { |model|
           next if model.nil?
@@ -153,6 +163,10 @@ module Vnet::NodeApi
       end
 
       def dispatch_created_item_events(model)
+        raise NotImplementedError
+      end
+
+      def dispatch_load_item_events(model, dispatch_options)
         raise NotImplementedError
       end
 

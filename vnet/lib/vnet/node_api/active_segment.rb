@@ -26,6 +26,10 @@ module Vnet::NodeApi
                        datapath_id: model.datapath_id)
       end
 
+      def dispatch_load_item_events(model, dispatch_options)
+        dispatch_event(ACTIVE_SEGMENT_CREATED_ITEM, model.to_hash.merge!(dispatch_options))
+      end
+
       def dispatch_deleted_item_events(model)
         dispatch_event(ACTIVE_SEGMENT_DELETED_ITEM, id: model.id)
 

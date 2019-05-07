@@ -31,6 +31,10 @@ module Vnet::NodeApi
         dispatch_event(ACTIVE_INTERFACE_CREATED_ITEM, model.to_hash)
       end
 
+      def dispatch_load_item_events(model, dispatch_options)
+        dispatch_event(ACTIVE_INTERFACE_CREATED_ITEM, model.to_hash.merge!(dispatch_options))
+      end
+
       def dispatch_deleted_item_events(model)
         dispatch_event(ACTIVE_INTERFACE_DELETED_ITEM, id: model.id)
       end
