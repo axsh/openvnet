@@ -73,8 +73,7 @@ module Vnet::Core
 
       mac_info[:ipv4_addresses] = ipv4_addresses
 
-      debug log_format("adding ipv4 address",
-                       "#{mac_info[:mac_address]}/#{ipv4_info[:ipv4_address]}")
+      debug log_format_h("adding ipv4 address", ipv4_info)
 
       [mac_info, ipv4_info]
     end
@@ -94,7 +93,7 @@ module Vnet::Core
 
       mac_info[:ipv4_addresses] = ipv4_addresses
 
-      debug log_format("removing ipv4 address from #{@uuid}/#{@id}",
+      debug log_format("removing ipv4 address",
                        "#{mac_info[:mac_address]}/#{ipv4_info[:ipv4_address]}")
 
       del_cookie_for_ip_lease(ipv4_info[:cookie_id])

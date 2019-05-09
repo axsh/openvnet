@@ -133,6 +133,7 @@ module Vnet::Openflow
         debug log_format_h('arp_lookup_lookup_packet_in looking up',
                            port_number: port_number,
                            interface_ipv4: ipv4_info[:ipv4_address],
+                           network_type: ipv4_info[:network_type],
                            request_ipv4: request_ipv4,
                            ipv4_src: message.ipv4_src,
                            ipv4_dst: message.ipv4_dst)
@@ -184,6 +185,7 @@ module Vnet::Openflow
       network_address.mask(32) | IPAddr.new('0.0.0.1')
     end
 
+
     def arp_lookup_reply_packet_in(message)
       port_number = message.match.in_port
 
@@ -197,24 +199,29 @@ module Vnet::Openflow
         return
       end
 
-      match_md = md_create(:network => ipv4_info[:network_id])
-      reflection_md = md_create(:reflection => nil)
-
-      cookie = ipv4_info[:network_id] | COOKIE_TYPE_NETWORK
-
       [ [35, {}],
-        [45, { :ipv4_src => message.arp_tpa } ]
+        [45, { ipv4_src: message.arp_tpa } ]
       ].each { |priority, match_extra|
-        flow = Flow.create(TABLE_ARP_LOOKUP_NW_NIL, priority,
-          match_md.merge({ :eth_type => 0x0800,
-              :ipv4_dst => message.arp_spa
-            }).merge(match_extra), {
-            :eth_dst => message.arp_sha
-          },
-          reflection_md.merge!({ :cookie => cookie,
-              :idle_timeout => 3600,
-              :goto_table => TABLE_NETWORK_DST_CLASSIFIER_NW_NIL
-            }))
+        flow = flow_create(table: TABLE_ARP_LOOKUP_NW_NIL,
+                           goto_table: TABLE_NETWORK_DST_CLASSIFIER_NW_NIL,
+                           priority: priority,
+                           idle_timeout: 3600,
+
+                           match: {
+                             eth_type: 0x0800,
+                             ipv4_dst: message.arp_spa,
+                           },
+                           match_first: ipv4_info[:network_id],
+
+                           write_reflection: true,
+
+                           actions: {
+                             eth_dst: message.arp_sha,
+                           },
+
+                           cookie: ipv4_info[:network_id] | COOKIE_TYPE_NETWORK,
+                          )
+
         @dp_info.add_flow(flow)
       }
 
@@ -234,17 +241,26 @@ module Vnet::Openflow
 
         flows = []
 
-        flows << Flow.create(TABLE_ARP_LOOKUP_NW_NIL, 25,
-          match_md.merge({ :eth_type => 0x0800,
-              :ipv4_dst => queued_message[:destination_ipv4].mask(queued_message[:destination_prefix]),
-              :ipv4_dst_mask => IPV4_BROADCAST.mask(queued_message[:destination_prefix]),
-            }), {
-            :eth_dst => message.arp_sha
-          },
-          reflection_md.merge!({ :cookie => cookie,
-              :idle_timeout => 3600,
-              :goto_table => TABLE_NETWORK_DST_CLASSIFIER_NW_NIL
-            }))
+        # TODO: Review.
+        flow = flow_create(table: TABLE_ARP_LOOKUP_NW_NIL,
+                           goto_table: TABLE_NETWORK_DST_CLASSIFIER_NW_NIL,
+                           priority: 25,
+                           idle_timeout: 3600,
+
+                           match: {
+                             eth_type: 0x0800,
+                             :ipv4_dst => queued_message[:destination_ipv4].mask(queued_message[:destination_prefix]),
+                             :ipv4_dst_mask => IPV4_BROADCAST.mask(queued_message[:destination_prefix]),
+                           },
+                           match_first: ipv4_info[:network_id],
+
+                           actions: {
+                             eth_dst: message.arp_sha,
+                           },
+                           write_reflection: true,
+
+                           cookie: ipv4_info[:network_id] | COOKIE_TYPE_NETWORK,
+                          )
 
         # if queued_message[:use_src_ipv4]
         #   flows << Flow.create(TABLE_ARP_LOOKUP_NW_NIL, 45,
@@ -407,23 +423,21 @@ module Vnet::Openflow
       }
     end
 
-    #
-    # Refactor...
-    #
-
-    def match_packet(message)
-      match = { :eth_type => 0x0800,
-        :ipv4_dst => message.ipv4_dst
-      }
-
+    def match_for_network_metadata(message)
       case message.table_id
       when TABLE_ARP_LOOKUP_NW_NIL
-        match.merge!(match_first: (message.match.metadata & METADATA_FIRST_MASK) >> 32)
+        { match_first: (message.match.metadata & METADATA_FIRST_MASK) >> 32 }
       else
-        debug log_format("arp_lookup match_packet does not support table_id", table_id: message.table_id)
+        raise "arp_lookup match_for_network_metadata does not support table_id #{message.table_id}"
+
+        error log_format("arp_lookup match_packet does not support table_id", table_id: message.table_id)
         nil
       end
     end
+
+    #
+    # Refactor...
+    #
 
     def unreachable_ip(messages, error_msg, suppress_reason)
       message = messages.last[:message]
@@ -445,22 +459,25 @@ module Vnet::Openflow
       when :inactive_interface then hard_timeout = 10
       end
 
-      match_packet(message).tap { |match|
-        if match.nil?
+      match_for_network_metadata(message).tap { |match_network|
+        if match_network.nil?
           debug log_format("arp_lookup suppress_packets received packet with unknown table id")
           return
         end
 
-        flow = flow_create(table: TABLE_ARP_LOOKUP_NW_NIL,
-                           priority: 21,
-                           hard_timeout: hard_timeout,
+        flow_hash = {
+          table: TABLE_ARP_LOOKUP_NW_NIL,
+          priority: 21,
+          hard_timeout: hard_timeout,
 
-                           match: match_packet(message),
+          match: { eth_type: 0x0800,
+                   ipv4_dst: message.ipv4_dst,
+                 },
 
-                           cookie: message.cookie,
-                          )
+          cookie: message.cookie,
+        }.merge(match_network)
 
-        @dp_info.add_flow(flow)
+        @dp_info.add_flow(flow_create(flow_hash))
       }
     end
 

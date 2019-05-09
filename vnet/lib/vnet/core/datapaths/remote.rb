@@ -185,8 +185,8 @@ module Vnet::Core::Datapaths
                            },
                            match_remote: true,
                            match_first: flow_gen_id,
-                           match_second: flow_id,
 
+                           write_reflection: true,
                            write_second: 0,
 
                            cookie: flow_cookie)
