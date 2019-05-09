@@ -27,6 +27,9 @@ module Vnet::Openflow
       trema_hash[:idle_timeout] = @params[:options][:idle_timeout] if @params[:options][:idle_timeout]
       trema_hash[:cookie] = @params[:options][:cookie] if @params[:options][:cookie]
       trema_hash[:cookie_mask] = @params[:options][:cookie_mask] if @params[:options][:cookie_mask]
+
+      Celluloid.logger.debug "trema_hash: #{trema_hash.inspect}"
+
       trema_hash
     end
 

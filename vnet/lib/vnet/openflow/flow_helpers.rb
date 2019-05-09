@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Openflow
-
   module FlowHelpers
     include MetadataHelpers
 
@@ -104,5 +103,4 @@ module Vnet::Openflow
     end
 
   end
-
 end
