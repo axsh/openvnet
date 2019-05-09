@@ -202,16 +202,15 @@ module Vnet::Core::Translations
           actions: actions
         }
 
-        # TODO: Move outside of block...
         if translation[:route_link_id]
           flow_options[:match_first] = @interface_id
           flow_options[:match_second] = translation[:route_link_id]
           flow_options[:write_reflection] = true
-          flow_options[:write_second] = nil
+          flow_options[:write_second] = 0
         else
           flow_options[:match_first] = @interface_id
           flow_options[:write_reflection] = true
-          flow_options[:write_second] = nil
+          flow_options[:write_second] = 0
         end
 
         flows << flow_create(flow_options)
