@@ -154,13 +154,13 @@ module Vnet::Openflow
                            goto_table: TABLE_LOCAL_PORT,
                            priority: 12,
                            match: {
-                             :in_port => OFPP_LOCAL
+                             in_port: Pio::OpenFlow13::Port32.reserved_port_number(:local)
                            })
       flows << flow_create(table: TABLE_CLASSIFIER,
                            goto_table: TABLE_CONTROLLER_PORT,
                            priority: 12,
                            match: {
-                             :in_port => OFPP_CONTROLLER
+                             in_port: Pio::OpenFlow13::Port32.reserved_port_number(:controller)
                            })
 
       #
@@ -172,7 +172,7 @@ module Vnet::Openflow
                              priority: 1,
 
                              actions: {
-                               output: OFPP_CONTROLLER
+                               output: :controller
                              },
 
                              cookie: cookie_type | COOKIE_DYNAMIC_LOAD_MASK)
@@ -185,15 +185,15 @@ module Vnet::Openflow
     # Send messages that will start initializing the switch.
     #
     def switch_ready
-      @dp_info.send_message(Trema::Messages::FeaturesRequest.new)
-      @dp_info.send_message(Trema::Messages::PortDescMultipartRequest.new)
+      @dp_info.send_message(Pio::OpenFlow13::Features::Request.new)
+      # @dp_info.send_message(Pio::OpenFlow13::PortDescMultipart::Request.new)
     end
 
     def features_reply(message)
       debug log_format("transaction_id: %#x" % message.transaction_id)
       debug log_format("n_buffers: %u" % message.n_buffers)
       debug log_format("n_tables: %u" % message.n_tables)
-      debug log_format("capabilities: %u" % message.capabilities)
+      debug log_format("capabilities: #{message.capabilities.join(', ')}")
     end
 
     def port_status(message)

@@ -49,7 +49,7 @@ module Vnet::Core::Interfaces
                            match_first: @id,
 
                            actions: {
-                             :output => OFPP_LOCAL
+                             :output => :local
                            })
     end
 

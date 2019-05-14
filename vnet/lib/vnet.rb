@@ -429,6 +429,7 @@ module Vnet
 
   module Openflow
     autoload :ArpLookup, 'vnet/openflow/arp_lookup'
+    autoload :Command, 'vnet/openflow/command'
     autoload :Controller, 'vnet/openflow/controller'
     autoload :Datapath, 'vnet/openflow/datapath'
     autoload :DatapathInfo, 'vnet/openflow/datapath'
@@ -438,7 +439,6 @@ module Vnet
     autoload :OvsOfctl, 'vnet/openflow/ovs_ofctl'
     autoload :PacketHelpers, 'vnet/openflow/packet_handler'
     autoload :Switch, 'vnet/openflow/switch'
-    autoload :TremaTasks, 'vnet/openflow/trema_tasks'
   end
 
   module Services

@@ -158,7 +158,7 @@ module Vnet::Core
 
     def detect_item_mode(port_name, port_number)
       case
-      when port_number == OFPP_LOCAL
+      when port_number == :local
         MODE_LOCAL
       when port_name =~ /^t-/
         MODE_TUNNEL

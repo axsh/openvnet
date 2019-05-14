@@ -122,7 +122,7 @@ module Vnet::Core::Segments
 
       case message.table_id
       when TABLE_OUTPUT_CONTROLLER_SEG_NW
-        message.match.in_port = OFPP_CONTROLLER
+        message.match.in_port = :controller
       when TABLE_INTERFACE_INGRESS_SEG_DPSEG
       else
         warn log_format("packet in from wrong table", message.inspect)

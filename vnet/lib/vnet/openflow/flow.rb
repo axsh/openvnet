@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+require 'pio/open_flow13'
+
 module Vnet::Openflow
 
   class Flow
@@ -8,20 +10,22 @@ module Vnet::Openflow
 
     def initialize(table_id, priority, match, actions, options = {})
       @params = {
-        :table_id => table_id,
-        :priority => priority,
-        :match => match,
-        :actions => actions,
-        :options => options
+        table_id: table_id,
+        priority: priority,
+        match: match,
+        actions: actions,
+        options: options
       }
     end
 
     def to_trema_hash
+      Celluloid::Logger.debug("XXXXXXXX #{@params[:match].inspect}")
+
       trema_hash = {
-        :table_id => @params[:table_id],
-        :priority => @params[:priority],
-        :match => Trema::Match.new(@params[:match]),
-        :instructions => convert_instructions(@params[:actions], @params[:options]),
+        table_id: @params[:table_id],
+        priority: @params[:priority],
+        match: Pio::OpenFlow13::Match.new(@params[:match]),
+        instructions: convert_instructions(@params[:actions], @params[:options]),
       }
       trema_hash[:hard_timeout] = @params[:options][:hard_timeout] if @params[:options][:hard_timeout]
       trema_hash[:idle_timeout] = @params[:options][:idle_timeout] if @params[:options][:idle_timeout]
@@ -45,21 +49,21 @@ module Vnet::Openflow
       instructions = []
 
       if actions
-        instructions << Trema::Instructions::ApplyAction.new(:actions => self.convert_actions(actions))
+        instructions << Pio::OpenFlow13::Apply.new(self.convert_actions(actions))
       end
 
       if options[:metadata]
-        instructions << Trema::Instructions::WriteMetadata.new(:metadata => options[:metadata],
-                                                               :metadata_mask => options[:metadata_mask])
+        instructions << Pio::OpenFlow13::WriteMetadata.new(metadata: options[:metadata],
+                                                           metadata_mask: options[:metadata_mask])
       end
 
       if options[:goto_table]
-        instructions << Trema::Instructions::GotoTable.new(:table_id => options[:goto_table])
+        instructions << Pio::OpenFlow13::GotoTable.new(options[:goto_table])
       end
 
       if instructions.empty?
         # Make sure there's always at least one instruction included.
-        instructions << Trema::Instructions::ApplyAction.new(:actions => [])
+        instructions << Pio::OpenFlow13::Apply.new()
       end
 
       instructions
@@ -80,21 +84,21 @@ module Vnet::Openflow
     # TODO: SetField needs to consolidate actions.
     def to_action(tag, arg)
       case tag
-      when :eth_dst  then Trema::Actions::SetField.new(:action_set => [Trema::Actions::EthDst.new(:mac_address => arg)])
-      when :eth_src  then Trema::Actions::SetField.new(:action_set => [Trema::Actions::EthSrc.new(:mac_address => arg)])
-      when :ipv4_dst then Trema::Actions::SetField.new(:action_set => [Trema::Actions::Ipv4DstAddr.new(:ip_addr => arg)])
-      when :ipv4_src then Trema::Actions::SetField.new(:action_set => [Trema::Actions::Ipv4SrcAddr.new(:ip_addr => arg)])
+      when :eth_dst  then Trema::Actions::SetField.new(action_set: [Trema::Actions::EthDst.new(mac_address: arg)])
+      when :eth_src  then Trema::Actions::SetField.new(action_set: [Trema::Actions::EthSrc.new(mac_address: arg)])
+      when :ipv4_dst then Trema::Actions::SetField.new(action_set: [Trema::Actions::Ipv4DstAddr.new(ip_addr: arg)])
+      when :ipv4_src then Trema::Actions::SetField.new(action_set: [Trema::Actions::Ipv4SrcAddr.new(ip_addr: arg)])
 
-      when :tcp_dst  then Trema::Actions::SetField.new(:action_set => [Trema::Actions::TcpDstPort.new(:transport_port => arg)])
-      when :tcp_src  then Trema::Actions::SetField.new(:action_set => [Trema::Actions::TcpSrcPort.new(:transport_port => arg)])
-      when :udp_dst  then Trema::Actions::SetField.new(:action_set => [Trema::Actions::UdpDstPort.new(:transport_port => arg)])
-      when :udp_src  then Trema::Actions::SetField.new(:action_set => [Trema::Actions::UdpSrcPort.new(:transport_port => arg)])
+      when :tcp_dst  then Trema::Actions::SetField.new(action_set: [Trema::Actions::TcpDstPort.new(transport_port: arg)])
+      when :tcp_src  then Trema::Actions::SetField.new(action_set: [Trema::Actions::TcpSrcPort.new(transport_port: arg)])
+      when :udp_dst  then Trema::Actions::SetField.new(action_set: [Trema::Actions::UdpDstPort.new(transport_port: arg)])
+      when :udp_src  then Trema::Actions::SetField.new(action_set: [Trema::Actions::UdpSrcPort.new(transport_port: arg)])
 
-      when :normal then Trema::Actions::SendOutPort.new(:port_number => OFPP_NORMAL)
-      when :output then Trema::Actions::SendOutPort.new(:port_number => arg)
-      when :tunnel_id then Trema::Actions::SetField.new(:action_set => [Trema::Actions::TunnelId.new(:tunnel_id => arg)])
+      when :normal then Trema::Actions::SendOutPort.new(port_number: OFPP_NORMAL)
+      when :output then Trema::Actions::SendOutPort.new(port_number: arg)
+      when :tunnel_id then Trema::Actions::SetField.new(action_set: [Trema::Actions::TunnelId.new(tunnel_id: arg)])
       when :strip_vlan then Trema::Actions::PopVlan.new if arg == true # TODO refactoring
-      when :mod_vlan_vid then Trema::Actions::SetField.new(:action_set => [Trema::Actions::PushVlan.new(0x8100), Trema::Actions::VlanVid.new(:vlan_vid => arg)])
+      when :mod_vlan_vid then Trema::Actions::SetField.new(action_set: [Trema::Actions::PushVlan.new(0x8100), Trema::Actions::VlanVid.new(vlan_vid: arg)])
       else
         raise("Unknown action type.")
       end

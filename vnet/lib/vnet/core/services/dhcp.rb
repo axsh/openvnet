@@ -30,7 +30,7 @@ module Vnet::Core::Services
                            match_first: @interface_id,
 
                            actions: {
-                             :output => Vnet::Openflow::Controller::OFPP_CONTROLLER
+                             :output => :controller
                            })
 
       @dp_info.add_flows(flows)

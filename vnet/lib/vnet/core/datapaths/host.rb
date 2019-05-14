@@ -269,7 +269,7 @@ module Vnet::Core::Datapaths
 
                            actions: {
                              :eth_dst => dpg_map[:mac_address],
-                             :output => OFPP_CONTROLLER
+                             :output => :controller
                            },
                            cookie: flow_cookie)
 

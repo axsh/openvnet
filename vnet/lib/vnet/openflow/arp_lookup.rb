@@ -27,7 +27,7 @@ module Vnet::Openflow
                            match_first: @arp_lookup[:interface_id],
 
                            actions: {
-                             :output => Controller::OFPP_CONTROLLER
+                             :output => :controller
                            },
 
                            cookie: @arp_lookup[:reply_cookie])
@@ -64,7 +64,7 @@ module Vnet::Openflow
                              match_first: ipv4_info[:network_id],
 
                              actions: {
-                               :output => Controller::OFPP_CONTROLLER
+                               :output => :controller
                              },
 
                              cookie: @arp_lookup[:lookup_cookie])
@@ -321,13 +321,13 @@ module Vnet::Openflow
                          request_ipv4: params[:request_ipv4],
                          attempts: params[:attempts])
 
-      packet_arp_out({ :out_port => OFPP_TABLE,
-                       :in_port => OFPP_CONTROLLER,
-                       :eth_src => params[:interface_mac],
-                       :op_code => Racket::L3::ARP::ARPOP_REQUEST,
-                       :sha => params[:interface_mac],
-                       :spa => params[:interface_ipv4],
-                       :tpa => params[:request_ipv4]
+      packet_arp_out({ out_port: OFPP_TABLE,
+                       in_port: Pio::OpenFlow13::Port32.reserved_port_number(:controller),
+                       eth_src: params[:interface_mac],
+                       op_code: Racket::L3::ARP::ARPOP_REQUEST,
+                       sha: params[:interface_mac],
+                       spa: params[:interface_ipv4],
+                       tpa: params[:request_ipv4]
                      })
     end
 
@@ -410,14 +410,14 @@ module Vnet::Openflow
       return if messages.nil?
 
       messages.each { |message|
-        # Set the in_port to OFPP_CONTROLLER since the packets stored
+        # Set the in_port to :controller since the packets stored
         # have already been processed by TABLE_CLASSIFIER to
         # TABLE_ARP_LOOKUP_NW_NIL, and as such no longer match the fields
         # required by the old in_port.
         #
         # The route link is identified by eth_dst, which was set in
         # TABLE_ROUTER_LINK prior to be sent to the controller.
-        message[:message].match.in_port = OFPP_CONTROLLER
+        message[:message].match.in_port = :controller
 
         @dp_info.send_packet_out(message[:message], OFPP_TABLE)
       }

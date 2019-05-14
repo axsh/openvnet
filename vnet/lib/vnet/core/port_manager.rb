@@ -97,7 +97,7 @@ module Vnet::Core
       return if port.installed?
 
       case
-      when port.port_number == OFPP_LOCAL
+      when port.port_number == :local
         prepare_port_local(port)
       when port.port_desc.name =~ /^t-/
         prepare_port_tunnel(port)

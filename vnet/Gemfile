@@ -32,10 +32,7 @@ gem "unicorn"
 gem "activesupport"
 
 # trema and build requirement gems
-gem 'paper_house'
-gem 'rant', '>= 0.5.9', :git => 'https://github.com/axsh/rant.git'
-gem 'trema', :git=>'https://github.com/axsh/trema.git', :branch=>'wakame-edge'
-gem 'pio'
+gem 'trema', :git=>'https://github.com/trema/trema.git', :branch=>'develop'
 
 group :development, :test do
   # Rake's version required was added to make OpenVNet run on Ubuntu 14.04

@@ -79,19 +79,11 @@ module Vnet::Core
     #
 
     def add_flow(flow)
-      @controller.pass_task {
-        @controller.send_flow_mod_add(@dpid, flow.to_trema_hash)
-      }
+      @controller.public_add_flow(@dpid, flow)
     end
 
     def add_flows(flows)
-      return if flows.blank?
-
-      @controller.pass_task {
-        flows.each { |flow|
-          @controller.send_flow_mod_add(@dpid, flow.to_trema_hash)
-        }
-      }
+      @controller.public_add_flows(@dpid, flows)
     end
 
     def add_ovs_flow(flow_str)
@@ -112,9 +104,7 @@ module Vnet::Core
         :cookie_mask => cookie_mask
       }
 
-      @controller.pass_task {
-        @controller.public_send_flow_mod(@dpid, options)
-      }
+      @controller.public_send_flow_mod(@dpid, options)
     end
 
     def del_flows(params = {})
@@ -128,22 +118,19 @@ module Vnet::Core
       match = options[:match]
       options[:match] = Trema::Match.new(match) if match
 
-      @controller.pass_task {
-        @controller.public_send_flow_mod(@dpid, options)
-      }
+      @controller.public_send_flow_mod(@dpid, options)
     end
 
     def del_all_flows
       options = {
-        :command => Vnet::Openflow::Controller::OFPFC_DELETE,
-        :table_id => Vnet::Openflow::Controller::OFPTT_ALL,
-        :out_port => Vnet::Openflow::Controller::OFPP_ANY,
-        :out_group => Vnet::Openflow::Controller::OFPG_ANY,
+        buffer_id: :no_buffer,
+        match: {
+          table_id: :all,
+        },
+        out_port: :any,
       }
 
-      @controller.pass_task {
-        @controller.public_send_flow_mod(@dpid, options)
-      }
+      @controller.public_send_flow_mod_delete(@dpid, options)
     end
 
     #
@@ -165,15 +152,11 @@ module Vnet::Core
     #
 
     def send_message(message)
-      @controller.pass_task {
-        @controller.public_send_message(@dpid, message)
-      }
+      @controller.public_send_message(@dpid, message)
     end
 
     def send_packet_out(message, port_no)
-      @controller.pass_task {
-        @controller.public_send_packet_out(@dpid, message, port_no)
-      }
+      @controller.public_send_packet_out(@dpid, message, port_no)
     end
 
     #
