@@ -38,6 +38,7 @@ trap(:TERM) { Thread.new { @sleeper&.run } }
 trap(:INT) { Thread.new { @sleeper&.run } }
 
 Trema.logger = Trema::Logger.new('trema')
+Trema.logger.level = :debug
 
 Vnet::NodeModules::ServiceWatchdog.supervise_as :service_watchdog
 Vnet::NodeModules::ServiceOpenflow.supervise_as :service_openflow

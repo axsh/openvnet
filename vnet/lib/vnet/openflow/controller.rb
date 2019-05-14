@@ -4,7 +4,6 @@ require 'racket'
 require 'trema/controller'
 
 module Vnet::Openflow
-
   class Controller < Trema::Controller
     include Celluloid::Logger
     include Vnet::Constants::Openflow
@@ -196,6 +195,6 @@ module Vnet::Openflow
     def safe_dp_info(dpid)
       @datapaths[dpid] && @datapaths[dpid][:dp_info]
     end
-  end
 
+  end
 end
