@@ -8,15 +8,8 @@
 # http://www.opensource.org/licenses/MIT
 
 # frozen_string_literal: true
-# require 'active_support/core_ext/module/delegation'
-# require 'phut'
 require 'pio'
 require 'celluloid/io'
-
-# require 'socket'
-# require 'trema/command'
-# require 'trema/logger'
-# require 'trema/monkey_patch/integer'
 
 module Vnet::Openflow::Trema
   class NoControllerDefined < StandardError; end

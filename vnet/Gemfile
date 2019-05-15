@@ -1,49 +1,48 @@
-source "http://rubygems.org"
+source 'http://rubygems.org'
 
 gem 'ffi-rzmq'
-gem "bit-struct", ">= 0.13.7"
+gem 'bit-struct', '>= 0.13.7'
 
 # Celluloid and celluloid-io versions were fixed to make OpenVNet run
 # on Ubuntu 14.04, however we haven't updated them below.
-gem "celluloid", "0.16.0"
-gem "celluloid-io", "0.16.2"
+gem 'celluloid', '0.16.0'
+gem 'celluloid-io', '0.16.2'
 
 # We had to fork DCell in order to update the http gem.
 # DCell was requiring http 0.5.1 which has a security issue so I forked it and
 # updated its http requirement to 3.0.0.
-gem "dcell", :github => 'axsh/dcell', :branch => 'v0.16.1-updated-gems'
+gem 'dcell', :github => 'axsh/dcell', :branch => 'v0.16.1-updated-gems'
 
-gem "fuguta"
-gem "ipaddress"
-gem "json"
-gem "mysql2"
-gem "net-dhcp", ">= 1.1.1"
-gem "net-dns"
-gem "rack"
-gem "rack-cors"
-gem "racket", ">= 1.0.12", :git => 'https://github.com/axsh/racket.git'
-gem "sequel", "4.8.0" # Updating to 4.23.0 broke the unit tests. Needs to be investigated.
-gem "sequel_paranoia"
-gem "sinatra", "1.4.7" # Sinatra-browse is not compatible with Sinatra 2.0.0 yet
-gem "sinatra-contrib"
-gem "sinatra-hashfix"
-gem "sinatra-browse", ">= 0.6.1" # 0.5 and 0.6 have a bug where missing parameters would be set to nil values
-gem "unicorn"
-gem "activesupport"
+gem 'fuguta'
+gem 'ipaddress'
+gem 'json'
+gem 'mysql2'
+gem 'net-dhcp', '>= 1.1.1'
+gem 'net-dns'
+gem 'rack'
+gem 'rack-cors'
+gem 'racket', '>= 1.0.12', :git => 'https://github.com/axsh/racket.git'
+gem 'sequel', '4.8.0' # Updating to 4.23.0 broke the unit tests. Needs to be investigated.
+gem 'sequel_paranoia'
+gem 'sinatra', '1.4.7' # Sinatra-browse is not compatible with Sinatra 2.0.0 yet
+gem 'sinatra-contrib'
+gem 'sinatra-hashfix'
+gem 'sinatra-browse', '>= 0.6.1' # 0.5 and 0.6 have a bug where missing parameters would be set to nil values
+gem 'unicorn'
+gem 'activesupport'
 
-# trema and build requirement gems
-gem 'trema', :git=>'https://github.com/trema/trema.git', :branch=>'develop'
+gem 'pio', '0.30.2'
 
 group :development, :test do
   # Rake's version required was added to make OpenVNet run on Ubuntu 14.04
-  gem "rake", "10.1.0"
-  gem "rspec"
-  gem "rack-test"
-  gem "fabrication", '2.9.8' # Updating to 2.13.2 broke the unit tests.
+  gem 'rake', '10.1.0'
+  gem 'rspec'
+  gem 'rack-test'
+  gem 'fabrication', '2.9.8' # Updating to 2.13.2 broke the unit tests.
   gem 'database_cleaner'
-  gem "coveralls"
+  gem 'coveralls'
   gem 'webmock'
-  gem "pry-byebug"
+  gem 'pry-byebug'
 end
 
 group :metrics do

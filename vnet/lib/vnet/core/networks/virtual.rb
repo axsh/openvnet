@@ -89,7 +89,7 @@ module Vnet::Core::Networks
 
     def update_flows(port_numbers)
       flow_actions = port_numbers.collect { |port_number|
-        { :output => port_number }
+        { output: port_number }
       }
 
       flows = []

@@ -95,30 +95,16 @@ module Vnet::Core
     end
 
     def del_cookie(cookie, cookie_mask = Vnet::Constants::OpenflowFlows::COOKIE_MASK)
-      options = {
-        :command => Vnet::Openflow::Controller::OFPFC_DELETE,
-        :table_id => Vnet::Openflow::Controller::OFPTT_ALL,
-        :out_port => Vnet::Openflow::Controller::OFPP_ANY,
-        :out_group => Vnet::Openflow::Controller::OFPG_ANY,
+      params = {
         :cookie => cookie,
         :cookie_mask => cookie_mask
       }
 
-      @controller.public_send_flow_mod(@dpid, options)
+      @controller.send_flow_mod_delete(@dpid, params)
     end
 
     def del_flows(params = {})
-      options = {
-        :command => Vnet::Openflow::Controller::OFPFC_DELETE,
-        :table_id => Vnet::Openflow::Controller::OFPTT_ALL,
-        :out_port => Vnet::Openflow::Controller::OFPP_ANY,
-        :out_group => Vnet::Openflow::Controller::OFPG_ANY,
-      }.merge(params)
-
-      match = options[:match]
-      options[:match] = Trema::Match.new(match) if match
-
-      @controller.public_send_flow_mod(@dpid, options)
+      @controller.send_flow_mod_delete(@dpid, params.merge(match: Pio::Match.new(params[:match] || {})))
     end
 
     def del_all_flows

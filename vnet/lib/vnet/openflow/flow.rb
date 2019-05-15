@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-require 'pio/open_flow13'
+require 'pio'
 
 module Vnet::Openflow
 
@@ -19,8 +19,6 @@ module Vnet::Openflow
     end
 
     def to_trema_hash
-      Celluloid::Logger.debug("XXXXXXXX #{@params[:match].inspect}")
-
       trema_hash = {
         table_id: @params[:table_id],
         priority: @params[:priority],
@@ -75,7 +73,7 @@ module Vnet::Openflow
       elsif actions.class == Array
         actions.each { |arg| self.convert_actions(arg, result) }
       else
-        raise("Unknown action class: #{actions.class.name}.")
+        raise("Unknown action class: #{actions.class.name}")
       end
 
       result
@@ -84,23 +82,22 @@ module Vnet::Openflow
     # TODO: SetField needs to consolidate actions.
     def to_action(tag, arg)
       case tag
-      when :eth_dst  then Trema::Actions::SetField.new(action_set: [Trema::Actions::EthDst.new(mac_address: arg)])
-      when :eth_src  then Trema::Actions::SetField.new(action_set: [Trema::Actions::EthSrc.new(mac_address: arg)])
-      when :ipv4_dst then Trema::Actions::SetField.new(action_set: [Trema::Actions::Ipv4DstAddr.new(ip_addr: arg)])
-      when :ipv4_src then Trema::Actions::SetField.new(action_set: [Trema::Actions::Ipv4SrcAddr.new(ip_addr: arg)])
+      when :eth_dst  then Pio::SetDestinationMacAddress.new(arg)
+      when :eth_src  then Pio::SetSourceMacAddress.new(arg)
+      when :ipv4_dst then Pio::SetDestinationIpAddress.new(arg)
+      when :ipv4_src then Pio::SetSourceIpAddress.new(arg)
 
-      when :tcp_dst  then Trema::Actions::SetField.new(action_set: [Trema::Actions::TcpDstPort.new(transport_port: arg)])
-      when :tcp_src  then Trema::Actions::SetField.new(action_set: [Trema::Actions::TcpSrcPort.new(transport_port: arg)])
-      when :udp_dst  then Trema::Actions::SetField.new(action_set: [Trema::Actions::UdpDstPort.new(transport_port: arg)])
-      when :udp_src  then Trema::Actions::SetField.new(action_set: [Trema::Actions::UdpSrcPort.new(transport_port: arg)])
+      when :tcp_dst  then Pio::SetTransportDestinationPort.new(arg)
+      when :tcp_src  then Pio::SetTransportSourcePort.new(arg)
+      when :udp_dst  then Pio::SetTransportDestinationPort.new(arg)
+      when :udp_src  then Pio::SetTransportSourcePort.new(arg)
 
-      when :normal then Trema::Actions::SendOutPort.new(port_number: OFPP_NORMAL)
-      when :output then Trema::Actions::SendOutPort.new(port_number: arg)
-      when :tunnel_id then Trema::Actions::SetField.new(action_set: [Trema::Actions::TunnelId.new(tunnel_id: arg)])
-      when :strip_vlan then Trema::Actions::PopVlan.new if arg == true # TODO refactoring
-      when :mod_vlan_vid then Trema::Actions::SetField.new(action_set: [Trema::Actions::PushVlan.new(0x8100), Trema::Actions::VlanVid.new(vlan_vid: arg)])
+      when :output then Pio::SendOutPort.new(arg)
+      when :tunnel_id then Pio::OpenFlow10::SetVlanVid.new(0x999)
+      # when :strip_vlan then Pio::OpenFlow10::StripVlanHeader.new #Trema::Actions::PopVlan.new
+      # when :mod_vlan_vid then Trema::Actions::SetField.new(action_set: [Trema::Actions::PushVlan.new(0x8100), Trema::Actions::VlanVid.new(vlan_vid: arg)])
       else
-        raise("Unknown action type.")
+        raise("Unknown action type: #{tag}")
       end
     end
 

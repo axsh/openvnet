@@ -48,9 +48,6 @@ module Vnet::Configurations
     param :bootstrap_init_timeout, :default => 600
     param :main_init_timeout, :default => 120
 
-    param :trema_home, :default => Gem::Specification.find_by_name('trema').gem_dir
-    param :trema_tmp, :default => '/var/run/openvnet'
-
     param :switch
     param :ovsdb
   end

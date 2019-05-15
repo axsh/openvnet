@@ -44,12 +44,12 @@ module Vnet::Core::Networks
 
     def update_flows(port_numbers)
       flow_actions = port_numbers.collect { |port_number|
-        { :output => port_number }
+        { output: port_number }
       }
 
       # Include port LOCAL until we implement interfaces for local eth
       # ports.
-      flow_actions << { :output => OFPP_LOCAL }
+      flow_actions << { output: :local }
 
       flows = []
       flows << flow_create(table: TABLE_FLOOD_LOCAL_SEG_NW,
