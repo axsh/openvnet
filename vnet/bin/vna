@@ -9,7 +9,6 @@ require 'vnet/api_rpc'
 require 'celluloid'
 require 'celluloid/autostart'
 require 'dcell'
-require 'trema'
 
 #Vnet::Initializers::Logger.run("vna.log")
 
@@ -30,15 +29,13 @@ params = {
 params.merge!(:public => conf.node.pub_addr_string) if conf.node.addr.public != ""
 
 DCell.start(params)
+Celluloid.start
 
 @sleeper = Thread.current
 
 trap(:TTIN) { Celluloid.stack_dump }
 trap(:TERM) { Thread.new { @sleeper&.run } }
 trap(:INT) { Thread.new { @sleeper&.run } }
-
-Trema.logger = Trema::Logger.new('trema')
-Trema.logger.level = :debug
 
 Vnet::NodeModules::ServiceWatchdog.supervise_as :service_watchdog
 Vnet::NodeModules::ServiceOpenflow.supervise_as :service_openflow
@@ -47,3 +44,5 @@ Celluloid::Actor[:service_watchdog].start_watchdog
 Celluloid::Actor[:service_openflow].start_openflow
 
 sleep
+
+Celluloid::Actor[:service_openflow].handle_exit

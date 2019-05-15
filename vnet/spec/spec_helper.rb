@@ -34,7 +34,7 @@ DCell.setup
 DATAPATH_IDLE_FLOWCOUNT = 0
 
 # Disable watchdog registration.
-module Vnet::Manager::Watchdog
+module Vnet::Watchdog
   module InstanceMethods
     def watchdog_register
     end

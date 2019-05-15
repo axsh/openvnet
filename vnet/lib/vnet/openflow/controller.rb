@@ -1,17 +1,15 @@
 # -*- coding: utf-8 -*-
 
 require 'racket'
-require 'trema/controller'
 
 module Vnet::Openflow
-  class Controller < Trema::Controller
-    include Celluloid::Logger
+  class Controller < Vnet::Openflow::Trema::Controller
+    include Vnet::Logger
     include Vnet::Constants::Openflow
 
     attr_reader :datapaths
-    attr_accessor :trema_thread
 
-    def initialize(port_number, logging_level)
+    def initialize(port_number)
       @dpids = {}
       @datapaths = {}
 
@@ -136,7 +134,7 @@ module Vnet::Openflow
       # TODO: Need to wait after terminate.
       terminate_datapath(dpid)
 
-      info "initialize datapath actor. dpid: 0x%016x" % dpid
+      info log_format_h("initialize datapath actor", dpid: "0x%016x" % dpid)
 
       # There is no need to clean up the old switch, as all the
       # previous flows are removed. Just let it rebuild everything.

@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 
-require 'vnet/manager_watchdog'
-
 module Vnet::Services
   class Manager < Vnet::Manager
-    include Vnet::Manager::Watchdog
+    include Vnet::Watchdog
 
     def initialize(info, options = {})
       @vnet_info = info

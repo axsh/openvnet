@@ -36,12 +36,14 @@ module Vnet
   autoload :ItemDpUuid,           'vnet/item_base'
   autoload :ItemDpUuidMode,       'vnet/item_base'
   autoload :ItemDatapathUuidMode, 'vnet/item_base'
+  autoload :Logger,               'vnet/logger'
   autoload :Manager,              'vnet/manager'
   autoload :ManagerAssocs,        'vnet/manager_assocs'
   autoload :ManagerList,          'vnet/manager_list'
   autoload :UpdateItemStates,     'vnet/manager_modules'
   autoload :UpdatePropertyStates, 'vnet/manager_modules'
   autoload :Params,               'vnet/params'
+  autoload :Watchdog,             'vnet/watchdog'
 
   module Configurations
     autoload :Base,   'vnet/configurations/base'
@@ -429,7 +431,6 @@ module Vnet
 
   module Openflow
     autoload :ArpLookup, 'vnet/openflow/arp_lookup'
-    autoload :Command, 'vnet/openflow/command'
     autoload :Controller, 'vnet/openflow/controller'
     autoload :Datapath, 'vnet/openflow/datapath'
     autoload :DatapathInfo, 'vnet/openflow/datapath'
@@ -439,6 +440,11 @@ module Vnet
     autoload :OvsOfctl, 'vnet/openflow/ovs_ofctl'
     autoload :PacketHelpers, 'vnet/openflow/packet_handler'
     autoload :Switch, 'vnet/openflow/switch'
+
+    module Trema
+      autoload :Controller, 'vnet/openflow/trema/controller'
+      autoload :Switch, 'vnet/openflow/trema/switch'
+    end
   end
 
   module Services

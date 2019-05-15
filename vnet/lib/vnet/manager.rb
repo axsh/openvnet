@@ -3,18 +3,16 @@
 require 'sequel/core'
 require 'sequel/sql'
 
-require 'vnet/manager_logger'
 require 'vnet/manager_query'
 
 module Vnet
   class Manager
     include Celluloid
-    include Celluloid::Logger
 
     include Vnet::Constants::Openflow
     include Vnet::Event::EventTasks
     include Vnet::Event::Notifications
-    include Vnet::Manager::Logger
+    include Vnet::Logger
     include Vnet::Manager::Query
     include Vnet::Params
 

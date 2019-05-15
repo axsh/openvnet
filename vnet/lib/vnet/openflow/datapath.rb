@@ -108,7 +108,7 @@ module Vnet::Openflow
       # @dp_info.bootstrap_managers.each { |manager| manager.event_handler_drop_all }
       # @dp_info.main_managers.each { |manager| manager.event_handler_drop_all }
 
-      @controller.pass_task { @controller.reset_datapath(@dpid) }
+      @controller.reset_datapath(@dpid)
     end
 
     #

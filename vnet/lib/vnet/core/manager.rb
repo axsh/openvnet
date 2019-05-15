@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 
-require 'vnet/manager_watchdog'
-
 module Vnet::Core
   class Manager < Vnet::Manager
-    include Vnet::Manager::Watchdog
+    include Vnet::Watchdog
 
     attr_reader :datapath_info
 
