@@ -11,6 +11,9 @@ require 'fuguta'
 require 'json'
 require 'ostruct'
 
+# As Celluloid has customized thread handling, do not allow the
+# 'celluloid' module to be loaded before 'vnet'. This is to catch
+# programmer errors, _not_ race-conditions.
 if defined?(::Celluloid)
   raise "Celluloid module loaded before Vnet."
 end
