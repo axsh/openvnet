@@ -70,8 +70,8 @@ module Vnet::Core::Tunnels
       dpn = detect_network_id?(network_id) || return
 
       mac2mac_actions << {
-        :eth_dst => dpn[:mac_address],
-        :output => @host_port_number,
+        destination_mac_address: dpn[:mac_address],
+        output: @host_port_number,
       }
     end
 
@@ -81,8 +81,8 @@ module Vnet::Core::Tunnels
       dpn = detect_segment_id?(segment_id) || return
 
       mac2mac_actions << {
-        :eth_dst => dpn[:mac_address],
-        :output => @host_port_number,
+        destination_mac_address: dpn[:mac_address],
+        output: @host_port_number,
       }
     end
 

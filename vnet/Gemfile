@@ -31,7 +31,7 @@ gem 'sinatra-browse', '>= 0.6.1' # 0.5 and 0.6 have a bug where missing paramete
 gem 'unicorn'
 gem 'activesupport'
 
-gem 'pio', '0.30.2'
+gem 'pio', :github => 'rakshasa/pio', :branch => 'of13-missing'
 
 group :development, :test do
   # Rake's version required was added to make OpenVNet run on Ubuntu 14.04

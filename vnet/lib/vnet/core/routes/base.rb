@@ -28,7 +28,7 @@ module Vnet::Core::Routes
       @route_link_id = map.route_link_id
 
       @network_id = map.network_id
-      @ipv4_address = IPAddr.new(map.ipv4_network, Socket::AF_INET)
+      @ipv4_address = Pio::IPv4Address.new(map.ipv4_network)
       @ipv4_prefix = map.ipv4_prefix
 
       @ingress = map.ingress

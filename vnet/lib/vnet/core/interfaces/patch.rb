@@ -86,7 +86,7 @@ module Vnet::Core::Interfaces
                            priority: 20,
 
                            match: {
-                             :eth_dst => mac_info[:mac_address],
+                             destination_mac_address: mac_info[:mac_address],
                            },
                            match_remote: true,
                            match_first: @id,
@@ -101,7 +101,7 @@ module Vnet::Core::Interfaces
                            priority: 20,
 
                            match: {
-                             :eth_dst => MAC_BROADCAST
+                             destination_mac_address: MAC_BROADCAST
                            },
                            match_remote: true,
                            match_first: @id,
@@ -121,7 +121,7 @@ module Vnet::Core::Interfaces
                            priority: 20,
 
                            match: {
-                             :eth_src => mac_info[:mac_address]
+                             source_mac_address: mac_info[:mac_address]
                            },
                            match_first: @id,
 
@@ -135,8 +135,8 @@ module Vnet::Core::Interfaces
                            match_first: @id,
 
                            actions: {
-                             :eth_src => Pio::Mac.new('00:00:27:11:11:11'),
-                             :eth_dst => Pio::Mac.new('00:00:27:22:22:22'),
+                             source_mac_address: Pio::Mac.new('00:00:27:11:11:11'),
+                             destination_mac_address: Pio::Mac.new('00:00:27:22:22:22'),
                            },
 
                            cookie: flow_cookie)
@@ -155,7 +155,7 @@ module Vnet::Core::Interfaces
                            priority: 20,
 
                            match: {
-                             :eth_src => mac_info[:mac_address]
+                             source_mac_address: mac_info[:mac_address]
                            },
                            match_first: @id,
                            match_second: ipv4_info[:network_id],

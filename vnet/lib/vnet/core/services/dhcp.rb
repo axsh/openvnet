@@ -22,15 +22,15 @@ module Vnet::Core::Services
                            priority: 30,
 
                            match: {
-                             :eth_type => 0x0800,
-                             :ip_proto => 0x11,
-                             :udp_dst => 67,
-                             :udp_src => 68
+                             ether_type: ETH_TYPE_IPV4,
+                             ip_protocol: 0x11,
+                             udp_src: 68,
+                             udp_dst: 67,
                            },
                            match_first: @interface_id,
 
                            actions: {
-                             :output => :controller
+                             output: :controller
                            })
 
       @dp_info.add_flows(flows)
@@ -47,7 +47,7 @@ module Vnet::Core::Services
 
       # Verify dhcp_in values...
 
-      mac_info, ipv4_info, network = get_mac_ipv4_network(message.ipv4_src)
+      mac_info, ipv4_info, network = get_mac_ipv4_network(message.ipv4_source_address)
 
       if network.nil?
         debug log_format_h('could not find network', mac_info: mac_info.inspect, ipv4_info: ipv4_info.inspect, network_id: network.inspect)
@@ -110,12 +110,12 @@ module Vnet::Core::Services
       end
 
       match_dhcp = {
-        :eth_type => 0x0800,
-        :ip_proto => 0x11,
-        :ipv4_dst => IPV4_BROADCAST,
-        :ipv4_src => IPV4_ZERO,
-        :udp_dst => 67,
-        :udp_src => 68
+        ether_type: ETH_TYPE_IPV4,
+        ip_protocol: 0x11,
+        ipv4_source_address: IPV4_ZERO,
+        ipv4_destination_address: IPV4_BROADCAST,
+        udp_src: 68,
+        udp_dst: 67,
       }
 
       flows = []
@@ -226,7 +226,7 @@ module Vnet::Core::Services
       dhcp_out.chaddr = params[:chaddr].to_a # port.mac
       dhcp_out.siaddr = params[:ipv4_address].to_i
 
-      subnet_mask = IPAddr.new(IPAddr::IN4MASK, Socket::AF_INET).mask(params[:ipv4_prefix])
+      subnet_mask = Pio::IPv4Address.new(IPAddr::IN4MASK).mask(params[:ipv4_prefix])
 
       dhcp_out.options << DHCP::ServerIdentifierOption.new(:payload => params[:ipv4_address].hton.unpack('C*'))
       dhcp_out.options << DHCP::IPAddressLeaseTimeOption.new(:payload => [ 0xff, 0xff, 0xff, 0xff ])

@@ -28,7 +28,7 @@ module Vnet::Core::Ports
                              priority: 30,
 
                              match: {
-                               :in_port => self.port_number
+                               in_port: self.port_number
                              },
 
                              write_reflection: false,
@@ -45,19 +45,19 @@ module Vnet::Core::Ports
                              match_first: @tunnel_id,
 
                              actions: {
-                               :output => self.port_number
+                               output: self.port_number
                              })
         flows << flow_create(table: TABLE_OUT_PORT_EGRESS_TUN_NIL,
                              priority: 2,
 
                              match: {
-                               :in_port => self.port_number
+                               in_port: self.port_number
                              },
                              match_reflection: true,
                              match_first: @tunnel_id,
 
                              actions: {
-                               :output => OFPP_IN_PORT
+                               output: OFPP_IN_PORT
                              })
       end
 

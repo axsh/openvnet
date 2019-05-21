@@ -33,12 +33,12 @@ module Vnet::Core::Networks
 
     def update_flows(port_numbers)
       local_actions = port_numbers.collect { |port_number|
-        { :output => port_number }
+        { output: port_number }
       }
 
       # Include port LOCAL until we implement interfaces for local eth
       # ports.
-      local_actions << { :output => :local }
+      local_actions << { output: :local }
 
       # TODO: Require matching IPv4? Probably do it in TABLE_NETWORK_DST_MAC_LOOKUP_NIL_NW.
 

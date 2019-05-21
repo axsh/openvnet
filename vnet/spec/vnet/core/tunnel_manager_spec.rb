@@ -15,9 +15,9 @@ describe Vnet::Core::TunnelManager do
   }
 
   let(:host_addresses) {
-    [IPAddr.new("192.168.1.1").to_i,
-      IPAddr.new("192.168.1.2").to_i,
-      IPAddr.new("192.168.2.1").to_i]
+    [Pio::IPv4Address.new("192.168.1.1").to_i,
+      Pio::IPv4Address.new("192.168.1.2").to_i,
+      Pio::IPv4Address.new("192.168.2.1").to_i]
   }
 
   (1..3).each { |i|
@@ -179,7 +179,7 @@ describe Vnet::Core::TunnelManager do
       #   1,
       #   {:metadata => 1 | METADATA_TYPE_NETWORK,
       #    :metadata_mask => METADATA_VALUE_MASK | METADATA_TYPE_MASK},
-      #   [{:tunnel_id => 1 | TUNNEL_FLAG_MASK}, {:output => 9}],
+      #   [{:tunnel_id => 1 | TUNNEL_FLAG_MASK}, {output: 9}],
       #   {:cookie => 1 | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)})
     end
 
@@ -216,7 +216,7 @@ describe Vnet::Core::TunnelManager do
           metadata: 1,
           metadata_mask: METADATA_SECOND_MASK,
         }, [
-          { :tunnel_id => (1 & TUNNEL_ID_MASK) | TUNNEL_NETWORK}, {:output => 9}
+          { :tunnel_id => (1 & TUNNEL_ID_MASK) | TUNNEL_NETWORK}, {output: 9}
         ], {
           goto_table: TABLE_FLOOD_SEGMENT_SEG_NW,
           cookie: 1 | (COOKIE_PREFIX_NETWORK << COOKIE_PREFIX_SHIFT)

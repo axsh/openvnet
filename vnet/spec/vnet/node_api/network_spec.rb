@@ -12,7 +12,7 @@ describe Vnet::NodeApi::Network do
     it "return networks" do
       3.times.inject([]) do |array|
         array << Fabricate(:network) do
-          ipv4_network { sequence(:ipv4_network, IPAddr.new("192.168.1.1").to_i) }
+          ipv4_network { sequence(:ipv4_network, Pio::IPv4Address.new("192.168.1.1").to_i) }
         end
       end
       ret = Vnet::NodeApi::Network.execute(:all)

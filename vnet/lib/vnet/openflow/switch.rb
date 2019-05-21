@@ -105,7 +105,7 @@ module Vnet::Openflow
       }
 
       [[TABLE_CLASSIFIER, 10, nil, { :tunnel_id => 0 }],
-       [TABLE_OUTPUT_HOSTIF_DST_DPN_NIL, 2, nil, { :eth_dst => MAC_BROADCAST }],
+       [TABLE_OUTPUT_HOSTIF_DST_DPN_NIL, 2, nil, { destination_mac_address: MAC_BROADCAST }],
        [TABLE_OUTPUT_MAC2MAC_SIF_DIF, 1, nil, { :tunnel_id => 0 }],
       ].each { |table, priority, flag, match|
         flows << flow_create({ table: table,
@@ -143,7 +143,7 @@ module Vnet::Openflow
                              goto_table: to_table,
                              priority: 30,
                              match: {
-                               eth_dst: MAC_BROADCAST
+                               destination_mac_address: MAC_BROADCAST
                              })
       }
 

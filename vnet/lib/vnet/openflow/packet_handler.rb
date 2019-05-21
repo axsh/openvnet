@@ -29,7 +29,7 @@ module Vnet::Openflow
       if params[:in_port]
         packet_params[:datapath_id] = @dp_info.dpid
         packet_params[:buffer_id] = OFP_NO_BUFFER
-        packet_params[:match] = Trema::Match.new(:in_port => params[:in_port])
+        packet_params[:match] = Trema::Match.new(in_port: params[:in_port])
       end
 
       message = Trema::Messages::PacketIn.new(packet_params)

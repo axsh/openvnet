@@ -84,7 +84,7 @@ module Vnet::Endpoints::V10::Helpers
     PARSE_IPV4 = proc do |param|
       begin
         #TODO: Change to ipaddress
-        address = IPAddress::IPv4.new(param)
+        address = Pio::IPv4Address.new(param)
         raise(E::ArgumentError, 'Not an IPv4 address.') unless address.ipv4?
         address.to_i
       rescue ArgumentError
@@ -103,7 +103,7 @@ module Vnet::Endpoints::V10::Helpers
     PARSE_IPV4_ADDRESS = proc do |param|
       begin
         #TODO: Change to ipaddress
-        address = IPAddress::IPv4.new(param)
+        address = Pio::IPv4Address.new(param)
         raise(E::ArgumentError, 'Not an IPv4 address.') unless address.ipv4?
         address
       rescue ArgumentError

@@ -23,22 +23,22 @@ module Vnet::Openflow
 
     def match_ipv4_subnet_dst(address, prefix)
       if is_ipv4_broadcast(address, prefix)
-        { :eth_type => ETH_TYPE_IPV4 }
+        { ether_type: ETH_TYPE_IPV4 }
       else
-        { :eth_type => ETH_TYPE_IPV4,
-          :ipv4_dst => address,
-          :ipv4_dst_mask => IPV4_BROADCAST << (32 - prefix)
+        { ether_type: ETH_TYPE_IPV4,
+          ipv4_destination_address: address,
+          ipv4_destination_address_mask: IPV4_BROADCAST.mask(prefix),
         }
       end
     end
 
     def match_ipv4_subnet_src(address, prefix)
       if is_ipv4_broadcast(address, prefix)
-        { :eth_type => ETH_TYPE_IPV4 }
+        { ether_type: ETH_TYPE_IPV4 }
       else
-        { :eth_type => ETH_TYPE_IPV4,
-          :ipv4_src => address,
-          :ipv4_src_mask => IPV4_BROADCAST << (32 - prefix)
+        { eth_type: ETH_TYPE_IPV4,
+          ipv4_source_address: address,
+          ipv4_source_address_mask: IPV4_BROADCAST.mask(prefix),
         }
       end
     end
@@ -86,14 +86,14 @@ module Vnet::Openflow
     end
 
     def flows_for_filtering_mac_address(flows, mac_address, use_cookie = self.cookie)
-      [[TABLE_SEGMENT_SRC_CLASSIFIER_SEG_NIL, { :eth_src => mac_address }],
-       [TABLE_SEGMENT_SRC_CLASSIFIER_SEG_NIL, { :eth_dst => mac_address }],
-       [TABLE_SEGMENT_DST_CLASSIFIER_SEG_NW, { :eth_src => mac_address }],
-       [TABLE_SEGMENT_DST_CLASSIFIER_SEG_NW, { :eth_dst => mac_address }],
-       [TABLE_NETWORK_SRC_CLASSIFIER_NW_NIL, { :eth_src => mac_address }],
-       [TABLE_NETWORK_SRC_CLASSIFIER_NW_NIL, { :eth_dst => mac_address }],
-       [TABLE_NETWORK_DST_CLASSIFIER_NW_NIL, { :eth_src => mac_address }],
-       [TABLE_NETWORK_DST_CLASSIFIER_NW_NIL, { :eth_dst => mac_address }],
+      [[TABLE_SEGMENT_SRC_CLASSIFIER_SEG_NIL, { source_mac_address: mac_address }],
+       [TABLE_SEGMENT_SRC_CLASSIFIER_SEG_NIL, { destination_mac_address: mac_address }],
+       [TABLE_SEGMENT_DST_CLASSIFIER_SEG_NW, { source_mac_address: mac_address }],
+       [TABLE_SEGMENT_DST_CLASSIFIER_SEG_NW, { destination_mac_address: mac_address }],
+       [TABLE_NETWORK_SRC_CLASSIFIER_NW_NIL, { source_mac_address: mac_address }],
+       [TABLE_NETWORK_SRC_CLASSIFIER_NW_NIL, { destination_mac_address: mac_address }],
+       [TABLE_NETWORK_DST_CLASSIFIER_NW_NIL, { source_mac_address: mac_address }],
+       [TABLE_NETWORK_DST_CLASSIFIER_NW_NIL, { destination_mac_address: mac_address }],
       ].each { |table, match|
         flows << flow_create(table: table,
                              priority: 90,

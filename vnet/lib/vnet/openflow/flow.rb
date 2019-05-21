@@ -22,6 +22,7 @@ module Vnet::Openflow
       trema_hash = {
         table_id: @params[:table_id],
         priority: @params[:priority],
+        transaction_id: rand(0xffffffff),
         match: Pio::OpenFlow13::Match.new(@params[:match]),
         instructions: convert_instructions(@params[:actions], @params[:options]),
       }
@@ -30,7 +31,8 @@ module Vnet::Openflow
       trema_hash[:cookie] = @params[:options][:cookie] if @params[:options][:cookie]
       trema_hash[:cookie_mask] = @params[:options][:cookie_mask] if @params[:options][:cookie_mask]
 
-      Celluloid.logger.debug "trema_hash: #{trema_hash.inspect}"
+      Celluloid.logger.debug "trema_hash.params: #{@params.inspect}"
+      Celluloid.logger.debug "trema_hash.result: #{trema_hash.inspect}"
 
       trema_hash
     end
@@ -82,10 +84,10 @@ module Vnet::Openflow
     # TODO: SetField needs to consolidate actions.
     def to_action(tag, arg)
       case tag
-      when :eth_dst  then Pio::SetDestinationMacAddress.new(arg)
-      when :eth_src  then Pio::SetSourceMacAddress.new(arg)
-      when :ipv4_dst then Pio::SetDestinationIpAddress.new(arg)
-      when :ipv4_src then Pio::SetSourceIpAddress.new(arg)
+      when :destination_mac_address  then Pio::SetDestinationMacAddress.new(arg)
+      when :source_mac_address  then Pio::SetSourceMacAddress.new(arg)
+      when :ipv4_destination_address then Pio::SetDestinationIpAddress.new(arg)
+      when :ipv4_source_address then Pio::SetSourceIpAddress.new(arg)
 
       when :tcp_dst  then Pio::SetTransportDestinationPort.new(arg)
       when :tcp_src  then Pio::SetTransportSourcePort.new(arg)

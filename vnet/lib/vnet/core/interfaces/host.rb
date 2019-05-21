@@ -65,7 +65,7 @@ module Vnet::Core::Interfaces
                            match_first: @id,
 
                            actions: {
-                             :output => :local
+                             output: :local
                            })
     end
 
@@ -80,7 +80,7 @@ module Vnet::Core::Interfaces
                            priority: 30,
                            
                            match: {
-                             :eth_src => mac_info[:mac_address],
+                             source_mac_address: mac_info[:mac_address],
                            },
                            
                            write_remote: false,
@@ -110,7 +110,7 @@ module Vnet::Core::Interfaces
                            priority: 20,
 
                            match: {
-                             :eth_dst => mac_info[:mac_address],
+                             destination_mac_address: mac_info[:mac_address],
                            },
                            match_first: @id,
 
@@ -122,7 +122,7 @@ module Vnet::Core::Interfaces
                            priority: 21,
 
                            match: {
-                             :eth_dst => MAC_BROADCAST
+                             destination_mac_address: MAC_BROADCAST
                            },
 
                            write_first: @id,

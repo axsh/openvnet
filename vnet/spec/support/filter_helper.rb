@@ -39,11 +39,11 @@ end
 def protocol_type_egress(protocol, port_number)
   case protocol
     when 'tcp' then
-      { ip_proto: IPV4_PROTOCOL_TCP, tcp_dst: port_number }
+      { ip_protocol: IPV4_PROTOCOL_TCP, tcp_dst: port_number }
     when 'udp' then
-      { ip_proto: IPV4_PROTOCOL_UDP, udp_dst: port_number }
+      { ip_protocol: IPV4_PROTOCOL_UDP, udp_dst: port_number }
     when 'icmp' then
-      { ip_proto: IPV4_PROTOCOL_ICMP }
+      { ip_protocol: IPV4_PROTOCOL_ICMP }
     else
       return;
     end
@@ -52,11 +52,11 @@ end
 def protocol_type_ingress(protocol, port_number)
   case protocol
     when 'tcp' then
-      { ip_proto: IPV4_PROTOCOL_TCP, tcp_src: port_number }
+      { ip_protocol: IPV4_PROTOCOL_TCP, tcp_src: port_number }
     when 'udp' then
-      { ip_proto: IPV4_PROTOCOL_UDP, udp_src: port_number }
+      { ip_protocol: IPV4_PROTOCOL_UDP, udp_src: port_number }
     when 'icmp' then
-      { ip_proto: IPV4_PROTOCOL_ICMP }
+      { ip_protocol: IPV4_PROTOCOL_ICMP }
     else
       return;
     end
@@ -64,17 +64,17 @@ end
 
 def arp_match_src(ipv4_address, prefix)
   {
-    eth_type: ETH_TYPE_ARP,
+    ether_type: ETH_TYPE_ARP,
     arp_spa: ipv4_address,
-    arp_spa_mask: IPV4_BROADCAST << (32 - prefix)
+    arp_spa_mask: IPV4_BROADCAST.mask(prefix)
   }
 end
 
 def arp_match_dst(ipv4_address, prefix)
   {
-    eth_type: ETH_TYPE_ARP,
+    ether_type: ETH_TYPE_ARP,
     arp_tpa: ipv4_address,
-    arp_tpa_mask: IPV4_BROADCAST << (32 - prefix)
+    arp_tpa_mask: IPV4_BROADCAST.mask(prefix)
   }
 end
 

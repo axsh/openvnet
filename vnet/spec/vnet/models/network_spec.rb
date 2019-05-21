@@ -5,19 +5,19 @@ describe Vnet::Models::Network do
   let(:network1) do
     Fabricate(:network,
             uuid: "nw-1",
-            ipv4_network: IPAddr.new("10.101.1.0").to_i,
+            ipv4_network: Pio::IPv4Address.new("10.101.1.0").to_i,
             ipv4_prefix: 24)
   end
 
   let(:network2) do
     Fabricate(:network,
             uuid: "nw-2",
-            ipv4_network: IPAddr.new("10.102.1.0").to_i,
+            ipv4_network: Pio::IPv4Address.new("10.102.1.0").to_i,
             ipv4_prefix: 24)
   end
 
-  let(:ipv4_address1) { IPAddr.new("10.101.1.10").to_i }
-  let(:ipv4_address2) { IPAddr.new("10.102.1.10").to_i }
+  let(:ipv4_address1) { Pio::IPv4Address.new("10.101.1.10").to_i }
+  let(:ipv4_address2) { Pio::IPv4Address.new("10.102.1.10").to_i }
 
   4.times do |i|
     let!("interface#{i + 1}".to_sym) do

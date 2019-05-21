@@ -54,8 +54,8 @@ module Vnet::Core::Translations
       translation = {
         :static_address_id => static_address_id,
         :route_link_id => route_link_id,
-        :ingress_ipv4_address => IPAddr.new(ingress_ipv4_address, Socket::AF_INET),
-        :egress_ipv4_address => IPAddr.new(egress_ipv4_address, Socket::AF_INET),
+        :ingress_ipv4_address => Pio::IPv4Address.new(ingress_ipv4_address),
+        :egress_ipv4_address => Pio::IPv4Address.new(egress_ipv4_address),
         :ingress_port_number => ingress_port_number,
         :egress_port_number => egress_port_number,
       }
@@ -103,27 +103,27 @@ module Vnet::Core::Translations
       ingress_port_number = translation[:ingress_port_number]
 
       if ingress_port_number
-        [[{ eth_type: ETH_TYPE_IPV4,
-            ipv4_dst: translation[:ingress_ipv4_address],
-            ip_proto: IPV4_PROTOCOL_TCP,
+        [[{ ether_type: ETH_TYPE_IPV4,
+            ip_protocol: IPV4_PROTOCOL_TCP,
+            ipv4_destination_address: translation[:ingress_ipv4_address],
             tcp_dst: ingress_port_number
           }, {
-            ipv4_dst: translation[:egress_ipv4_address],
+            ipv4_destination_address: translation[:egress_ipv4_address],
             tcp_dst: translation[:egress_port_number],
           }],
-         [{ eth_type: ETH_TYPE_IPV4,
-            ipv4_dst: translation[:ingress_ipv4_address],
-            ip_proto: IPV4_PROTOCOL_UDP,
+         [{ ether_type: ETH_TYPE_IPV4,
+            ip_protocol: IPV4_PROTOCOL_UDP,
+            ipv4_destination_address: translation[:ingress_ipv4_address],
             udp_dst: ingress_port_number
           }, {
-            ipv4_dst: translation[:egress_ipv4_address],
+            ipv4_destination_address: translation[:egress_ipv4_address],
             udp_dst: translation[:egress_port_number],
           }]]
       else
-        [[{ eth_type: ETH_TYPE_IPV4,
-            ipv4_dst: translation[:ingress_ipv4_address]
+        [[{ ether_type: ETH_TYPE_IPV4,
+            ipv4_destination_address: translation[:ingress_ipv4_address]
           }, {
-            ipv4_dst: translation[:egress_ipv4_address],
+            ipv4_destination_address: translation[:egress_ipv4_address],
           }]]
       end
     end
@@ -132,27 +132,27 @@ module Vnet::Core::Translations
       egress_port_number = translation[:egress_port_number]
 
       if egress_port_number
-        [[{ eth_type: ETH_TYPE_IPV4,
-            ipv4_src: translation[:egress_ipv4_address],
-            ip_proto: IPV4_PROTOCOL_TCP,
+        [[{ ether_type: ETH_TYPE_IPV4,
+            ipv4_source_address: translation[:egress_ipv4_address],
+            ip_protocol: IPV4_PROTOCOL_TCP,
             tcp_src: egress_port_number
           }, {
-            ipv4_src: translation[:ingress_ipv4_address],
+            ipv4_source_address: translation[:ingress_ipv4_address],
             tcp_src: translation[:ingress_port_number],
           }],
-         [{ eth_type: ETH_TYPE_IPV4,
-            ipv4_src: translation[:egress_ipv4_address],
-            ip_proto: IPV4_PROTOCOL_UDP,
+         [{ ether_type: ETH_TYPE_IPV4,
+            ipv4_source_address: translation[:egress_ipv4_address],
+            ip_protocol: IPV4_PROTOCOL_UDP,
             udp_src: egress_port_number
           }, {
-            ipv4_src: translation[:ingress_ipv4_address],
+            ipv4_source_address: translation[:ingress_ipv4_address],
             udp_src: translation[:ingress_port_number],
           }]]
       else
-        [[{ eth_type: ETH_TYPE_IPV4,
-            ipv4_src: translation[:egress_ipv4_address]
+        [[{ ether_type: ETH_TYPE_IPV4,
+            ipv4_source_address: translation[:egress_ipv4_address]
           }, {
-            ipv4_src: translation[:ingress_ipv4_address]
+            ipv4_source_address: translation[:ingress_ipv4_address]
           }]]
       end
     end

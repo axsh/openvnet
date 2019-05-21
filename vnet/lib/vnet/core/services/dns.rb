@@ -25,14 +25,14 @@ module Vnet::Core::Services
                            priority: 30,
 
                            match: {
-                             :eth_type => 0x0800,
-                             :ip_proto => 0x11,
-                             :udp_dst => 53,
+                             ether_type: ETH_TYPE_IPV4,
+                             ip_protocol: 0x11,
+                             udp_dst: 53,
                            },
                            match_first: @interface_id,
 
                            actions: {
-                             :output => :controller
+                             output: :controller
                            })
 
       @dp_info.add_flows(flows)
@@ -42,7 +42,7 @@ module Vnet::Core::Services
       debug log_format('packet_in received')
       #debug log_format('message: ', message.inspect)
 
-      mac_info, ipv4_info, network = get_mac_ipv4_network(message.ipv4_src)
+      mac_info, ipv4_info, network = get_mac_ipv4_network(message.ipv4_source_address)
       return if network.nil?
 
       client_info = find_client_infos(message.match.in_port, mac_info, ipv4_info).first
@@ -80,11 +80,11 @@ module Vnet::Core::Services
                            priority: 30,
 
                            match: {
-                             :eth_type => 0x0800,
-                             :ip_proto => 0x11,
-                             :ipv4_dst => IPV4_BROADCAST,
-                             :ipv4_src => IPV4_ZERO,
-                             :udp_dst => 53,
+                             ether_type: ETH_TYPE_IPV4,
+                             ip_protocol: 0x11,
+                             ipv4_source_address: IPV4_ZERO,
+                             ipv4_destination_address: IPV4_BROADCAST,
+                             udp_dst: 53,
                            },
                            match_second: network_id,
 
@@ -103,7 +103,7 @@ module Vnet::Core::Services
     def add_dns_record(dns_record_map)
       name = normalize_record_name(dns_record_map.name)
       @records[name] << {
-        ipv4_address: IPAddr.new(dns_record_map.ipv4_address, Socket::AF_INET),
+        ipv4_address: Pio::IPv4Address.new(dns_record_map.ipv4_address),
         ttl: dns_record_map.ttl
       }
     end

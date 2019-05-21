@@ -41,7 +41,7 @@ module Vnet::Models
     private
 
     def parse_ipv4(ipv4)
-      IPAddress::IPv4::parse_u32(ipv4).to_s
+      Pio::IPv4Address.new(ipv4).to_s
     end
 
     def protocol_included(protocols = [])

@@ -33,7 +33,7 @@ describe Vnet::NodeApi::LeasePolicy do
 
       it "returns an ipv4 address by incremental order" do
         ipv4_address = Vnet::NodeApi::LeasePolicy.schedule(network, ip_range_group)
-        expect(IPAddress::IPv4.parse_u32(ipv4_address).to_s).to eq "10.102.0.101"
+        expect(Pio::IPv4Address.new(ipv4_address).to_s).to eq "10.102.0.101"
       end
     end
 
@@ -44,7 +44,7 @@ describe Vnet::NodeApi::LeasePolicy do
 
       it "returns an ipv4 address by decremental order" do
         ipv4_address = Vnet::NodeApi::LeasePolicy.schedule(network, ip_range_group)
-        expect(IPAddress::IPv4.parse_u32(ipv4_address).to_s).to eq "10.102.0.110"
+        expect(Pio::IPv4Address.new(ipv4_address).to_s).to eq "10.102.0.110"
       end
     end
 
@@ -79,12 +79,12 @@ describe Vnet::NodeApi::LeasePolicy do
       it "returns the ip addresses within the network's subnet" do
 
         Vnet::NodeApi::LeasePolicy.schedule(network, ip_range_group).tap do |ipv4_address|
-          expect(IPAddress::IPv4.parse_u32(ipv4_address).to_s).to eq "10.102.0.101"
+          expect(Pio::IPv4Address.new(ipv4_address).to_s).to eq "10.102.0.101"
           Vnet::Models::IpAddress.create(network: network, ipv4_address: ipv4_address)
         end
 
         Vnet::NodeApi::LeasePolicy.schedule(network, ip_range_group).tap do |ipv4_address|
-          expect(IPAddress::IPv4.parse_u32(ipv4_address).to_s).to eq "10.102.0.102"
+          expect(Pio::IPv4Address.new(ipv4_address).to_s).to eq "10.102.0.102"
           Vnet::Models::IpAddress.create(network: network, ipv4_address: ipv4_address)
         end
 
@@ -122,7 +122,7 @@ describe Vnet::NodeApi::LeasePolicy do
 
       ip_lease = Vnet::NodeApi::LeasePolicy.allocate_ip(lease_policy_uuid: lease_policy.canonical_uuid)
 
-      expect(IPAddress::IPv4.parse_u32(ip_lease.ipv4_address).to_s).to eq "10.102.0.101"
+      expect(Pio::IPv4Address.new(ip_lease.ipv4_address).to_s).to eq "10.102.0.101"
       expect(ip_lease.ip_retentions.first).to eq lease_policy.ip_retention_containers.first.ip_retentions.first
       expect(ip_lease.ip_retentions.first.leased_at.to_i).to eq now.to_i
 
@@ -160,7 +160,7 @@ describe Vnet::NodeApi::LeasePolicy do
           )
 
           ip_lease = interface.ip_leases.first
-          expect(IPAddress::IPv4.parse_u32(ip_lease.ipv4_address).to_s).to eq "10.102.0.101"
+          expect(Pio::IPv4Address.new(ip_lease.ipv4_address).to_s).to eq "10.102.0.101"
 
           expect(interface.lease_policy_base_interfaces.first.label).to be_nil
 
@@ -186,7 +186,7 @@ describe Vnet::NodeApi::LeasePolicy do
           )
 
           ip_lease = interface.ip_leases.first
-          expect(IPAddress::IPv4.parse_u32(ip_lease.ipv4_address).to_s).to eq "10.102.0.101"
+          expect(Pio::IPv4Address.new(ip_lease.ipv4_address).to_s).to eq "10.102.0.101"
 
           expect(interface.lease_policy_base_interfaces.first.label).to eq "foo"
 
@@ -227,7 +227,7 @@ describe Vnet::NodeApi::LeasePolicy do
         it "creates an ip_lease and add it to ip_lease_containers" do
           ip_lease = Vnet::NodeApi::LeasePolicy.allocate_ip(lease_policy_uuid: lease_policy.canonical_uuid)
 
-          expect(IPAddress::IPv4.parse_u32(ip_lease.ipv4_address).to_s).to eq "10.102.0.101"
+          expect(Pio::IPv4Address.new(ip_lease.ipv4_address).to_s).to eq "10.102.0.101"
           expect(ip_lease.ip_lease_containers.size).to eq 2
           expect(ip_lease.ip_lease_containers).to eq lease_policy.ip_lease_containers
 
@@ -244,7 +244,7 @@ describe Vnet::NodeApi::LeasePolicy do
             label: "foo"
           )
 
-          expect(IPAddress::IPv4.parse_u32(ip_lease.ipv4_address).to_s).to eq "10.102.0.101"
+          expect(Pio::IPv4Address.new(ip_lease.ipv4_address).to_s).to eq "10.102.0.101"
           expect(ip_lease.ip_lease_containers.size).to eq 1
           expect(ip_lease.ip_lease_containers.first).to eq lease_policy_ip_lease_container_with_label.ip_lease_container
 

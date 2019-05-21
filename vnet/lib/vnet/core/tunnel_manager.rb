@@ -541,7 +541,7 @@ module Vnet::Core
                                    interface_mode: type,
                                    interface_id: interface_id,
                                    network_id: ip_lease.network_id,
-                                   ipv4_address: IPAddr.new(ip_lease.ipv4_address, Socket::AF_INET))
+                                   ipv4_address: Pio::IPv4Address.new(ip_lease.ipv4_address))
     end
 
     def interface_prepare(interface_id, interface_mode)

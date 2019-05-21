@@ -138,32 +138,32 @@ module Vnet::Core::Filters
 
     def rule_for_ipv4(ip_proto, src_address:, dst_address:, src_prefix:, dst_prefix:, **)
       egress_match = {
-        eth_type: ETH_TYPE_IPV4,
-        ip_proto: ip_proto
+        ether_type: ETH_TYPE_IPV4,
+        ip_protocol: ip_proto
       }.tap { |match|
         if !any_address?(src_address, src_prefix)
-          match[:ipv4_dst] = src_address
-          match[:ipv4_dst_mask] = IPV4_BROADCAST << (32 - src_prefix)
+          match[:ipv4_destination_address] = src_address
+          match[:ipv4_destination_address_mask] = IPV4_BROADCAST.mask(src_prefix)
         end
 
         if !any_address?(dst_address, dst_prefix)
-          match[:ipv4_src] = dst_address
-          match[:ipv4_src_mask] = IPV4_BROADCAST << (32 - dst_prefix)
+          match[:ipv4_source_address] = dst_address
+          match[:ipv4_source_address_mask] = IPV4_BROADCAST.mask(dst_prefix)
         end
       }
 
       ingress_match = {
-        eth_type: ETH_TYPE_IPV4,
-        ip_proto: ip_proto
+        ether_type: ETH_TYPE_IPV4,
+        ip_protocol: ip_proto
       }.tap { |match|
         if !any_address?(src_address, src_prefix)
-          match[:ipv4_src] = src_address
-          match[:ipv4_src_mask] = IPV4_BROADCAST << (32 - src_prefix)
+          match[:ipv4_source_address] = src_address
+          match[:ipv4_source_address_mask] = IPV4_BROADCAST.mask(src_prefix)
         end
 
         if !any_address?(dst_address, dst_prefix)
-          match[:ipv4_dst] = dst_address
-          match[:ipv4_dst_mask] = IPV4_BROADCAST << (32 - dst_prefix)
+          match[:ipv4_destination_address] = dst_address
+          match[:ipv4_destination_address_mask] = IPV4_BROADCAST.mask(dst_prefix)
         end
       }
 
@@ -200,30 +200,30 @@ module Vnet::Core::Filters
     
     def rule_for_arp(src_address:, dst_address:, src_prefix:, dst_prefix:, **)
       egress_match = {
-        eth_type: ETH_TYPE_ARP,
+        ether_type: ETH_TYPE_ARP,
       }.tap { |match|
         if !any_address?(src_address, src_prefix)
           match[:arp_tpa] = src_address
-          match[:arp_tpa_mask] = IPV4_BROADCAST << (32 - src_prefix)
+          match[:arp_tpa_mask] = IPV4_BROADCAST.mask(src_prefix)
         end
 
         if !any_address?(dst_address, dst_prefix)
           match[:arp_spa] = dst_address
-          match[:arp_spa_mask] = IPV4_BROADCAST << (32 - dst_prefix)
+          match[:arp_spa_mask] = IPV4_BROADCAST.mask(dst_prefix)
         end
       }
 
       ingress_match = {
-        eth_type: ETH_TYPE_ARP,
+        ether_type: ETH_TYPE_ARP,
       }.tap { |match|
         if !any_address?(src_address, src_prefix)
           match[:arp_spa] = src_address
-          match[:arp_spa_mask] = IPV4_BROADCAST << (32 - src_prefix)
+          match[:arp_spa_mask] = IPV4_BROADCAST.mask(src_prefix)
         end
 
         if !any_address?(dst_address, dst_prefix)
           match[:arp_tpa] = dst_address
-          match[:arp_tpa_mask] = IPV4_BROADCAST << (32 - dst_prefix)
+          match[:arp_tpa_mask] = IPV4_BROADCAST.mask(dst_prefix)
         end
       }
 
@@ -264,37 +264,37 @@ module Vnet::Core::Filters
       return if !message.ipv4?
 
       egress_match = {
-        eth_type: ETH_TYPE_IPV4,
-        ipv4_src: message.ipv4_src,
-        ipv4_dst: message.ipv4_dst
+        ether_type: ETH_TYPE_IPV4,
+        ipv4_source_address: message.ipv4_source_address,
+        ipv4_destination_address: message.ipv4_destination_address
       }
       ingress_match = {
-        eth_type: ETH_TYPE_IPV4,
-        ipv4_src: message.ipv4_dst,
-        ipv4_dst: message.ipv4_src
+        ether_type: ETH_TYPE_IPV4,
+        ipv4_source_address: message.ipv4_destination_address,
+        ipv4_destination_address: message.ipv4_source_address
       }
 
       case
       when message.tcp?
-        egress_match.merge!(ip_proto: IPV4_PROTOCOL_TCP,
+        egress_match.merge!(ip_protocol: IPV4_PROTOCOL_TCP,
                             tcp_src: message.tcp_src,
                             tcp_dst: message.tcp_dst)
-        ingress_match.merge!(ip_proto: IPV4_PROTOCOL_TCP,
+        ingress_match.merge!(ip_protocol: IPV4_PROTOCOL_TCP,
                              tcp_src: message.tcp_dst,
                              tcp_dst: message.tcp_src)
       when message.udp?
-        egress_match.merge!(ip_proto: IPV4_PROTOCOL_UDP,
+        egress_match.merge!(ip_protocol: IPV4_PROTOCOL_UDP,
                             udp_src: message.udp_src,
                             udp_dst: message.udp_dst)
-        ingress_match.merge!(ip_proto: IPV4_PROTOCOL_UDP,
+        ingress_match.merge!(ip_protocol: IPV4_PROTOCOL_UDP,
                              udp_src: message.udp_dst,
                              udp_dst: message.udp_src)
       when message.icmpv4?
-        egress_match.merge!(ip_proto: IPV4_PROTOCOL_ICMP)
-        ingress_match.merge!(ip_proto: IPV4_PROTOCOL_ICMP)
+        egress_match.merge!(ip_protocol: IPV4_PROTOCOL_ICMP)
+        ingress_match.merge!(ip_protocol: IPV4_PROTOCOL_ICMP)
       when message.arpv4?
-        egress_match.merge!(ip_proto: IPV4_PROTOCOL_ARP)
-        ingress_match.merge!(ip_proto: IPV4_PROTOCOL_ARP)
+        egress_match.merge!(ip_protocol: IPV4_PROTOCOL_ARP)
+        ingress_match.merge!(ip_protocol: IPV4_PROTOCOL_ARP)
       end
 
       return egress_match, ingress_match

@@ -112,13 +112,13 @@ module Vnet::Core::Datapaths
                            priority: 30,
 
                            match: {
-                             :eth_dst => dpg_map[:mac_address]
+                             destination_mac_address: dpg_map[:mac_address]
                            },
                            match_remote: true,
                            match_first: dpg_map[:interface_id],
 
                            actions: {
-                             :eth_dst => MAC_BROADCAST
+                             destination_mac_address: MAC_BROADCAST
                            },
                            write_reflection: false,
                            write_first: dpg_map[:network_id],
@@ -183,13 +183,13 @@ module Vnet::Core::Datapaths
                            priority: 30,
 
                            match: {
-                             :eth_dst => dpg_map[:mac_address]
+                             destination_mac_address: dpg_map[:mac_address]
                            },
                            match_remote: true,
                            match_first: dpg_map[:interface_id],
 
                            actions: {
-                             :eth_dst => MAC_BROADCAST
+                             destination_mac_address: MAC_BROADCAST
                            },
                            write_reflection: false,
                            write_first: dpg_map[:segment_id],
@@ -246,8 +246,8 @@ module Vnet::Core::Datapaths
                            priority: 20,
 
                            match: {
-                             # :eth_type => 0x0806
-                             :eth_dst => dpg_map[:mac_address]
+                             # ether_type: ETH_TYPE_ARP
+                             destination_mac_address: dpg_map[:mac_address]
                            },
 
                            write_reflection: false,
@@ -256,20 +256,20 @@ module Vnet::Core::Datapaths
                            write_second: 0,
 
                            actions: {
-                             :eth_dst => MAC_BROADCAST
+                             destination_mac_address: MAC_BROADCAST
                            },
                            cookie: flow_cookie)
       flows << flow_create(table: TABLE_OUTPUT_CONTROLLER_SEG_NW,
                            priority: 1,
                            
                            match: {
-                             :eth_dst => MAC_BROADCAST
+                             destination_mac_address: MAC_BROADCAST
                            },
                            match_first: dpg_map[:segment_id],
 
                            actions: {
-                             :eth_dst => dpg_map[:mac_address],
-                             :output => :controller
+                             destination_mac_address: dpg_map[:mac_address],
+                             output: :controller,
                            },
                            cookie: flow_cookie)
 
@@ -293,8 +293,8 @@ module Vnet::Core::Datapaths
                            priority: 30,
 
                            match: {
-                             :tunnel_id => TUNNEL_ROUTE_LINK,
-                             :eth_dst => dpg_map[:mac_address]
+                             tunnel_id: TUNNEL_ROUTE_LINK,
+                             destination_mac_address: dpg_map[:mac_address]
                            },
 
                            write_reflection: true,
@@ -316,7 +316,7 @@ module Vnet::Core::Datapaths
                            priority: 30,
 
                            match: {
-                             :eth_dst => dpg_map[:mac_address]
+                             destination_mac_address: dpg_map[:mac_address]
                            },
                            match_remote: true,
                            match_first: dpg_map[:interface_id],
@@ -338,7 +338,7 @@ module Vnet::Core::Datapaths
                            write_first: dpg_map[:interface_id],
 
                            actions: {
-                             :eth_src => dpg_map[:mac_address]
+                             source_mac_address: dpg_map[:mac_address]
                            },
                            cookie: flow_cookie)
 

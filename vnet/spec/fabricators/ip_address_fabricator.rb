@@ -4,11 +4,11 @@ require 'ipaddress'
 
 Fabricator(:ip_address, class_name: Vnet::Models::IpAddress) do
   network { Fabricate(:network) }
-  ipv4_address { sequence(:ipv4_address, IPAddress::IPv4.new("192.168.1.1").to_i) }
+  ipv4_address { sequence(:ipv4_address, Pio::IPv4Address.new("192.168.1.1").to_i) }
 end
 
 Fabricator(:ip_address_no_nw, class_name: Vnet::Models::IpAddress) do
-  ipv4_address { sequence(:ipv4_address, IPAddress::IPv4.new("192.168.1.1").to_i) }
+  ipv4_address { sequence(:ipv4_address, Pio::IPv4Address.new("192.168.1.1").to_i) }
 end
 
 Fabricator(:ip_address_1, class_name: Vnet::Models::IpAddress) do

@@ -21,13 +21,13 @@ module Vnet::Openflow
                            priority: 30,
                            
                            match: {
-                             :eth_type => 0x0806,
-                             :arp_op => 2,
+                             ether_type: ETH_TYPE_ARP,
+                             arp_op: 2,
                            },
                            match_first: @arp_lookup[:interface_id],
 
                            actions: {
-                             :output => :controller
+                             output: :controller
                            },
 
                            cookie: @arp_lookup[:reply_cookie])
@@ -38,22 +38,22 @@ module Vnet::Openflow
       mac_address = mac_info[:mac_address]
 
       [ [20, {
-            :eth_src => mac_address,
-            :eth_type => 0x0800
+            ether_type: ETH_TYPE_IPV4,
+            source_mac_address: mac_address,
           }],
         [30, {
-            :eth_src => mac_address,
-            :eth_type => 0x0800,
-            :ipv4_dst => ipv4_info[:ipv4_address].mask(ipv4_info_mask),
-            :ipv4_dst_mask => IPV4_BROADCAST.mask(ipv4_info_mask)
+            ether_type: ETH_TYPE_IPV4,
+            source_mac_address: mac_address,
+            ipv4_destination_address: ipv4_info[:ipv4_address].mask(ipv4_info_mask),
+            ipv4_destination_address_mask: IPV4_BROADCAST.mask(ipv4_info_mask),
           }],
         [40, {
-            :eth_src => mac_address,
-            :eth_type => 0x0800,
-            :ipv4_src => ipv4_info[:ipv4_address].mask(ipv4_info_mask),
-            :ipv4_src_mask => IPV4_BROADCAST.mask(ipv4_info_mask),
-            :ipv4_dst => ipv4_info[:ipv4_address].mask(ipv4_info_mask),
-            :ipv4_dst_mask => IPV4_BROADCAST.mask(ipv4_info_mask)
+            ether_type: ETH_TYPE_IPV4,
+            source_mac_address: mac_address,
+            ipv4_source_address: ipv4_info[:ipv4_address].mask(ipv4_info_mask),
+            ipv4_source_address_mask: IPV4_BROADCAST.mask(ipv4_info_mask),
+            ipv4_destination_address: ipv4_info[:ipv4_address].mask(ipv4_info_mask),
+            ipv4_destination_address_mask: IPV4_BROADCAST.mask(ipv4_info_mask),
           }],
       ].each { |priority, match|
         flows << flow_create(table: TABLE_ARP_LOOKUP_NW_NIL,
@@ -64,7 +64,7 @@ module Vnet::Openflow
                              match_first: ipv4_info[:network_id],
 
                              actions: {
-                               :output => :controller
+                               output: :controller,
                              },
 
                              cookie: @arp_lookup[:lookup_cookie])
@@ -76,7 +76,7 @@ module Vnet::Openflow
 
       # Check if the address is in the same network, or if we need
       # to look up a gateway mac address.
-      request_ipv4 = message.ipv4_dst
+      request_ipv4 = message.ipv4_destination_address
 
       # TODO: This should be done every time process_timeout is called...
 
@@ -84,13 +84,13 @@ module Vnet::Openflow
       # network. For n-hop routing, figure out when the a gateway /
       # route should be looked up.
 
-      mac_info, ipv4_info, network = get_mac_ipv4_network(message.ipv4_src)
+      mac_info, ipv4_info, network = get_mac_ipv4_network(message.ipv4_source_address)
 
       # When the source ipv4 address belongs to the simulated
       # interface we need to match it in TABLE_ARP_LOOKUP_NW_NIL so that each
       # ip lease used is forced to do an arp request. This ensures
       # that the external interface sends us an arp request.
-      use_src_ipv4 = network && message.ipv4_src
+      use_src_ipv4 = network && message.ipv4_source_address
 
       if network.nil?
         mac_info, ipv4_info, network = get_mac_ipv4_network(nil)
@@ -100,8 +100,8 @@ module Vnet::Openflow
         debug log_format_h('arp_lookup_lookup_packet_in failed',
                            port_number: port_number,
                            request_ipv4: request_ipv4,
-                           ipv4_src: message.ipv4_src,
-                           ipv4_dst: message.ipv4_dst)
+                           ipv4_source_address: message.ipv4_source_address,
+                           ipv4_dst: message.ipv4_destination_address)
         return
       end
 
@@ -135,8 +135,8 @@ module Vnet::Openflow
                            interface_ipv4: ipv4_info[:ipv4_address],
                            network_type: ipv4_info[:network_type],
                            request_ipv4: request_ipv4,
-                           ipv4_src: message.ipv4_src,
-                           ipv4_dst: message.ipv4_dst)
+                           ipv4_src: message.ipv4_source_address,
+                           ipv4_dst: message.ipv4_destination_address)
 
         case ipv4_info[:network_type]
         when :physical
@@ -163,8 +163,8 @@ module Vnet::Openflow
                            port_number: port_number,
                            interface_ipv4: ipv4_info[:ipv4_address],
                            request_ipv4: request_ipv4,
-                           ipv4_src: message.ipv4_src,
-                           ipv4_dst: message.ipv4_dst,
+                           ipv4_src: message.ipv4_source_address,
+                           ipv4_dst: message.ipv4_destination_address,
                            messages_size: messages.size)
       end
 
@@ -179,10 +179,10 @@ module Vnet::Openflow
 
         debug log_format("arp lookup using gateway '#{default_gw}'")
 
-        return IPAddr.new(default_gw) if default_gw
+        return Pio::IPv4Address.new(default_gw) if default_gw
       end
 
-      network_address.mask(32) | IPAddr.new('0.0.0.1')
+      network_address.mask(32) | Pio::IPv4Address.new('0.0.0.1')
     end
 
 
@@ -200,7 +200,7 @@ module Vnet::Openflow
       end
 
       [ [35, {}],
-        [45, { ipv4_src: message.arp_tpa } ]
+        [45, { ipv4_source_address: message.arp_tpa } ]
       ].each { |priority, match_extra|
         flow = flow_create(table: TABLE_ARP_LOOKUP_NW_NIL,
                            goto_table: TABLE_NETWORK_DST_CLASSIFIER_NW_NIL,
@@ -208,15 +208,15 @@ module Vnet::Openflow
                            idle_timeout: 3600,
 
                            match: {
-                             eth_type: 0x0800,
-                             ipv4_dst: message.arp_spa,
+                             ether_type: 0x0800,
+                             ipv4_destination_address: message.arp_spa,
                            },
                            match_first: ipv4_info[:network_id],
 
                            write_reflection: true,
 
                            actions: {
-                             eth_dst: message.arp_sha,
+                             destination_mac_address: message.arp_sha,
                            },
 
                            cookie: ipv4_info[:network_id] | COOKIE_TYPE_NETWORK,
@@ -248,14 +248,14 @@ module Vnet::Openflow
                            idle_timeout: 3600,
 
                            match: {
-                             eth_type: 0x0800,
-                             :ipv4_dst => queued_message[:destination_ipv4].mask(queued_message[:destination_prefix]),
-                             :ipv4_dst_mask => IPV4_BROADCAST.mask(queued_message[:destination_prefix]),
+                             ether_type: 0x0800,
+                             ipv4_destination_address: queued_message[:destination_ipv4].mask(queued_message[:destination_prefix]),
+                             ipv4_destination_address_mask: IPV4_BROADCAST.mask(queued_message[:destination_prefix]),
                            },
                            match_first: ipv4_info[:network_id],
 
                            actions: {
-                             eth_dst: message.arp_sha,
+                             destination_mac_address: message.arp_sha,
                            },
                            write_reflection: true,
 
@@ -264,12 +264,12 @@ module Vnet::Openflow
 
         # if queued_message[:use_src_ipv4]
         #   flows << Flow.create(TABLE_ARP_LOOKUP_NW_NIL, 45,
-        #     match_md.merge({ :eth_type => 0x0800,
-        #         :ipv4_src => queued_message[:use_src_ipv4],
-        #         :ipv4_dst => queued_message[:destination_ipv4].mask(queued_message[:destination_prefix]),
-        #         :ipv4_dst_mask => IPV4_BROADCAST.mask(queued_message[:destination_prefix]),
+        #     match_md.merge({ ether_type: 0x0800,
+        #         ipv4_source_address: queued_message[:use_src_ipv4],
+        #         ipv4_destination_address: queued_message[:destination_ipv4].mask(queued_message[:destination_prefix]),
+        #         :ipv4_destination_address_mask => IPV4_BROADCAST.mask(queued_message[:destination_prefix]),
         #       }), {
-        #       :eth_dst => message.arp_sha
+        #       destination_mac_address: message.arp_sha
         #     },
         #     reflection_md.merge!({ :cookie => cookie,
         #         :idle_timeout => 3600,
@@ -387,8 +387,8 @@ module Vnet::Openflow
                            idle_timeout: 3600,
 
                            match: {
-                             :eth_type => 0x0800,
-                             :ipv4_dst => params[:request_ipv4]
+                             ether_type: ETH_TYPE_IPV4,
+                             ipv4_destination_address: params[:request_ipv4]
                            },
                            match_first: params[:interface_network_id],
 
@@ -397,7 +397,7 @@ module Vnet::Openflow
                            write_second: params[:interface_network_id],
 
                            actions: {
-                             :eth_dst => Pio::Mac.new(ip_lease.mac_lease.mac_address),
+                             destination_mac_address: Pio::Mac.new(ip_lease.mac_lease.mac_address),
                            },
                            cookie: ip_lease.interface_id | COOKIE_TYPE_INTERFACE)
 
@@ -415,7 +415,7 @@ module Vnet::Openflow
         # TABLE_ARP_LOOKUP_NW_NIL, and as such no longer match the fields
         # required by the old in_port.
         #
-        # The route link is identified by eth_dst, which was set in
+        # The route link is identified by destination_mac_address, which was set in
         # TABLE_ROUTER_LINK prior to be sent to the controller.
         message[:message].match.in_port = :controller
 
@@ -444,7 +444,7 @@ module Vnet::Openflow
       return if message.nil?
 
       debug log_format("packet_in, error '#{error_msg}'",
-                       "cookie:0x%x ipv4:#{message.ipv4_dst}" % message.cookie)
+                       "cookie:0x%x ipv4:#{message.ipv4_destination_address}" % message.cookie)
 
       suppress_packets(message, suppress_reason)
       nil
@@ -470,8 +470,8 @@ module Vnet::Openflow
           priority: 21,
           hard_timeout: hard_timeout,
 
-          match: { eth_type: 0x0800,
-                   ipv4_dst: message.ipv4_dst,
+          match: { ether_type: 0x0800,
+                   ipv4_destination_address: message.ipv4_destination_address,
                  },
 
           cookie: message.cookie,

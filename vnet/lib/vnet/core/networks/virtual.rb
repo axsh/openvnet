@@ -68,7 +68,7 @@ module Vnet::Core::Networks
                              priority: 31,
 
                              match: {
-                               :eth_dst => MAC_BROADCAST
+                               destination_mac_address: MAC_BROADCAST
                              },
                              match_first: @id,
                              

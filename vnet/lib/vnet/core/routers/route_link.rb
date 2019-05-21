@@ -42,7 +42,7 @@ module Vnet::Core::Routers
                            priority: 30,
 
                            match: {
-                             :eth_src => @mac_address
+                             source_mac_address: @mac_address
                            },
 
                            write_reflection: false,
@@ -56,8 +56,8 @@ module Vnet::Core::Routers
                            priority: 30,
 
                            match: {
-                             :tunnel_id => TUNNEL_ROUTE_LINK,
-                             :eth_dst => @mac_address
+                             tunnel_id: TUNNEL_ROUTE_LINK,
+                             destination_mac_address: @mac_address
                            },
 
                            write_reflection: false,

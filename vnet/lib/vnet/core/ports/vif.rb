@@ -25,7 +25,7 @@ module Vnet::Core::Ports
                            priority: 11,
                            
                            match: {
-                             :in_port => self.port_number,
+                             in_port: self.port_number,
                            },
                            
                            write_reflection: false,
@@ -39,7 +39,7 @@ module Vnet::Core::Ports
                            match_first: @interface_id,
 
                            actions: {
-                             :output => self.port_number
+                             output: self.port_number
                            })
 
       @dp_info.add_flows(flows)

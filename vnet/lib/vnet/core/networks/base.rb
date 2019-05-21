@@ -16,7 +16,7 @@ module Vnet::Core::Networks
       map = params[:map]
 
       @cookie = @id | COOKIE_TYPE_NETWORK
-      @ipv4_network = IPAddr.new(map.ipv4_network, Socket::AF_INET)
+      @ipv4_network = Pio::IPv4Address.new(map.ipv4_network)
       @ipv4_prefix = map.ipv4_prefix
 
       @segment_id = map.segment_id

@@ -49,7 +49,7 @@ module Vnet::Core
       messages = @messages.delete(item_id)
 
       # The item must have a 'mac_address' attribute that will be used
-      # as the eth_src address for sending packet out messages.
+      # as the source_mac_address address for sending packet out messages.
       if messages.nil? || mac_address.nil?
         debug log_format('flush messages failed', "id:#{item_id} mac_address:#{mac_address}")
         return
@@ -58,7 +58,7 @@ module Vnet::Core
       messages.each { |message|
         packet = message[:message]
         packet.match.in_port = :controller
-        packet.match.eth_src = mac_address
+        packet.match.source_mac_address = mac_address
 
         @dp_info.send_packet_out(packet, OFPP_TABLE)
       }

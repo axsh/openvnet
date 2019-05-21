@@ -41,8 +41,8 @@ module Vnet::Endpoints::V10::Responses
         action: object.action,
         
         # TODO: Use local helper method.
-        src_address: IPAddress::IPv4::parse_u32(object.src_address).to_s,
-        dst_address: IPAddress::IPv4::parse_u32(object.dst_address).to_s,
+        src_address: Pio::IPv4Address.new(object.src_address).to_s,
+        dst_address: Pio::IPv4Address.new(object.dst_address).to_s,
         src_prefix: object.src_prefix,
         dst_prefix: object.dst_prefix
       }.tap { |result|

@@ -67,7 +67,7 @@ describe Vnet::NodeApi::Interface do
             mac_address: 2,
             ip_leases: [
               Fabricate(:ip_lease,
-                ipv4_address: IPAddr.new("192.168.1.2").to_i,
+                ipv4_address: Pio::IPv4Address.new("192.168.1.2").to_i,
                 network_id: Fabricate(:network).id)
             ])])
     end
@@ -99,7 +99,7 @@ describe Vnet::NodeApi::Interface do
             mac_address: 2,
             ip_leases: [
               Fabricate(:ip_lease,
-                        ipv4_address: IPAddr.new("192.168.1.2").to_i,
+                        ipv4_address: Pio::IPv4Address.new("192.168.1.2").to_i,
                 network_id: network.id)
             ])])
     end

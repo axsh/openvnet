@@ -181,7 +181,7 @@ module Vnet::Core::Datapaths
                            priority: 1,
 
                            match: {
-                             :eth_src => dpg_map[:mac_address]
+                             source_mac_address: dpg_map[:mac_address]
                            },
                            match_remote: true,
                            match_first: flow_gen_id,
@@ -223,8 +223,8 @@ module Vnet::Core::Datapaths
                              write_second: dpg_map[:interface_id],
 
                              actions: {
-                               :eth_dst => dpg_map[:mac_address],
-                               :tunnel_id => TUNNEL_ROUTE_LINK
+                               tunnel_id: TUNNEL_ROUTE_LINK,
+                               destination_mac_address: dpg_map[:mac_address],
                              },
                              cookie: flow_cookie)
       }

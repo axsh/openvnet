@@ -119,11 +119,11 @@ module Vnet::Core::Interfaces
         packet_arp_out({ :out_port => message.in_port,
                          :in_port => Pio::OpenFlow13::Port32.reserved_port_number(:controller),
                          :eth_src => mac_info[:mac_address],
-                         :eth_dst => message.eth_src,
+                         :eth_dst => message.source_mac_address,
                          :op_code => Racket::L3::ARP::ARPOP_REPLY,
                          :sha => mac_info[:mac_address],
                          :spa => ipv4_info[:ipv4_address],
-                         :tha => message.eth_src,
+                         :tha => message.source_mac_address,
                          :tpa => message.arp_spa,
                        })
 
@@ -134,19 +134,19 @@ module Vnet::Core::Interfaces
         arp_lookup_reply_packet_in(message)
 
       when TAG_ICMP_REQUEST
-        mac_info, ipv4_info = get_mac_ipv4(message.ipv4_dst)
+        mac_info, ipv4_info = get_mac_ipv4(message.ipv4_destination_address)
         return if mac_info.nil? || ipv4_info.nil?
 
         raw_in = icmpv4_in(message)
 
         case message.icmpv4_type
         when Racket::L4::ICMPGeneric::ICMP_TYPE_ECHO_REQUEST
-          icmpv4_out({ :out_port => message.in_port,
+          icmpv4_out({ out_port: message.in_port,
 
-                       :eth_src => mac_info[:mac_address],
-                       :eth_dst => message.eth_src,
-                       :ipv4_src => ipv4_info[:ipv4_address],
-                       :ipv4_dst => message.ipv4_src,
+                       eth_src: mac_info[:mac_address],
+                       eth_dst: message.source_mac_address,
+                       ipv4_src: ipv4_info[:ipv4_address],
+                       ipv4_dst: message.ipv4_source_address,
 
                        :icmpv4_type => Racket::L4::ICMPGeneric::ICMP_TYPE_ECHO_REPLY,
                        :icmpv4_id => raw_in.l4.id,
@@ -173,13 +173,13 @@ module Vnet::Core::Interfaces
                            priority: 30,
 
                            match: {
-                             :eth_type => 0x0806,
-                             :arp_op => 1,
+                             ether_type: 0x0806,
+                             arp_op: 1,
                            },
                            match_first: @id,
 
                            actions: {
-                             :output => :controller
+                             output: :controller
                            },
                            
                            cookie: self.cookie_for_tag(TAG_ARP_REQUEST_INTERFACE))
@@ -187,14 +187,14 @@ module Vnet::Core::Interfaces
                            priority: 30,
 
                            match: {
-                             :eth_type => 0x0800,
-                             :ip_proto => 0x01,
-                             :icmpv4_type => Racket::L4::ICMPGeneric::ICMP_TYPE_ECHO_REQUEST,
+                             ether_type: 0x0800,
+                             ip_protocol: 0x01,
+                             icmpv4_type: Racket::L4::ICMPGeneric::ICMP_TYPE_ECHO_REQUEST,
                            },
                            match_first: @id,
 
                            actions: {
-                             :output => :controller
+                             output: :controller
                            },
 
                            cookie: self.cookie_for_tag(TAG_ICMP_REQUEST))
@@ -211,7 +211,7 @@ module Vnet::Core::Interfaces
                            priority: 30,
 
                            match: {
-                             :eth_src => mac_info[:mac_address],
+                             source_mac_address: mac_info[:mac_address],
                            },
 
                            write_reflection: false,
@@ -233,11 +233,12 @@ module Vnet::Core::Interfaces
       flow_base = {table: TABLE_FLOOD_SIMULATED_SEG_NW,
                    goto_table: TABLE_OUT_PORT_INGRESS_IF_NIL,
                    
-                   match: {:eth_type => 0x0806,
-                           :arp_op => 1,
-                           :arp_tha => MAC_ZERO,
-                           :arp_tpa => ipv4_address
-                          },
+                   match: {
+                     ether_type: ETH_TYPE_ARP,
+                     arp_op: 1,
+                     arp_tha: MAC_ZERO,
+                     arp_tpa: ipv4_address
+                   },
 
                    write_first: @id,
                   }

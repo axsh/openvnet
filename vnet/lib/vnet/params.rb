@@ -164,7 +164,7 @@ module Vnet
     #
     # TODO: Shouldn't this be creating IPAddr types?
     def get_param_ipv4_address(params, key, required = true)
-      param = IPAddr.new(get_param(params, key, required) || return, Socket::AF_INET)
+      param = Pio::IPv4Address.new(get_param(params, key, required) || return)
 
       if !param.ipv4?
         throw_param_error('value is not a valid IPv4 address', params, key)

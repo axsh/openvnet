@@ -29,7 +29,7 @@ module Vnet::Openflow::Trema
         {
           command: :add,
           priority: @user_options[:priority] || 0,
-          transaction_id: rand(0xffffffff),
+          transaction_id: @user_options[:transaction_id] || rand(0xffffffff),
           idle_timeout: @user_options[:idle_timeout] || 0,
           hard_timeout: @user_options[:hard_timeout] || 0,
           buffer_id: @user_options[:buffer_id] || 0xffffffff,
@@ -52,7 +52,7 @@ module Vnet::Openflow::Trema
         {
           command: :add,
           priority: @user_options[:priority] || 0,
-          transaction_id: rand(0xffffffff),
+          transaction_id: @user_options[:transaction_id] || rand(0xffffffff),
           idle_timeout: @user_options[:idle_timeout] || 0,
           hard_timeout: @user_options[:hard_timeout] || 0,
           buffer_id: @user_options[:buffer_id] || 0xffffffff,
@@ -76,7 +76,7 @@ module Vnet::Openflow::Trema
       def to_hash
         {
           command: :delete,
-          transaction_id: rand(0xffffffff),
+          transaction_id: @user_options[:transaction_id] || rand(0xffffffff),
           buffer_id: @user_options[:buffer_id] || 0xffffffff,
           match: @user_options.fetch(:match),
           out_port: @user_options[:out_port] || 0xffffffff
@@ -94,7 +94,7 @@ module Vnet::Openflow::Trema
       def to_hash
         if @user_options[:packet_in]
           {
-            transaction_id: rand(0xffffffff),
+            transaction_id: @user_options[:transaction_id] || rand(0xffffffff),
             buffer_id: 0xffffffff,
             actions: @user_options[:actions],
             in_port: @user_options.fetch(:packet_in).in_port,
@@ -102,7 +102,7 @@ module Vnet::Openflow::Trema
           }
         else
           {
-            transaction_id: rand(0xffffffff),
+            transaction_id: @user_options[:transaction_id] || rand(0xffffffff),
             buffer_id: 0xffffffff,
             actions: @user_options[:actions],
             raw_data: @user_options.fetch(:raw_data)
@@ -189,7 +189,7 @@ module Vnet::Openflow::Trema
     end
 
     def send_message(datapath_id, message)
-      Celluloid.logger.debug "Sending #{message.inspect}"
+      # Celluloid.logger.debug "Sending #{message.inspect}"
       SWITCH.fetch(datapath_id).write message
     rescue KeyError, Errno::ECONNRESET, Errno::EPIPE
       logger.debug "Switch #{datapath_id} is disconnected."
@@ -307,6 +307,10 @@ module Vnet::Openflow::Trema
         maybe_send_handler :barrier_reply, datapath_id, message
       when DescriptionStats::Reply
         maybe_send_handler :description_stats_reply, datapath_id, message
+      when OpenFlow13::Error::BadMatch
+        maybe_send_handler :error_bad_match, datapath_id, message
+      when OpenFlow13::Error::BadRequest
+        maybe_send_handler :error_bad_request, datapath_id, message
       else
         raise "Unknown OpenFlow message: #{message.inspect}"
       end

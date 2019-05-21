@@ -74,7 +74,7 @@ module Vnet::NodeApi
               if f.is_a?(Hash)
                 key = f.keys.first
                 value = f.values.first
-                options_for_recursive_call.merge!(:fill => value)
+                options_for_recursive_call.merge!(fill: value)
               else
                 key = f
               end

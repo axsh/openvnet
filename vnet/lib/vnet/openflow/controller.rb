@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-require 'racket'
-
 module Vnet::Openflow
   class Controller < Vnet::Openflow::Trema::Controller
     include Vnet::Logger
@@ -16,6 +14,7 @@ module Vnet::Openflow
       super
     end
 
+    # TODO: Deprecate public_*.
     def public_send_message(dpid, message)
       send_handler(:send_message, dpid, message)
     end
@@ -49,7 +48,59 @@ module Vnet::Openflow
     end
 
     #
-    # Only call from within trema context:
+    # Public methods:
+    #
+
+    def initialize_datapath(dpid)
+      # TODO: Need to wait after terminate.
+      terminate_datapath(dpid)
+
+      info log_format_h("initialize datapath actor", dpid: "0x%016x" % dpid)
+
+      # There is no need to clean up the old switch, as all the
+      # previous flows are removed. Just let it rebuild everything.
+      #
+      # This might not be optimal in cases where the switch got
+      # disconnected for a short period, as Open vSwitch has the
+      # ability to keep flows between sessions.
+      datapath = Datapath.new(self, dpid, OvsOfctl.new(dpid))
+
+      if @datapaths[dpid]
+        info "initialize datapath actor cancelled, already intitialized after termination. dpid: 0x%016x" % dpid
+        return
+      end
+
+      @datapaths[dpid] = { datapath: datapath, dp_info: datapath.dp_info }
+
+      datapath.async.create_switch
+      datapath.async.run_normal
+    end
+
+    # TODO: We cannot allow datapaths to be initialized while the
+    # previous one is terminating, fixme.
+    def terminate_datapath(dpid)
+      datapath_map = @datapaths.delete(dpid) || return
+      datapath = datapath_map[:datapath] || return
+
+      info "terminating datapath actor. dpid: 0x%016x" % dpid
+      datapath.terminate if datapath.alive?
+      info "terminated datapath actor. dpid: 0x%016x" % dpid
+    end
+
+    def reset_datapath(dpid)
+      terminate_datapath(dpid)
+
+      # Datapath was recreated while we're terminating. (TODO: set dpids status while reseting)
+      return if @datapaths[dpid]
+
+      # TODO: Check that we're not shutting down.
+      if @dpids[dpid] == :ready
+        initialize_datapath(dpid)
+      end
+    end
+
+    #
+    # Controller methods:
     #
 
     def start(args)
@@ -59,6 +110,7 @@ module Vnet::Openflow
     def switch_ready(dpid)
       info "switch_ready from %#x." % dpid
 
+      # TODO: Make async and safe.
       @dpids[dpid] = :ready
       initialize_datapath(dpid)
     end
@@ -125,60 +177,21 @@ module Vnet::Openflow
       debug "data: #{message.buffer.unpack('H*')}"
     end
 
-    def reset_datapath(dpid)
-      terminate_datapath(dpid)
-      initialize_datapath(dpid)
+    def error_bad_match(dpid, message)
+      error log_format_h("openflow error bad_match from controller", dpid: "0x%016x" % dpid, message: message.inspect)
+      handle_terminal_error(dpid)
     end
 
-    def initialize_datapath(dpid)
-      # TODO: Need to wait after terminate.
-      terminate_datapath(dpid)
-
-      info log_format_h("initialize datapath actor", dpid: "0x%016x" % dpid)
-
-      # There is no need to clean up the old switch, as all the
-      # previous flows are removed. Just let it rebuild everything.
-      #
-      # This might not be optimal in cases where the switch got
-      # disconnected for a short period, as Open vSwitch has the
-      # ability to keep flows between sessions.
-      datapath = Datapath.new(self, dpid, OvsOfctl.new(dpid))
-
-      if @datapaths[dpid]
-        info "initialize datapath actor cancelled, already intitialized after termination. dpid: 0x%016x" % dpid
-        return
-      end
-
-      @datapaths[dpid] = { datapath: datapath, dp_info: datapath.dp_info }
-
-      datapath.async.create_switch
-      datapath.async.run_normal
+    def error_bad_request(dpid, message)
+      error log_format_h("openflow error bad_request from controller", dpid: "0x%016x" % dpid, message: message.inspect)
+      handle_terminal_error(dpid)
     end
 
-    # TODO: We cannot allow datapaths to be initialized while the
-    # previous one is terminating, fixme.
-    def terminate_datapath(dpid)
-      datapath_map = @datapaths.delete(dpid) || return
-      datapath = datapath_map[:datapath] || return
+    #
+    # Private methods:
+    #
 
-      info "terminating datapath actor. dpid: 0x%016x" % dpid
-      datapath.terminate if datapath.alive?
-      info "terminated datapath actor. dpid: 0x%016x" % dpid
-    end
-
-    def reset_datapath(dpid)
-      terminate_datapath(dpid)
-
-      # Datapath was recreated while we're terminating. (TODO: set dpids status while reseting)
-      return if @datapaths[dpid]
-
-      # TODO: Check that we're not shutting down.
-      if @dpids[dpid] == :ready
-        initialize_datapath(dpid)
-      end
-    end
-
-    public
+    private
 
     def internal_add_flows(dpid, flows)
       flows.each { |flow|
@@ -192,6 +205,14 @@ module Vnet::Openflow
 
     def safe_dp_info(dpid)
       @datapaths[dpid] && @datapaths[dpid][:dp_info]
+    end
+
+    def handle_terminal_error(dpid)
+      error log_format_h("resetting datapath due to error", dpid: "0x%016x" % dpid)
+
+      # TODO: Add timer / last error, etc.
+      # reset_datapath(dpid)
+      raise "Terminal error received."
     end
 
   end

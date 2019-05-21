@@ -26,7 +26,7 @@ module Vnet::Core::Ports
                              priority: 11,
 
                              match: {
-                               :in_port => self.port_number
+                               in_port: self.port_number
                              },
 
                              write_reflection: false,
@@ -39,13 +39,13 @@ module Vnet::Core::Ports
                              priority: 2,
                              
                              match: {
-                               :in_port => self.port_number
+                               in_port: self.port_number
                              },
                              match_reflection: true,
                              match_first: @interface_id,
 
                              actions: {
-                               :output => OFPP_IN_PORT
+                               output: OFPP_IN_PORT
                              })
         flows << flow_create(table: TABLE_OUT_PORT_EGRESS_IF_NIL,
                              priority: 1,
@@ -53,7 +53,7 @@ module Vnet::Core::Ports
                              match_first: @interface_id,
 
                              actions: {
-                               :output => self.port_number
+                               output: self.port_number
                              })
       end
 

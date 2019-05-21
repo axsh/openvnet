@@ -22,8 +22,8 @@ module Vnet
 
       MAC_ZERO       = Pio::Mac.new('00:00:00:00:00:00')
       MAC_BROADCAST  = Pio::Mac.new('ff:ff:ff:ff:ff:ff')
-      IPV4_ZERO      = IPAddr.new('0.0.0.0')
-      IPV4_BROADCAST = IPAddr.new('255.255.255.255')
+      IPV4_ZERO      = Pio::IPv4Address.new('0.0.0.0')
+      IPV4_BROADCAST = Pio::IPv4Address.new('255.255.255.255')
 
       #
       # eth types

@@ -36,13 +36,13 @@ def random_mac
 end
 
 def random_ipv4_s(mask=24)
-  IPAddr.new(rand(2**32),Socket::AF_INET).mask(mask).to_s
+  Pio::IPv4Address.new(rand(2**32)).mask(mask).to_s
 end
 
 def random_ipv4_i(mask=24)
-  IPAddr.new(rand(2**32),Socket::AF_INET).mask(mask).to_i
+  Pio::IPv4Address.new(rand(2**32)).mask(mask).to_i
 end
 
 def random_ipv4(mask=24)
-  IPAddr.new(rand(2**32),Socket::AF_INET).mask(mask)
+  Pio::IPv4Address.new(rand(2**32)).mask(mask)
 end

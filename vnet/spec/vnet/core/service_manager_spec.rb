@@ -22,7 +22,7 @@ describe Vnet::Core::ServiceManager do
         interface: service_interface,
         mac_address: random_mac_i),
       ip_address: Fabricate(:ip_address,
-        ipv4_address: IPAddr.new("192.168.1.3").to_i,
+        ipv4_address: Pio::IPv4Address.new("192.168.1.3").to_i,
         network: network))
   }
 
@@ -51,8 +51,8 @@ describe Vnet::Core::ServiceManager do
 
         service_manager.send(:internal_detect, id: network_service.id).tap do |item|
           expect(item.dns_service[:public_dns]).to eq "8.8.8.8,8.8.4.4"
-          expect(item.records["foo."].first[:ipv4_address]).to eq IPAddr.new("192.168.1.10")
-          expect(item.dns_server_for(network.id)).to eq IPAddr.new("192.168.1.3").to_s
+          expect(item.records["foo."].first[:ipv4_address]).to eq Pio::IPv4Address.new("192.168.1.10")
+          expect(item.dns_server_for(network.id)).to eq Pio::IPv4Address.new("192.168.1.3").to_s
         end
 
         expect(dp_info.added_flows).to be_any { |flow|

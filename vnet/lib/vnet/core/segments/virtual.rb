@@ -49,7 +49,7 @@ module Vnet::Core::Segments
 
     def update_flows(port_numbers)
       flood_actions = port_numbers.collect { |port_number|
-        { :output => port_number }
+        { output: port_number }
       }
 
       flows = []
@@ -67,11 +67,11 @@ module Vnet::Core::Segments
     def packet_in(message)
       if @datapath_info.enable_ovs_learn_action
         error log_format_h('packet_in however enable_ovs_learn_action is true',
-                           in_port: message.in_port, eth_dst: message.eth_dst, eth_src: message.eth_src)
+                           in_port: message.in_port, eth_dst: message.destination_mac_address, eth_src: message.source_mac_address)
         return
       end
 
-      info log_format_h('packet_in', in_port: message.in_port, eth_dst: message.eth_dst, eth_src: message.eth_src)
+      info log_format_h('packet_in', in_port: message.in_port, eth_dst: message.destination_mac_address, eth_src: message.source_mac_address)
       # info log_format("packet_in", message.inspect)
 
       # TODO: Verify eth_src and arp_sha.
@@ -84,13 +84,13 @@ module Vnet::Core::Segments
                            idle_timeout: 36000,
 
                            match: {
-                             :eth_dst => message.eth_src
+                             destination_mac_address: message.source_mac_address
                            },
                            match_remote: false,
                            match_first: @id,
 
                            actions: {
-                             :output => message.in_port
+                             output: message.in_port
                            })
       
       # TODO: Should be possible to also have an idle_timeout if we
@@ -104,9 +104,9 @@ module Vnet::Core::Segments
                            hard_timeout: 600,
 
                            match: {
-                             :in_port => message.in_port,
-                             :eth_type => 0x0806,
-                             :eth_src => message.eth_src
+                             in_port: message.in_port,
+                             ether_type: ETH_TYPE_ARP,
+                             source_mac_address: message.source_mac_address
                            },
                            match_remote: true,
                            match_first: @id,

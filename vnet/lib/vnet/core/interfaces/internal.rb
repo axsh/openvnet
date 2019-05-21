@@ -49,7 +49,7 @@ module Vnet::Core::Interfaces
                            match_first: @id,
 
                            actions: {
-                             :output => :local
+                             output: :local
                            })
     end
 
@@ -64,7 +64,7 @@ module Vnet::Core::Interfaces
                            priority: 30,
 
                            match: {
-                             :eth_src => mac_info[:mac_address],
+                             source_mac_address: mac_info[:mac_address],
                            },
                            
                            write_reflection: false,

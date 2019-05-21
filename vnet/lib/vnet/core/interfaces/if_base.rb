@@ -48,10 +48,10 @@ module Vnet::Core::Interfaces
       #
       # Anti-spoof:
       #
-      [{ :eth_src => mac_address,
+      [{ source_mac_address: mac_address,
        },{
-         :eth_type => 0x0806,
-         :arp_sha => mac_address,
+         ether_type: ETH_TYPE_ARP,
+         arp_sha: mac_address,
        }
       ].each { |match|
         # Currently add to ingress_nw_if table since we do not
@@ -69,7 +69,9 @@ module Vnet::Core::Interfaces
                              goto_table: TABLE_SEGMENT_SRC_CLASSIFIER_SEG_NIL,
                              priority: 30,
 
-                             match: { :eth_src => mac_address },
+                             match: {
+                               source_mac_address: mac_address
+                             },
                              match_first: @id,
 
                              write_first: segment_id,
@@ -79,7 +81,7 @@ module Vnet::Core::Interfaces
                              priority: 60,
 
                              match: {
-                               :eth_dst => mac_address
+                               destination_mac_address: mac_address
                              },
                              match_first: segment_id,
 
@@ -101,18 +103,18 @@ module Vnet::Core::Interfaces
       #
       # Validate
       #
-      [{ :eth_type => 0x0800,
-         :eth_src => mac_address,
-         :ipv4_src => IPV4_ZERO
+      [{ ether_type: ETH_TYPE_IPV4,
+         source_mac_address: mac_address,
+         ipv4_source_address: IPV4_ZERO
        }, {
-         :eth_type => 0x0800,
-         :eth_src => mac_address,
-         :ipv4_src => ipv4_address
+         ether_type: ETH_TYPE_IPV4,
+         source_mac_address: mac_address,
+         ipv4_source_address: ipv4_address
        }, {
-         :eth_type => 0x0806,
-         :eth_src => mac_address,
-         :arp_sha => mac_address,
-         :arp_spa => ipv4_address
+         ether_type: ETH_TYPE_ARP,
+         source_mac_address: mac_address,
+         arp_sha: mac_address,
+         arp_spa: ipv4_address
        }].each { |match|
         if segment_id
           flows << flow_create(table: TABLE_INTERFACE_EGRESS_VALIDATE_IF_NIL,
@@ -148,25 +150,25 @@ module Vnet::Core::Interfaces
                            priority: 40,
 
                            match: {
-                             :eth_type => 0x0800,
-                             :ipv4_dst => ipv4_address,
+                             ether_type: ETH_TYPE_IPV4,
+                             ipv4_destination_address: ipv4_address,
                            },
                            match_first: network_id,
 
                            actions: {
-                             :eth_dst => mac_address,
+                             destination_mac_address: mac_address,
                            },
                            
                            cookie: cookie)
 
-      [{:eth_type => 0x0800,
-        :eth_dst => mac_address,
-        :ipv4_dst => ipv4_address,
+      [{ether_type: ETH_TYPE_IPV4,
+        destination_mac_address: mac_address,
+        ipv4_destination_address: ipv4_address,
        },{
-        :eth_type => 0x0806,
-        :eth_dst => mac_address,
-        :arp_tha => mac_address,
-        :arp_tpa => ipv4_address
+        ether_type: ETH_TYPE_ARP,
+        destination_mac_address: mac_address,
+        arp_tha: mac_address,
+        arp_tpa: ipv4_address
        }].each { |match|
         flows << flow_create(table: TABLE_NETWORK_DST_MAC_LOOKUP_NIL_NW,
                              goto_table: TABLE_INTERFACE_INGRESS_FILTER_IF_NIL,
@@ -188,12 +190,12 @@ module Vnet::Core::Interfaces
       # such it is for the time being disabled.
 
       if mode == :vif || mode == :host
-        [{ :eth_type => 0x0806,
-            :arp_spa => ipv4_address,
-          },{
-            :eth_type => 0x0800,
-            :ipv4_src => ipv4_address,
-          }
+        [{ ether_type: ETH_TYPE_ARP,
+           arp_spa: ipv4_address,
+         },{
+           ether_type: ETH_TYPE_IPV4,
+           ipv4_source_address: ipv4_address,
+         }
         ].each { |match|
           flows << flow_create(table: TABLE_INTERFACE_INGRESS_NW_DPNW,
                                priority: 90,
@@ -216,9 +218,9 @@ module Vnet::Core::Interfaces
                              priority: 20,
                              
                              match: {
-                               :eth_type => 0x0800,
-                               :eth_dst => mac_info[:mac_address],
-                               :ipv4_dst => ipv4_info[:ipv4_address]
+                               ether_type: ETH_TYPE_IPV4,
+                               destination_mac_address: mac_info[:mac_address],
+                               ipv4_destination_address: ipv4_info[:ipv4_address]
                              },
                              match_first: ipv4_info[:network_id],
 
@@ -230,8 +232,8 @@ module Vnet::Core::Interfaces
                            priority: 10,
 
                            match: {
-                             :eth_type => 0x0800,
-                             :eth_dst => mac_info[:mac_address]
+                             ether_type: ETH_TYPE_IPV4,
+                             destination_mac_address: mac_info[:mac_address]
                            },
                            match_first: ipv4_info[:network_id],
                            write_first: @id,
@@ -248,7 +250,7 @@ module Vnet::Core::Interfaces
                            priority: 20,
 
                            match: {
-                             :eth_dst => mac_info[:mac_address]
+                             destination_mac_address: mac_info[:mac_address]
                            },
 
                            write_second: ipv4_info[:network_id],
@@ -265,7 +267,7 @@ module Vnet::Core::Interfaces
                            priority: 60,
 
                            match: {
-                             :eth_src => mac_info[:mac_address]
+                             source_mac_address: mac_info[:mac_address]
                            },
 
                            write_second: ipv4_info[:network_id],
@@ -281,7 +283,7 @@ module Vnet::Core::Interfaces
                            priority: 20,
 
                            match: {
-                             :eth_src => mac_info[:mac_address]
+                             source_mac_address: mac_info[:mac_address]
                            },
                            match_first: @id,
                            
@@ -301,7 +303,7 @@ module Vnet::Core::Interfaces
                            priority: 20,
 
                            match: {
-                             :eth_src => mac_info[:mac_address]
+                             source_mac_address: mac_info[:mac_address]
                            },
                            match_first: @id,
                            match_second: ipv4_info[:network_id],
@@ -328,7 +330,7 @@ module Vnet::Core::Interfaces
                            match_first: @id,
 
                            actions: {
-                             :eth_src => mac_info[:mac_address]
+                             source_mac_address: mac_info[:mac_address]
                            },
                            write_first: ipv4_info[:network_id],
                            write_second: 0,
@@ -352,11 +354,11 @@ module Vnet::Core::Interfaces
       segment_id = mac_info[:segment_id] || return
       cookie = self.cookie_for_mac_lease(mac_info[:cookie_id])
 
-      [{ :eth_type => 0x0800,
-         :eth_dst => mac_info[:mac_address]
+      [{ ether_type: ETH_TYPE_IPV4,
+         destination_mac_address: mac_info[:mac_address]
        }, {
-         :eth_type => 0x0806,
-         :eth_dst => mac_info[:mac_address]
+         ether_type: ETH_TYPE_ARP,
+         destination_mac_address: mac_info[:mac_address]
        }].each { |match|
         flows << flow_create(table: TABLE_INTERFACE_INGRESS_LOOKUP_IF_NIL,
                              goto_table: TABLE_INTERFACE_INGRESS_IF_SEG,
@@ -373,13 +375,13 @@ module Vnet::Core::Interfaces
     def flows_for_mac2mac_ipv4(flows, mac_info, ipv4_info)
       cookie = self.cookie_for_ip_lease(ipv4_info[:cookie_id])
 
-      [{ :eth_type => 0x0800,
-         :eth_dst => mac_info[:mac_address],
-         :ipv4_dst => ipv4_info[:ipv4_address]
+      [{ ether_type: ETH_TYPE_IPV4,
+         destination_mac_address: mac_info[:mac_address],
+         ipv4_destination_address: ipv4_info[:ipv4_address]
        }, {
-         :eth_type => 0x0806,
-         :eth_dst => mac_info[:mac_address],
-         :arp_tpa => ipv4_info[:ipv4_address]
+         ether_type: ETH_TYPE_ARP,
+         destination_mac_address: mac_info[:mac_address],
+         arp_tpa: ipv4_info[:ipv4_address]
        }].each { |match|
         flows << flow_create(table: TABLE_INTERFACE_INGRESS_LOOKUP_IF_NIL,
                              goto_table: TABLE_INTERFACE_INGRESS_IF_NW,

@@ -313,7 +313,7 @@ module Vnet::Core
                             network_type: network[:type],
                             network_prefix: network[:ipv4_prefix],
                             cookie_id: ip_lease.cookie_id,
-                            ipv4_address: IPAddr.new(ip_lease.ip_address.ipv4_address, Socket::AF_INET),
+                            ipv4_address: Pio::IPv4Address.new(ip_lease.ip_address.ipv4_address),
                             enable_routing: ip_lease.enable_routing)
     end
 
