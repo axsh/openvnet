@@ -92,7 +92,7 @@ module Vnet::NodeApi
                       raise "Unsupported IP address assignment: #{ip_range_group.allocation_type}"
                     end
         if leaseaddr.nil?
-          netstr = Pio::IPv4Address.new(network.ipv4_network, network.ipv4_prefix).to_string
+          netstr = Pio::IPv4Address.new(network.ipv4_network).mask!(network.ipv4_prefix).to_s
           raise "Run out of dynamic IP addresses from the network segment: #{network.uuid}, #{netstr}"
         end
         leaseaddr
@@ -110,10 +110,13 @@ module Vnet::NodeApi
           :desc => :end_ipv4_address.desc,
         }[order]
 
-        network_ip_address = Pio::IPv4Address.new(network.ipv4_network, network.ipv4_prefix)
+        network_ip_address = Pio::IPv4Address.new(network.ipv4_network).mask!(network.ipv4_prefix).to_range
+        network_first_ip = network_ip_address.first.to_i + 1
+        network_last_ip = network_ip_address.last.to_i - 1
+        
         ip_range_group.ip_ranges_dataset.containing_range(from_ipaddr, to_ipaddr).order(range_order).all.each do |i|
-          from = [from_ipaddr, network_ip_address.first.to_i, i.begin_ipv4_address].max
-          to = [to_ipaddr, network_ip_address.last.to_i, i.end_ipv4_address].min
+          from = [from_ipaddr, network_first_ip, i.begin_ipv4_address].max
+          to = [to_ipaddr, network_last_ip, i.end_ipv4_address].min
 
           # no ip address is assigined
           return if from > to

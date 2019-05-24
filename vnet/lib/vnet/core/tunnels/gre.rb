@@ -25,15 +25,13 @@ module Vnet::Core::Tunnels
         return
       end
 
-      if @dst_ipv4_address.nil? || !@dst_ipv4_address.ipv4?
-        error log_format("no valid remote IPv4 address for #{@uuid}",
-                         "ipv4_address:#{@dst_ipv4_address}")
+      if !is_address_ipv4?(@dst_ipv4_address)
+        error log_format_h("no valid remote IPv4 address for #{@uuid}", dst_ipv4_address: @dst_ipv4_address.inspect)
         return
       end
 
-      if @src_ipv4_address.nil? || !@src_ipv4_address.ipv4?
-        error log_format("no valid local IPv4 address for #{@uuid}",
-                         "ipv4_address:#{@src_ipv4_address}")
+      if !is_address_ipv4?(@src_ipv4_address)
+        error log_format_h("no valid local IPv4 address for #{@uuid}", src_ipv4_address: @src_ipv4_address.inspect)
         return
       end
 

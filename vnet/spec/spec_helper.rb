@@ -8,7 +8,6 @@ Bundler.setup(:default)
 Bundler.require(:test)
 
 require 'dcell'
-require 'trema' # Needed for the to_trema_hash methods in mock_datapath
 require 'vnet/api_direct'
 
 Dir['./spec/helpers/*.rb'].map {|f| require f }
@@ -32,6 +31,8 @@ DCell.setup
 # When a datapath is initialized, it'll have flow.
 # The one that accepts ARP in the INTERFACE_INGRESS_FILTER table
 DATAPATH_IDLE_FLOWCOUNT = 0
+
+Pio::OpenFlow.version = :OpenFlow13
 
 # Disable watchdog registration.
 module Vnet::Watchdog

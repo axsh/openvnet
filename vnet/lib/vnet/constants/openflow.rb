@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
 
-require 'ipaddr'
-
 # Remove top-level :array and :string methods introduced by trema-edge
 # to avoid the conflict with BinData's primitive methods.
 Class.class_eval { undef_method :array } rescue NameError
 Class.class_eval { undef_method :string } rescue NameError
-require 'pio'
 
 module Vnet
   module Constants

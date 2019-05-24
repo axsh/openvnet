@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 
-require 'ipaddr'
-
 module Vnet::Models
-
   class DnsService < Base
     taggable "dnss"
 
@@ -29,12 +26,16 @@ module Vnet::Models
       end
 
       has_invalid = public_dns && public_dns.split(",").detect { |ip_address|
-        !IPAddr.new(ip_address).ipv4?
+        begin
+          IPAddr.new(ip_address, Socket::AF_INET)
+          false
+        rescue IPAddr::InvalidAddressError
+          true
+        end
       }
 
       errors.add(:public_dns, 'is not valid') if has_invalid
     end
 
   end
-
 end

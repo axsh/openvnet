@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 module Vnet::Models
-
   class TranslationStaticAddress < Base
     plugin :paranoia_is_deleted
 
@@ -24,5 +23,4 @@ module Vnet::Models
     end
 
   end
-
 end

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 require 'spec_helper'
 
 describe Vnet::Configurations::Vna do
@@ -16,11 +17,10 @@ describe Vnet::Configurations::Vna do
     it { expect(subject.node.addr.port).to eq 19103 }
     it { expect(subject.node.addr_string).to eq "tcp://127.0.0.1:19103" }
 
-    # trema
-    it { expect(subject.trema_home).to eq Gem::Specification.find_by_name('trema').gem_dir }
-    it { expect(subject.trema_tmp).to eq "/var/run/openvnet" }
-
     it { expect(subject.switch).to eq "tcp:172.16.50.2:6653" }
     it { expect(subject.ovsdb).to eq "tcp:172.16.55.1:6666" }
+
+    it { expect(subject.bootstrap_init_timeout).to eq 600 }
+    it { expect(subject.main_init_timeout).to eq 120 }
   end
 end

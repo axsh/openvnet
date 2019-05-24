@@ -10,6 +10,7 @@ require 'ext/kernel'
 require 'fuguta'
 require 'json'
 require 'ostruct'
+require 'pio'
 
 module Vnet
 

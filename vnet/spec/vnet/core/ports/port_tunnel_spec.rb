@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
+
 require 'spec_helper'
-require 'trema'
 
 include Vnet::Constants::Openflow
 

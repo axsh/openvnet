@@ -8,7 +8,6 @@
 # http://www.opensource.org/licenses/MIT
 
 # frozen_string_literal: true
-require 'pio'
 require 'celluloid/io'
 
 module Vnet::Openflow::Trema
@@ -136,6 +135,10 @@ module Vnet::Openflow::Trema
 
     # @private
     def initialize(port_number = DEFAULT_TCP_PORT)
+      if Pio::OpenFlow.version != :OpenFlow13
+        raise "Pio OpenFlow version not set to OpenFlow13."
+      end
+
       @port_number = port_number
       @threads = []
 

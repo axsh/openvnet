@@ -55,5 +55,9 @@ describe Vnet::Configurations::Common do
     it { expect(subject.db.user).to eq "root" }
     it { expect(subject.db.password).to eq "" }
     it { expect(subject.db_uri).to eq "mysql2://localhost:3306/vnet_test?user=root&password=" }
+
+    it { expect(subject.watchdog_interval).to eq 10 }
+    it { expect(subject.watchdog_timeout).to eq 30 }
+    it { expect(subject.watchdog_logging).to eq 'error' }
   end
 end

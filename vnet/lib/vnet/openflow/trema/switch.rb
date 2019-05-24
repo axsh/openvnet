@@ -8,7 +8,6 @@
 # http://www.opensource.org/licenses/MIT
 
 # frozen_string_literal: true
-require 'pio'
 
 module Vnet::Openflow::Trema
   # OpenFlow switch.

@@ -4,7 +4,6 @@
 # to avoid the conflict with BinData's primitive methods.
 Class.class_eval { undef_method :array } rescue NameError
 Class.class_eval { undef_method :string } rescue NameError
-require 'pio'
 
 module Vnet::Endpoints::V10::Helpers
   E = Vnet::Endpoints::Errors
@@ -83,11 +82,8 @@ module Vnet::Endpoints::V10::Helpers
   module Parsers
     PARSE_IPV4 = proc do |param|
       begin
-        #TODO: Change to ipaddress
-        address = Pio::IPv4Address.new(param)
-        raise(E::ArgumentError, 'Not an IPv4 address.') unless address.ipv4?
-        address.to_i
-      rescue ArgumentError
+        Pio::IPv4Address.new(param).to_i
+      rescue IPAddr::InvalidAddressError
         raise(E::ArgumentError, "Could not parse IPv4 address: #{param}")
       end
     end
@@ -102,11 +98,8 @@ module Vnet::Endpoints::V10::Helpers
 
     PARSE_IPV4_ADDRESS = proc do |param|
       begin
-        #TODO: Change to ipaddress
-        address = Pio::IPv4Address.new(param)
-        raise(E::ArgumentError, 'Not an IPv4 address.') unless address.ipv4?
-        address
-      rescue ArgumentError
+        Pio::IPv4Address.new(param)
+      rescue IPAddr::InvalidAddressError
         raise(E::ArgumentError, "Could not parse IPv4 address: #{param}")
       end
     end

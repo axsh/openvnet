@@ -17,6 +17,26 @@ module Vnet::Openflow
                                   :write_second,
                                  ]
 
+    def is_address_ipv4?(address)
+      case address
+      when nil
+        return false
+      when Pio::IPv4Address
+        return address.value.ipv4?
+      when IPAddr
+        return address.ipv4?
+      when String
+        begin
+          IPAddr.new(addr, Socket::AF_INET)
+        rescue IPAddr::InvalidAddressError
+          return false
+        end
+        return true
+      else
+        raise "Unknown address type '#{address.inspect}."
+      end
+    end
+
     def is_ipv4_broadcast(address, prefix)
       address == IPV4_ZERO && prefix == 0
     end
@@ -26,7 +46,7 @@ module Vnet::Openflow
         { ether_type: ETH_TYPE_IPV4 }
       else
         { ether_type: ETH_TYPE_IPV4,
-          ipv4_destination_address: address,
+          ipv4_destination_address: Pio::IPv4Address.new(address),
           ipv4_destination_address_mask: IPV4_BROADCAST.mask(prefix),
         }
       end
@@ -36,8 +56,8 @@ module Vnet::Openflow
       if is_ipv4_broadcast(address, prefix)
         { ether_type: ETH_TYPE_IPV4 }
       else
-        { eth_type: ETH_TYPE_IPV4,
-          ipv4_source_address: address,
+        { ether_type: ETH_TYPE_IPV4,
+          ipv4_source_address: Pio::IPv4Address.new(address),
           ipv4_source_address_mask: IPV4_BROADCAST.mask(prefix),
         }
       end

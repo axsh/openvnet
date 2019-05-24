@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
 
-require 'pio'
-
 module Vnet::Openflow
-
   class Flow
-
     attr_reader :params
 
     def initialize(table_id, priority, match, actions, options = {})
@@ -19,6 +15,8 @@ module Vnet::Openflow
     end
 
     def to_trema_hash
+      Celluloid.logger.debug "trema_hash.params: #{@params.inspect}"
+
       trema_hash = {
         table_id: @params[:table_id],
         priority: @params[:priority],
@@ -31,7 +29,6 @@ module Vnet::Openflow
       trema_hash[:cookie] = @params[:options][:cookie] if @params[:options][:cookie]
       trema_hash[:cookie_mask] = @params[:options][:cookie_mask] if @params[:options][:cookie_mask]
 
-      Celluloid.logger.debug "trema_hash.params: #{@params.inspect}"
       Celluloid.logger.debug "trema_hash.result: #{trema_hash.inspect}"
 
       trema_hash
@@ -104,6 +101,5 @@ module Vnet::Openflow
     end
 
   end
-
 end
 
