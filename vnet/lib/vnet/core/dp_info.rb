@@ -109,11 +109,9 @@ module Vnet::Core
 
     def del_all_flows
       options = {
-        buffer_id: :no_buffer,
+        table_id: 0xff,
         match: {
-          table_id: :all,
         },
-        out_port: :any,
       }
 
       @controller.public_send_flow_mod_delete(@dpid, options)

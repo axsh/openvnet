@@ -27,9 +27,7 @@ module Vnet::Openflow
     #
 
     def create_default_flows
-      #
-      # Add default flows:
-      #
+      @dp_info.del_all_flows
 
       flows = []
 

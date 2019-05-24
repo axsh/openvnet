@@ -18,26 +18,6 @@ module Vnet::Openflow::Trema
   #
   # rubocop:disable ClassLength
   class Controller
-    # Pio::FlowMod.new argument
-    class FlowModAddOption
-      def initialize(user_options)
-        @user_options = user_options
-      end
-
-      def to_hash
-        {
-          command: :add,
-          priority: @user_options[:priority] || 0,
-          transaction_id: @user_options[:transaction_id] || rand(0xffffffff),
-          idle_timeout: @user_options[:idle_timeout] || 0,
-          hard_timeout: @user_options[:hard_timeout] || 0,
-          buffer_id: @user_options[:buffer_id] || 0xffffffff,
-          match: @user_options.fetch(:match),
-          actions: @user_options[:actions] || []
-        }
-      end
-    end
-
     # Pio::FlowMod.new argument (OpenFlow 1.3)
     class FlowModAdd13Option
       def initialize(user_options)
@@ -50,14 +30,16 @@ module Vnet::Openflow::Trema
       def to_hash
         {
           command: :add,
-          priority: @user_options[:priority] || 0,
           transaction_id: @user_options[:transaction_id] || rand(0xffffffff),
+          cookie: @user_options[:cookie] || 0,
+          cookie_mask: @user_options[:cookie_mask] || 0,
+          table_id: @user_options[:table_id] || 0,
           idle_timeout: @user_options[:idle_timeout] || 0,
           hard_timeout: @user_options[:hard_timeout] || 0,
+          priority: @user_options[:priority] || 0,
           buffer_id: @user_options[:buffer_id] || 0xffffffff,
-          match: @user_options.fetch(:match),
-          table_id: @user_options[:table_id] || 0,
           flags: @user_options[:flags] || [],
+          match: @user_options.fetch(:match),
           instructions: @user_options[:instructions] || []
         }
       end
@@ -76,6 +58,7 @@ module Vnet::Openflow::Trema
         {
           command: :delete,
           transaction_id: @user_options[:transaction_id] || rand(0xffffffff),
+          table_id: @user_options[:table_id] || 0,
           buffer_id: @user_options[:buffer_id] || 0xffffffff,
           match: @user_options.fetch(:match),
           out_port: @user_options[:out_port] || 0xffffffff
@@ -170,16 +153,11 @@ module Vnet::Openflow::Trema
     # @!group OpenFlow Message
 
     def send_flow_mod_add(datapath_id, options)
-      flow_mod =
-        case Pio::OpenFlow.version
-        when :OpenFlow10
-          FlowMod.new(FlowModAddOption.new(options).to_hash)
-        when :OpenFlow13
-          FlowMod.new(FlowModAdd13Option.new(options).to_hash)
-        else
-          raise "Unsupported OpenFlow version: #{Pio::OpenFlow.version}"
-        end
-      send_message datapath_id, flow_mod
+      if Pio::OpenFlow.version != :OpenFlow13
+        raise "Unsupported OpenFlow version: #{Pio::OpenFlow.version}"
+      end
+
+      send_message datapath_id, FlowMod.new(FlowModAdd13Option.new(options).to_hash)
     end
 
     def send_flow_mod_delete(datapath_id, options)

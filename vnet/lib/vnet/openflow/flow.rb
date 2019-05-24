@@ -24,10 +24,13 @@ module Vnet::Openflow
         match: Pio::OpenFlow13::Match.new(@params[:match]),
         instructions: convert_instructions(@params[:actions], @params[:options]),
       }
-      trema_hash[:hard_timeout] = @params[:options][:hard_timeout] if @params[:options][:hard_timeout]
-      trema_hash[:idle_timeout] = @params[:options][:idle_timeout] if @params[:options][:idle_timeout]
-      trema_hash[:cookie] = @params[:options][:cookie] if @params[:options][:cookie]
-      trema_hash[:cookie_mask] = @params[:options][:cookie_mask] if @params[:options][:cookie_mask]
+
+      @params[:options].tap { |options|
+        trema_hash[:hard_timeout] = options[:hard_timeout] if options[:hard_timeout]
+        trema_hash[:idle_timeout] = options[:idle_timeout] if options[:idle_timeout]
+        trema_hash[:cookie] = options[:cookie] if options[:cookie]
+        trema_hash[:cookie_mask] = options[:cookie_mask] if options[:cookie_mask]
+      }
 
       # Celluloid.logger.debug "trema_hash.result: #{trema_hash.inspect}"
 
