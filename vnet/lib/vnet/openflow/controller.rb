@@ -182,6 +182,11 @@ module Vnet::Openflow
       handle_terminal_error(dpid)
     end
 
+    def error_bad_action(dpid, message)
+      error log_format_h("openflow error bad_match from controller", dpid: "0x%016x" % dpid, message: message.inspect)
+      handle_terminal_error(dpid)
+    end
+
     def error_bad_request(dpid, message)
       error log_format_h("openflow error bad_request from controller", dpid: "0x%016x" % dpid, message: message.inspect)
       handle_terminal_error(dpid)
@@ -212,7 +217,8 @@ module Vnet::Openflow
 
       # TODO: Add timer / last error, etc.
       # reset_datapath(dpid)
-      raise "Terminal error received."
+      # raise "Terminal error received."
+      exit -1
     end
 
   end

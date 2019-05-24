@@ -26,6 +26,7 @@ module Vnet::Openflow::Trema
 
     def initialize(socket)
       @socket = socket
+      @trema_log = Vnet::Configurations::Vna.conf.trema_log
     end
 
     def init
@@ -44,7 +45,7 @@ module Vnet::Openflow::Trema
     alias dpid datapath_id
 
     def write(message)
-      debug "Sending #{message.inspect}"
+      debug "trema_switch: sending #{message.inspect}" if @trema_log
       @socket.write message.to_binary
     end
 
@@ -67,7 +68,9 @@ module Vnet::Openflow::Trema
     def expect_receiving(expected_message_klass)
       loop do
         message = read
-        debug "Received #{message}"
+
+        debug "trema_switch: received #{message}" if @trema_log
+
         case message
         when expected_message_klass
           return message

@@ -126,7 +126,7 @@ module Vnet::Core::Datapaths
                              write_second: dpg_map[:interface_id],
 
                              actions: {
-                               :tunnel_id => (flow_gen_id & TUNNEL_ID_MASK) | TUNNEL_NETWORK
+                               tunnel_id: (flow_gen_id & TUNNEL_ID_MASK) | TUNNEL_NETWORK
                              },
                              cookie: flow_cookie)
       }

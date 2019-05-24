@@ -141,6 +141,7 @@ module Vnet::Openflow::Trema
 
       @port_number = port_number
       @threads = []
+      @trema_log = Vnet::Configurations::Vna.conf.trema_log
 
       init_watchdog("trema_controller")
     end
@@ -195,13 +196,13 @@ module Vnet::Openflow::Trema
       # Celluloid.logger.debug "Sending #{message.inspect}"
       SWITCH.fetch(datapath_id).write message
     rescue KeyError, Errno::ECONNRESET, Errno::EPIPE
-      logger.debug "Switch #{datapath_id} is disconnected."
+      logger.debug "trema_controller: switch #{datapath_id} is disconnected."
     end
 
     def send_message_binary(datapath_id, binary)
       SWITCH.fetch(datapath_id).write_binary binary
     rescue KeyError, Errno::ECONNRESET, Errno::EPIPE
-      logger.debug "Switch #{datapath_id} is disconnected."
+      logger.debug "trema_controller: switch #{datapath_id} is disconnected."
     end
 
     # @!endgroup
@@ -280,10 +281,11 @@ module Vnet::Openflow::Trema
       begin
         message = SWITCH.fetch(datapath_id).read
       rescue KeyError
-        logger.debug "Switch #{datapath_id} is disconnected."
+        logger.debug "trema_controller: switch #{datapath_id} is disconnected."
       end
 
-      Celluloid.logger.debug "Received #{message.inspect}"
+      Celluloid.logger.debug "trema_controller: received #{message.inspect}" if @trema_log
+
       case message
       when Echo::Request
         maybe_send_handler :echo_request, datapath_id, message
@@ -312,6 +314,8 @@ module Vnet::Openflow::Trema
         maybe_send_handler :description_stats_reply, datapath_id, message
       when OpenFlow13::Error::BadMatch
         maybe_send_handler :error_bad_match, datapath_id, message
+      when OpenFlow13::Error::BadAction
+        maybe_send_handler :error_bad_action, datapath_id, message
       when OpenFlow13::Error::BadRequest
         maybe_send_handler :error_bad_request, datapath_id, message
       else

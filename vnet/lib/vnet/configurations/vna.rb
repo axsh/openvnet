@@ -50,6 +50,8 @@ module Vnet::Configurations
 
     param :switch
     param :ovsdb
+
+    param :trema_log, :default => false
   end
 
 end

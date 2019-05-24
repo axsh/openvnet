@@ -15,7 +15,7 @@ module Vnet::Openflow
     end
 
     def to_trema_hash
-      Celluloid.logger.debug "trema_hash.params: #{@params.inspect}"
+      # Celluloid.logger.debug "trema_hash.params: #{@params.inspect}"
 
       trema_hash = {
         table_id: @params[:table_id],
@@ -29,7 +29,7 @@ module Vnet::Openflow
       trema_hash[:cookie] = @params[:options][:cookie] if @params[:options][:cookie]
       trema_hash[:cookie_mask] = @params[:options][:cookie_mask] if @params[:options][:cookie_mask]
 
-      Celluloid.logger.debug "trema_hash.result: #{trema_hash.inspect}"
+      # Celluloid.logger.debug "trema_hash.result: #{trema_hash.inspect}"
 
       trema_hash
     end
@@ -78,23 +78,15 @@ module Vnet::Openflow
       result
     end
 
-    # TODO: SetField needs to consolidate actions.
     def to_action(tag, arg)
       case tag
-      when :destination_mac_address  then Pio::SetDestinationMacAddress.new(arg)
-      when :source_mac_address  then Pio::SetSourceMacAddress.new(arg)
-      when :ipv4_destination_address then Pio::SetDestinationIpAddress.new(arg)
-      when :ipv4_source_address then Pio::SetSourceIpAddress.new(arg)
+      when :destination_mac_address  then Pio::OpenFlow13::SetDestinationMacAddress.new(arg)
+      when :source_mac_address  then Pio::OpenFlow13::SetSourceMacAddress.new(arg)
+      when :ipv4_destination_address then Pio::OpenFlow13::SetDestinationIpAddress.new(arg)
+      when :ipv4_source_address then Pio::OpenFlow13::SetSourceIpAddress.new(arg)
 
-      when :tcp_dst  then Pio::SetTransportDestinationPort.new(arg)
-      when :tcp_src  then Pio::SetTransportSourcePort.new(arg)
-      when :udp_dst  then Pio::SetTransportDestinationPort.new(arg)
-      when :udp_src  then Pio::SetTransportSourcePort.new(arg)
-
-      when :output then Pio::SendOutPort.new(arg)
-      when :tunnel_id then Pio::OpenFlow10::SetVlanVid.new(0x999)
-      # when :strip_vlan then Pio::OpenFlow10::StripVlanHeader.new #Trema::Actions::PopVlan.new
-      # when :mod_vlan_vid then Trema::Actions::SetField.new(action_set: [Trema::Actions::PushVlan.new(0x8100), Trema::Actions::VlanVid.new(vlan_vid: arg)])
+      when :output then Pio::OpenFlow13::SendOutPort.new(arg)
+      when :tunnel_id then Pio::OpenFlow13::SetTunnelId.new(arg)
       else
         raise("Unknown action type: #{tag}")
       end
