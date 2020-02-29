@@ -39,7 +39,7 @@ gem 'pio'
 
 group :development, :test do
   # Rake's version required was added to make OpenVNet run on Ubuntu 14.04
-  gem "rake", "10.1.0"
+  gem "rake", "13.0.1"
   gem "rspec"
   gem "rack-test"
   gem "fabrication", '2.9.8' # Updating to 2.13.2 broke the unit tests.
