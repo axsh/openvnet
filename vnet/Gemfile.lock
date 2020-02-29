@@ -136,7 +136,7 @@ GEM
       rack (>= 1.0, < 3)
     rainbow (3.0.0)
     raindrops (0.19.0)
-    rake (10.1.0)
+    rake (13.0.1)
     redis (4.0.2)
     redis-namespace (1.6.0)
       redis (>= 3.0.4)
@@ -241,7 +241,7 @@ DEPENDENCIES
   rack-cors
   rack-test
   racket (>= 1.0.12)!
-  rake (= 10.1.0)
+  rake (= 13.0.1)
   rant (>= 0.5.9)!
   rspec
   rubocop
